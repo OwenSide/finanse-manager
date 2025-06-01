@@ -70,6 +70,26 @@ export default function App() {
     return dateMatch && categoryMatch && typeMatch && walletMatch;
   });
 
+  const handleDeleteTransaction = (id) => {
+  const confirmed = window.confirm("Czy na pewno chcesz usunąć tę transakcję?");
+  if (confirmed) {
+    setTransactions(transactions.filter((t) => t.id !== id));
+  }
+};
+
+const handleEditTransaction = (transaction) => {
+  setForm({
+    amount: transaction.amount.toString(),
+    categoryId: transaction.categoryId,
+    date: transaction.date,
+    comment: transaction.comment,
+    walletId: transaction.walletId,
+  });
+
+  // Удаляем оригинальную транзакцию, новую пользователь сохранит вручную
+  setTransactions(transactions.filter((t) => t.id !== transaction.id));
+  };
+
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Menedżer finansów</h1>
@@ -126,13 +146,29 @@ export default function App() {
         <ul className="divide-y">
           {filteredTransactions.map((t) => (
             <li key={t.id} className="py-2">
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start gap-2">
                 <div>
                   <div className="font-medium">{categories.find(c => c.id === t.categoryId)?.name}</div>
                   <div className="text-sm text-gray-500">{t.date} • {t.comment}</div>
                 </div>
-                <div className={t.type === "income" ? "text-green-600" : "text-red-600"}>
-                  {t.type === "income" ? "+" : "-"}{t.amount} zł
+                <div className="flex items-center gap-2">
+                  <div className={t.type === "income" ? "text-green-600" : "text-red-600"}>
+                    {t.type === "income" ? "+" : "-"}{t.amount} zł
+                  </div>
+                  <button
+                    onClick={() => handleEditTransaction(t)}
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Edytuj"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTransaction(t.id)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Usuń"
+                  >
+                    ❌
+                  </button>
                 </div>
               </div>
             </li>
