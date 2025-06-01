@@ -29,5 +29,5 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/finanse-manager",
+  base: "/finanse-manager/",
 })
