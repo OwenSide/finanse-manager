@@ -72,7 +72,7 @@ export default function App() {
 
   return (
     <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Menedżer finansów (offline)</h1>
+      <h1 className="text-2xl font-bold mb-4">Menedżer finansów</h1>
 
       <div className="mb-6">
         <h2 className="font-semibold mb-2">Dodaj transakcję</h2>
