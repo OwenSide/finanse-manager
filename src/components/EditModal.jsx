@@ -1,5 +1,6 @@
 // components/EditModal.jsx
 import React from "react";
+import { getAllWallets } from "../db.js";
 
 export default function EditModal({ isOpen, transaction, onSave, onClose, categories, wallets }) {
   if (!isOpen || !transaction) return null;
@@ -45,7 +46,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
           >
             <option value="">Portfel</option>
             {wallets.map((w) => (
-              <option key={w.id} value={w.id}>{w.name}</option>
+              <option key={w.id} value={w.id}>{w.name}({w.currency})</option>
             ))}
           </select>
           <input

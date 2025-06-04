@@ -8,6 +8,7 @@ import {
   updateTransaction,
   deleteTransaction,
   addCategory,
+  getAllWallets,
 } from "../db.js";
 
 const predefinedCategories = [
@@ -42,36 +43,37 @@ export default function DodajTransakcje() {
 
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [wallets, setWallets] = useState([]);
 
   useEffect(() => {
-  async function loadData() {
-    try {
-      let existingCategories = await getAllCategories();
+    async function loadData() {
+      try {
+        let existingCategories = await getAllCategories();
+        const existingIds = new Set(existingCategories.map((c) => c.id));
 
-      // Добавляем только недостающие категории
-      const existingIds = new Set(existingCategories.map((c) => c.id));
-
-      for (const cat of predefinedCategories) {
-        if (!existingIds.has(cat.id)) {
-          await addCategory(cat);
+        for (const cat of predefinedCategories) {
+          if (!existingIds.has(cat.id)) {
+            await addCategory(cat);
+          }
         }
+
+        const updatedCategories = await getAllCategories();
+        setCategories(updatedCategories);
+
+        const txs = await getAllTransactions();
+        setTransactions(txs);
+
+        const walletList = await getAllWallets();
+        setWallets(walletList);
+      } catch (error) {
+        console.error("Błąd podczas ładowania danych:", error);
+        setCategories(predefinedCategories);
       }
-
-      // Обновляем список после добавления
-      const updatedCategories = await getAllCategories();
-      setCategories(updatedCategories);
-
-      const txs = await getAllTransactions();
-      setTransactions(txs);
-    } catch (error) {
-      console.error("Błąd podczas ładowania danych:", error);
-      // Резервный план
-      setCategories(predefinedCategories);
     }
-  }
 
-  loadData();
-}, []);
+    loadData();
+  }, []);
+
 
 
 
@@ -166,9 +168,9 @@ export default function DodajTransakcje() {
             onChange={(e) => setForm({ ...form, walletId: e.target.value })}
           >
             <option value="">Portfel</option>
-            {predefinedWallets.map((w) => (
+            {wallets.map((w) => (
               <option key={w.id} value={w.id}>
-                {w.name}
+                {w.name}({w.currency})
               </option>
             ))}
           </select>
@@ -228,9 +230,9 @@ export default function DodajTransakcje() {
             onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}
           >
             <option value="">Wszystkie portfele</option>
-            {predefinedWallets.map((w) => (
+            {wallets.map((w) => (
               <option key={w.id} value={w.id}>
-                {w.name}
+                {w.name}({w.currency})
               </option>
             ))}
           </select>
@@ -257,7 +259,7 @@ export default function DodajTransakcje() {
                     className={t.type === "income" ? "text-green-600" : "text-red-600"}
                   >
                     {t.type === "income" ? "+" : "-"}
-                    {t.amount} zł
+                    {t.amount} {wallets.find((w) => w.id === t.walletId)?.currency || ""}
                   </div>
                   <button
                     onClick={() => handleEditTransaction(t)}
@@ -286,7 +288,7 @@ export default function DodajTransakcje() {
         onSave={handleSaveEdit}
         onClose={() => setIsModalOpen(false)}
         categories={categories}
-        wallets={predefinedWallets}
+        wallets={wallets}
       />
     </>
   );

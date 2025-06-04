@@ -1,9 +1,11 @@
 import { openDB } from "idb";
 
 const DB_NAME = "FinanceManagerDB";
-const DB_VERSION = 2;
+const DB_VERSION = 4;
 const STORE_CATEGORIES = "categories";
 const STORE_TRANSACTIONS = "transactions";
+const STORE_WALLETS = "wallets";
+const STORE_EXCHANGE_RATES = "exchangeRates"; // новое хранилище
 
 export async function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
@@ -14,10 +16,49 @@ export async function getDB() {
       if (!db.objectStoreNames.contains(STORE_TRANSACTIONS)) {
         db.createObjectStore(STORE_TRANSACTIONS, { keyPath: "id" });
       }
+      if (!db.objectStoreNames.contains(STORE_WALLETS)) {
+        db.createObjectStore(STORE_WALLETS, { keyPath: "id" }); 
+      }
+      if (!db.objectStoreNames.contains(STORE_EXCHANGE_RATES)) {
+        db.createObjectStore(STORE_EXCHANGE_RATES, { keyPath: "currency" });
+      }
     },
   });
 }
 
+
+// --- Wallets ---
+
+export async function getAllWallets() {
+  const db = await getDB();
+  return db.getAll("wallets");
+}
+
+export async function addWallet(wallet) {
+  const db = await getDB();
+  return db.put("wallets", wallet);
+}
+
+export async function deleteWallet(id) {
+  const db = await getDB();
+  return db.delete("wallets", id);
+}
+
+// --- Exchange Rates ---
+export async function saveExchangeRate(rate) {
+  const db = await getDB();
+  return db.put(STORE_EXCHANGE_RATES, rate); // { currency: "USD", rateToPLN: 4.21, updatedAt: Date }
+}
+
+export async function getExchangeRate(currency) {
+  const db = await getDB();
+  return db.get(STORE_EXCHANGE_RATES, currency);
+}
+
+export async function getAllExchangeRates() {
+  const db = await getDB();
+  return db.getAll(STORE_EXCHANGE_RATES);
+}
 
 // --- Categories ---
 
