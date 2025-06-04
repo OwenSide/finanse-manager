@@ -37,25 +37,25 @@ export default function Categories() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">📂 Kategorie</h2>
-      <div className="mb-4 flex gap-2 items-end">
+      <div className="mb-4 flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
         <input
           type="text"
           placeholder="Nazwa kategorii"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="border p-2"
+          className="border p-2 w-full"
         />
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="border p-2"
+          className="border p-2 w-full"
         >
           <option value="expense">Wydatek</option>
           <option value="income">Przychód</option>
         </select>
         <button
           onClick={handleAdd}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
         >
           ➕ Dodaj
         </button>
