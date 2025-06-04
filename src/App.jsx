@@ -2,7 +2,7 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { Menu } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
 import DodajTransakcje from "./pages/DodajTransakcje.jsx";
-import Stats from "./pages/Stats.jsx";
+import Stats from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
 import { useState } from "react";

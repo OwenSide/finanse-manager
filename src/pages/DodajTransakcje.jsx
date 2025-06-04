@@ -26,8 +26,8 @@ export default function DodajTransakcje() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState(predefinedCategories);
   const [filter, setFilter] = useState({
-    dateFrom: "",
-    dateTo: "",
+    dateFrom: getTodayDate(), 
+    dateTo: getTodayDate(),
     categoryId: "",
     type: "",
     walletId: "",
@@ -36,10 +36,15 @@ export default function DodajTransakcje() {
   const [form, setForm] = useState({
     amount: "",
     categoryId: "",
-    date: "",
+    date: getTodayDate(),
     comment: "",
     walletId: "",
   });
+
+  function getTodayDate() {
+    const today = new Date();
+    return today.toISOString().slice(0, 10); // берет первые 10 символов: 'YYYY-MM-DD'
+  }
 
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,9 +78,6 @@ export default function DodajTransakcje() {
 
     loadData();
   }, []);
-
-
-
 
   const handleAddTransaction = async () => {
     if (!form.amount || !form.categoryId || !form.date || !form.walletId) {
@@ -197,13 +199,13 @@ export default function DodajTransakcje() {
           <input
             type="date"
             className="p-2 border"
-            placeholder="Od"
+            value={filter.dateFrom}
             onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })}
           />
           <input
             type="date"
             className="p-2 border"
-            placeholder="Do"
+            value={filter.dateFrom}
             onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })}
           />
           <select

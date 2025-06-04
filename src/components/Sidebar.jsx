@@ -16,13 +16,13 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
       </div>
       <nav className="p-4 space-y-2">
         <NavLink
-            to="/stats"
-            className={({ isActive }) =>
+          to="/"
+          className={({ isActive }) =>
             (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
-            }
-            onClick={() => setMenuOpen(false)}
+          }
+          onClick={() => setMenuOpen(false)}
         >
-            📊 Statystyki
+          🏠 Strona główna
         </NavLink>
         <NavLink
             to="/add-transaction"

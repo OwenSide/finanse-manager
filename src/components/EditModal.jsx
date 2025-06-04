@@ -1,4 +1,3 @@
-// components/EditModal.jsx
 import React from "react";
 import { getAllWallets } from "../db.js";
 

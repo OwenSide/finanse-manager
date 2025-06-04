@@ -6,11 +6,10 @@ export async function fetchExchangeRates(base = "PLN") {
   const rates = {};
 
   for (const item of table) {
-    rates[item.code] = item.mid; // например: USD -> 4.2
+    rates[item.code] = item.mid; 
   }
 
-  // Добавим PLN как 1:1
   rates["PLN"] = 1;
 
-  return rates; // { USD: 4.2, EUR: 4.6, GBP: 5.3, PLN: 1 }
+  return rates; 
 }

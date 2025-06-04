@@ -5,7 +5,7 @@ const DB_VERSION = 4;
 const STORE_CATEGORIES = "categories";
 const STORE_TRANSACTIONS = "transactions";
 const STORE_WALLETS = "wallets";
-const STORE_EXCHANGE_RATES = "exchangeRates"; // новое хранилище
+const STORE_EXCHANGE_RATES = "exchangeRates"; 
 
 export async function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
@@ -47,7 +47,7 @@ export async function deleteWallet(id) {
 // --- Exchange Rates ---
 export async function saveExchangeRate(rate) {
   const db = await getDB();
-  return db.put(STORE_EXCHANGE_RATES, rate); // { currency: "USD", rateToPLN: 4.21, updatedAt: Date }
+  return db.put(STORE_EXCHANGE_RATES, rate); 
 }
 
 export async function getExchangeRate(currency) {

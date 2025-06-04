@@ -18,16 +18,21 @@ export default function Wallets() {
   }, []);
 
   useEffect(() => {
-  async function load() {
-    await syncExchangeRates();
-    const rates = await getAllExchangeRates();
-    const txs = await getAllTransactions();
-    const walletsWithBalance = calculateWalletsInPLN(wallets, txs, rates);
-    setWallets(walletsWithBalance);
-  }
+    async function loadAll() {
+      const walletList = await getAllWallets();
+      setWallets(walletList);
 
-  load();
-}, []);
+      await syncExchangeRates();
+      const rates = await getAllExchangeRates();
+      const txs = await getAllTransactions();
+
+      const walletsWithBalance = calculateWalletsInPLN(walletList, txs, rates);
+      setWallets(walletsWithBalance);
+    }
+
+    loadAll();
+  }, []);
+
 
   const handleAdd = async () => {
     if (!name.trim()) return;
