@@ -11,7 +11,7 @@ export default defineConfig({
         name: 'Menedżer finansów',
         short_name: 'FinManager',
         description: 'Progresywna aplikacja do zarządzania finansami',
-        theme_color: '#3b82f6',
+        theme_color: '#000',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
