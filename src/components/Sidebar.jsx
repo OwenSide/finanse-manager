@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar({ menuOpen, setMenuOpen }) {
   return (
@@ -14,11 +15,43 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
         </button>
       </div>
       <nav className="p-4 space-y-2">
-        <div className="hover:underline cursor-pointer">📊 Statystyki</div>
-        <div className="hover:underline cursor-pointer">➕ Dodaj transakcję</div>
-        <div className="hover:underline cursor-pointer">📂 Kategorie</div>
-        <div className="hover:underline cursor-pointer">💼 Portfele</div>
-      </nav>
+        <NavLink
+            to="/stats"
+            className={({ isActive }) =>
+            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
+            }
+            onClick={() => setMenuOpen(false)}
+        >
+            📊 Statystyki
+        </NavLink>
+        <NavLink
+            to="/add-transaction"
+            className={({ isActive }) =>
+            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
+            }
+            onClick={() => setMenuOpen(false)}
+        >
+            ➕ Dodaj transakcję
+        </NavLink>
+        <NavLink
+            to="/categories"
+            className={({ isActive }) =>
+            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
+            }
+            onClick={() => setMenuOpen(false)}
+        >
+            📂 Kategorie
+        </NavLink>
+        <NavLink
+            to="/wallets"
+            className={({ isActive }) =>
+            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
+            }
+            onClick={() => setMenuOpen(false)}
+        >
+            💼 Portfele
+        </NavLink>
+        </nav>
     </div>
   );
 }
