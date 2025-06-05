@@ -73,7 +73,7 @@ export default function Categories() {
               onClick={() => handleDelete(id)}
               className="text-red-500 hover:text-red-700"
             >
-              ❌ Usuń
+              ❌
             </button>
           </li>
         ))}

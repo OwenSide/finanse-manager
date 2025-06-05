@@ -92,7 +92,7 @@ export default function Wallets() {
               onClick={() => handleDelete(w.id)}
               className="text-red-500 hover:text-red-700"
             >
-              ❌ Usuń
+              ❌
             </button>
           </li>
         ))}

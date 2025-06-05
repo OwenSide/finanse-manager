@@ -14,7 +14,7 @@ export default function App() {
     <Router>
       <div className="flex">
         <Sidebar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-
+        
         <div className="flex-1 p-4 sm:ml-64">
           {/* Mobile menu button */}
           <div className="sm:hidden mb-4">
@@ -25,7 +25,9 @@ export default function App() {
               <Menu />
             </button>
           </div>
-          <h1 className="text-2xl font-bold mb-4">Menedżer finansów</h1>
+          <h1 className="text-3xl font-extrabold mb-6 text-black-700 flex items-center gap-2">
+              Menedżer finansów
+          </h1>
           <Routes>
             <Route path="/" element={<Stats />} />
             <Route path="/stats" element={<Stats />} />

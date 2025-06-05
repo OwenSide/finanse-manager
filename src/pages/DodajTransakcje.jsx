@@ -43,7 +43,7 @@ export default function DodajTransakcje() {
 
   function getTodayDate() {
     const today = new Date();
-    return today.toISOString().slice(0, 10); // берет первые 10 символов: 'YYYY-MM-DD'
+    return today.toISOString().slice(0, 10); 
   }
 
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -205,7 +205,7 @@ export default function DodajTransakcje() {
           <input
             type="date"
             className="p-2 border"
-            value={filter.dateFrom}
+            value={filter.dateTo}
             onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })}
           />
           <select

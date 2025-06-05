@@ -21,9 +21,11 @@ export default function Home() {
       });
       transactions.forEach(tx => {
         if (balancesByWalletId[tx.walletId] !== undefined) {
-          balancesByWalletId[tx.walletId] += tx.amount; 
+          const sign = tx.type === "expense" ? -1 : 1;
+          balancesByWalletId[tx.walletId] += sign * tx.amount;
         }
       });
+
 
       const rates = await fetchExchangeRates();
       setExchangeRates(rates);

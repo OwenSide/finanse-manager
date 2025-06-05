@@ -1,5 +1,4 @@
 import React from "react";
-import { getAllWallets } from "../db.js";
 
 export default function EditModal({ isOpen, transaction, onSave, onClose, categories, wallets }) {
   if (!isOpen || !transaction) return null;
