@@ -88,7 +88,7 @@ export default function Home() {
       </section>
 
       <section className="mt-6 border-t pt-4">
-        <p className="text-xl font-semibold text-gray-900">
+        <p className="text-md font-semibold text-gray-900">
           Łączna suma (PLN):{" "}
           <span className="text-indigo-600">{totalPLN.toFixed(2)} PLN</span>
         </p>

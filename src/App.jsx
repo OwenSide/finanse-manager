@@ -17,17 +17,24 @@ export default function App() {
         
         <div className="flex-1 p-4 sm:ml-64">
           {/* Mobile menu button */}
-          <div className="sm:hidden mb-4">
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="p-2 border rounded text-gray-700"
-            >
-              <Menu />
-            </button>
-          </div>
-          <h1 className="text-3xl font-extrabold mb-6 text-black-700 flex items-center gap-2">
-              Menedżer finansów
-          </h1>
+        <div className="flex">
+          <div className="sm:hidden mb-4 flex items-center justify-between">
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="p-2 border rounded text-gray-700"
+              >
+                <Menu />
+              </button>
+              <h1 className="text-xl font-bold text-black ml-4">Menedżer finansów</h1>
+            </div>
+
+            {/* Для десктопа — заголовок отдельно */}
+            <div className="hidden sm:block mb-6">
+              <h1 className="text-3xl font-extrabold text-black-700 flex items-center gap-2">
+                Menedżer finansów
+              </h1>
+            </div>
+        </div>
           <Routes>
             <Route path="/" element={<Stats />} />
             <Route path="/stats" element={<Stats />} />
