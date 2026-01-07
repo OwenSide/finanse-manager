@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, LayoutDashboard, PlusCircle, Tags, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar({ menuOpen, setMenuOpen }) {
@@ -18,20 +18,28 @@ export default function Sidebar({ menuOpen, setMenuOpen }) {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
+            `flex items-center p-3 rounded-lg transition-colors duration-200 ${
+              isActive 
+                ? "bg-indigo-50 text-indigo-700 font-bold" 
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900" 
+            }`
           }
           onClick={() => setMenuOpen(false)}
         >
-          🏠 Strona główna
+          <LayoutDashboard size={20} className="mr-3" />
+          Strona główna
         </NavLink>
         <NavLink
-            to="/add-transaction"
-            className={({ isActive }) =>
-            (isActive ? "underline font-semibold " : "hover:underline ") + "block p-0.5"
-            }
-            onClick={() => setMenuOpen(false)}
+          to="/add-transaction"
+          className={({ isActive }) =>
+            `flex items-center p-3 rounded-lg transition-colors duration-200 ${
+              isActive ? "bg-indigo-50 text-indigo-700 font-bold" : "text-gray-600 hover:bg-gray-100"
+            }`
+          }
+          onClick={() => setMenuOpen(false)}
         >
-            ➕ Dodaj transakcję
+          <PlusCircle size={20} className="mr-3" />
+          Dodaj transakcję
         </NavLink>
         <NavLink
             to="/categories"
