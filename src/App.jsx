@@ -1,85 +1,48 @@
-import { useState } from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import { Menu } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
+import BottomNav from "./components/BottomNav.jsx"; // Импортируем нижнее меню
 import DodajTransakcje from "./pages/DodajTransakcje.jsx";
-import Stats from "./pages/Home.jsx";
+import Home from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
 
 export default function App() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const [touchStartX, setTouchStartX] = useState(null);
-  const [touchEndX, setTouchEndX] = useState(null);
-
-  function handleTouchStart(e) {
-    setTouchStartX(e.touches[0].clientX);
-  }
-
-  function handleTouchMove(e) {
-    setTouchEndX(e.touches[0].clientX);
-  }
-
-  function handleTouchEnd() {
-    if (touchStartX !== null && touchEndX !== null) {
-      const diff = touchEndX - touchStartX;
-
-      if (window.innerWidth < 640) {
-        if (diff > 50) {
-          // свайп вправо — открыть меню
-          setMenuOpen(true);
-        } else if (diff < -50) {
-          // свайп влево — закрыть меню
-          setMenuOpen(false);
-        }
-      }
-    }
-    setTouchStartX(null);
-    setTouchEndX(null);
-  }
+  // Нам больше не нужны стейты для меню и свайпов, 
+  // так как навигация теперь разделена (Sidebar для ПК, BottomNav для телефона)
 
   return (
     <Router>
-      <div
-        className="flex"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <Sidebar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      {/* Глобальный контейнер: Темный фон, белый текст */}
+      <div className="flex min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-indigo-500/30">
+        
+        {/* 1. Сайдбар (Слева). 
+            Внутри него уже прописан класс 'hidden md:flex', 
+            поэтому он сам скроется на телефоне. */}
+        <Sidebar />
 
-        <div className="flex-1 p-4 sm:ml-64">
-          {/* Mobile menu button */}
-          <div className="flex">
-            <div className="sm:hidden mb-4 flex items-center justify-between">
-              <button
-                onClick={() => setMenuOpen(true)}
-                className="p-2 border rounded text-gray-700"
-              >
-                <Menu />
-              </button>
-              <h1 className="text-xl font-bold text-black ml-4">
-                Menedżer finansów
-              </h1>
-            </div>
-
-            {/* Для десктопа — заголовок отдельно */}
-            <div className="hidden sm:block mb-6">
-              <h1 className="text-3xl font-extrabold text-black-700 flex items-center gap-2">
-                Menedżer finansów
-              </h1>
-            </div>
+        {/* 2. Основной контент */}
+        <main className="flex-1 w-full min-h-screen relative transition-all duration-300">
+          
+          {/* Отступы контента:
+              md:pl-64 -> На ПК сдвигаем контент вправо (место под Sidebar)
+              pb-24    -> На телефоне добавляем отступ снизу (место под BottomNav)
+          */}
+          <div className="md:pl-64 pb-24 md:pb-0 h-full">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/stats" element={<Home />} />
+              <Route path="/add-transaction" element={<DodajTransakcje />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/wallets" element={<Wallets />} />
+            </Routes>
           </div>
+        </main>
 
-          <Routes>
-            <Route path="/" element={<Stats />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/add-transaction" element={<DodajTransakcje />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/wallets" element={<Wallets />} />
-          </Routes>
-        </div>
+        {/* 3. Нижнее меню (Снизу).
+            Внутри него прописан класс 'md:hidden',
+            поэтому оно покажется только на телефоне. */}
+        <BottomNav />
+
       </div>
     </Router>
   );

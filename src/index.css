@@ -11,3 +11,38 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+@layer base {
+  body {
+    /* Глубокий фон: смесь черного и темно-синего */
+    @apply bg-[#0B0E14] text-black min-h-screen overflow-x-hidden;
+  }
+}
+
+@layer components {
+  /* Эффект премиум-стекла */
+  .glass-panel {
+    @apply bg-[#151A23]/80      /* Темная подложка */
+           backdrop-blur-xl     /* Сильное размытие */
+           border border-white/5 /* Еле заметная рамка */
+           shadow-xl;
+  }
+
+  /* Акцентные карточки (Кошельки) */
+  .glass-card {
+    @apply bg-gradient-to-br from-[#1E2330] to-[#151922]
+           border border-white/5
+           shadow-lg transition-all duration-300;
+  }
+  
+  /* Неоновый текст для денег */
+  .text-neon {
+    @apply text-transparent bg-clip-text 
+           bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400
+           drop-shadow-[0_0_15px_rgba(168,85,247,0.3)];
+  }
+}
+
+/* Убираем скроллбар для красоты */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
