@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Wallet, CreditCard, Plus, ArrowUpRight, TrendingUp } from "lucide-react";
+import CountUp from 'react-countup';
 import { fetchExchangeRates } from "../api/exchangeRates.js";
 import { getAllWallets, getAllTransactions } from "../db.js";
-import { Wallet, CreditCard, Plus, ArrowUpRight, TrendingUp } from "lucide-react";
+
 
 export default function Home() {
   const [wallets, setWallets] = useState([]);
@@ -63,7 +65,13 @@ export default function Home() {
              <div className="flex flex-col items-center justify-center w-full">
                {/* СВЕТЯЩИЙСЯ ТЕКСТ (text-neon) */}
                <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
-                 {totalPLN.toFixed(2)}
+                 <CountUp 
+                    end={totalPLN} 
+                    duration={1.5} 
+                    decimals={2} 
+                    decimal="." 
+                    separator=" " 
+                 />
                </span>
                <span className="text-sm font-medium text-gray-500 mt-2">PLN</span>
              </div>
@@ -147,9 +155,9 @@ export default function Home() {
             <Link
               to="/wallets"
               className="
-                snap-center shrink-0 w-16 min-[450px]:w-24 md:w-auto 
+                snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto
                 h-40 min-[450px]:h-48 
-                glass-card rounded-[1.5rem]
+                glass-card rounded-[1.5rem] p-5
                 flex flex-col items-center justify-center gap-1
                 text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/20
                 transition-all border border-dashed border-white/10
