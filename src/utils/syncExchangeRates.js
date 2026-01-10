@@ -2,15 +2,23 @@ import { fetchExchangeRates } from "../api/exchangeRates";
 import { saveExchangeRate } from "../db";
 
 export async function syncExchangeRates() {
-  const rates = await fetchExchangeRates();
+  try {
+    const ratesMap = await fetchExchangeRates();
 
-  for (const currency of Object.keys(rates)) {
-    await saveExchangeRate({
-      currency,
-      rateToPLN: rates[currency],
-      updatedAt: new Date().toISOString(),
+    const promises = Object.entries(ratesMap).map(([currency, rate]) => {
+      return saveExchangeRate({
+        currency: currency,
+        rate: rate,
+        date: new Date().toISOString()
+      });
     });
-  }
 
-  return rates;
+    await Promise.all(promises);
+    console.log("✅ Курсы обновлены через интернет");
+    return true;
+
+  } catch (error) {
+    console.warn("⚠️ Нет интернета. Синхронизация пропущена.");
+    return false;
+  }
 }

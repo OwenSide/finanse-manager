@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Wallet, CreditCard, Plus, ArrowUpRight, TrendingUp } from "lucide-react";
 import CountUp from 'react-countup';
-import { fetchExchangeRates } from "../api/exchangeRates.js";
-import { getAllWallets, getAllTransactions } from "../db.js";
 
+import { getAllWallets, getAllTransactions, getAllExchangeRates } from "../db.js";
+import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
 
 export default function Home() {
   const [wallets, setWallets] = useState([]);
@@ -13,34 +13,52 @@ export default function Home() {
 
   useEffect(() => {
     async function loadData() {
-      const walletsData = await getAllWallets();
-      const transactions = await getAllTransactions();
-      const balancesByWalletId = {};
-      
-      walletsData.forEach((w) => { balancesByWalletId[w.id] = 0; });
-      transactions.forEach((tx) => {
-        if (balancesByWalletId[tx.walletId] !== undefined) {
-          const sign = tx.type === "expense" ? -1 : 1;
-          balancesByWalletId[tx.walletId] += sign * tx.amount;
-        }
-      });
+      try {
+        console.log("🔄 Загрузка данных...");
 
-      const rates = await fetchExchangeRates();
-      setExchangeRates(rates);
+        await syncExchangeRates();
 
-      const walletsWithBalances = walletsData.map((w) => ({
-        ...w,
-        balance: balancesByWalletId[w.id] ?? 0,
-      }));
+        const walletsData = await getAllWallets() || [];
+        const transactions = await getAllTransactions() || [];
+        const ratesList = await getAllExchangeRates() || [];
 
-      setWallets(walletsWithBalances);
+        const ratesMap = {};
+        ratesList.forEach(item => {
+             ratesMap[item.currency] = item.rate || item.mid || 1; 
+        });
+        
+        ratesMap["PLN"] = 1;
+        
+        console.log("💰 Курсы валют:", ratesMap);
+        setExchangeRates(ratesMap);
 
-      let sumPLN = 0;
-      walletsWithBalances.forEach((w) => {
-        const rate = rates[w.currency] || 1;
-        sumPLN += w.balance * rate;
-      });
-      setTotalPLN(sumPLN);
+        const balancesByWalletId = {};
+        walletsData.forEach((w) => { balancesByWalletId[w.id] = 0; });
+        
+        transactions.forEach((tx) => {
+          if (balancesByWalletId[tx.walletId] !== undefined) {
+            const sign = tx.type === "expense" ? -1 : 1;
+            balancesByWalletId[tx.walletId] += sign * (Number(tx.amount) || 0);
+          }
+        });
+
+        const walletsWithBalances = walletsData.map((w) => ({
+          ...w,
+          balance: balancesByWalletId[w.id] ?? 0,
+        }));
+
+        setWallets(walletsWithBalances);
+
+        let sumPLN = 0;
+        walletsWithBalances.forEach((w) => {
+          const rate = ratesMap[w.currency] || 1;
+          sumPLN += w.balance * rate;
+        });
+        setTotalPLN(sumPLN);
+
+      } catch (error) {
+        console.error("❌ ОШИБКА В HOME:", error);
+      }
     }
     loadData();
   }, []);

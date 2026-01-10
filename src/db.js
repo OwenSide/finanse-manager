@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 
 const DB_NAME = "FinanceManagerDB";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const STORE_CATEGORIES = "categories";
 const STORE_TRANSACTIONS = "transactions";
 const STORE_WALLETS = "wallets";
