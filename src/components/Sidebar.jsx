@@ -11,7 +11,7 @@ export default function Sidebar() {
         <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
            <Wallet size={20} />
         </div>
-        <span className="font-bold text-xl text-white tracking-tight">Manager</span>
+        <span className="font-bold text-xl text-white tracking-tight">FinManager</span>
       </div>
 
       {/* Навигация */}

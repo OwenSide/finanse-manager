@@ -7,21 +7,22 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.png'],
       manifest: {
-        name: 'Menedżer finansów',
+        name: 'Finance Manager',
         short_name: 'FinManager',
-        description: 'Progresywna aplikacja do zarządzania finansami',
-        theme_color: '#000',
-        background_color: '#ffffff',
+        description: 'Personal finance tracker',
+        theme_color: '#0B0E14',
+        background_color: '#0B0E14',
         display: 'standalone',
         icons: [
           {
-            src: 'icon-192.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'icon-512.png',
+            src: 'pwa-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
           },
