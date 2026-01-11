@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
-// Импортируем НАШ НОВЫЙ КОМПОНЕНТ
 import CategoryIcon from "../components/CategoryIcon"; 
 
 import {
@@ -73,17 +72,33 @@ export default function DodajTransakcje() {
       return;
     }
     const category = categories.find((c) => c.id === form.categoryId);
+
+    // --- ЛОГИКА ВРЕМЕНИ ---
+    const now = new Date(); // Текущее время
+    const selectedDate = new Date(form.date); // Дата из календаря (00:00:00)
+    
+    // Добавляем к выбранной дате текущее время
+    selectedDate.setHours(now.getHours());
+    selectedDate.setMinutes(now.getMinutes());
+    selectedDate.setSeconds(now.getSeconds());
+    // ----------------------
+
     const newTransaction = {
       id: uuidv4(),
       amount: parseFloat(form.amount),
       categoryId: form.categoryId,
-      date: form.date,
+      
+      // Сохраняем полную дату со временем в формате ISO (2026-01-11T14:45:00.000Z)
+      date: selectedDate.toISOString(), 
+      
       comment: form.comment,
       walletId: form.walletId,
       type: category?.type || "expense",
     };
+
     await addTransaction(newTransaction);
-    setTransactions((prev) => [...prev, newTransaction]);
+    // Добавляем в НАЧАЛО списка
+    setTransactions((prev) => [newTransaction, ...prev]);
     setForm({ ...form, amount: "", comment: "" });
   };
 
@@ -232,9 +247,12 @@ export default function DodajTransakcje() {
                                         {category?.name || "Brak kategorii"}
                                     </p>
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                        <span className="text-[10px] sm:text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">{t.date}</span>
-                                        {wallet && (<span className="text-[10px] sm:text-xs text-indigo-300">{wallet.name}</span>)}
-                                    </div>
+                                      {/* КРАСИВЫЙ ВЫВОД ДАТЫ И ВРЕМЕНИ */}
+                                      <span className="text-[10px] sm:text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                                          {new Date(t.date).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                      {wallet && (<span className="text-[10px] sm:text-xs text-indigo-300">{wallet.name}</span>)}
+                                  </div>
                                     {t.comment && (<p className="text-xs text-gray-400 mt-1 italic max-w-[150px] sm:max-w-xs truncate">"{t.comment}"</p>)}
                                 </div>
                             </div>
