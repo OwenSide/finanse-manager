@@ -1,14 +1,16 @@
 import { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check } from "lucide-react";
+import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check, Banknote } from "lucide-react"; // Добавил иконку Banknote
 
-import { getAllWallets, addWallet, deleteWallet, getAllExchangeRates } from "../db.js";
+// 🔥 Добавил addTransaction в импорт
+import { getAllWallets, addWallet, deleteWallet, getAllExchangeRates, addTransaction } from "../db.js";
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
 export default function Wallets() {
   const [wallets, setWallets] = useState([]);
   const [name, setName] = useState("");
+  const [initialBalance, setInitialBalance] = useState(""); // 🔥 Новое состояние для баланса
   const [loading, setLoading] = useState(true);
 
   // --- ЛОГИКА ВЫБОРА ВАЛЮТЫ ---
@@ -25,27 +27,16 @@ export default function Wallets() {
         const walletsData = await getAllWallets();
         setWallets(walletsData || []);
 
-        // Загружаем курсы
         const rates = await getAllExchangeRates();
         
-        // Собираем все валюты (из дефолтных и из базы)
         let dbCurrencies = [];
         if (rates && rates.length > 0) {
           dbCurrencies = rates.map(r => r.currency);
         }
         
-        // Объединяем всё в кучу и убираем дубликаты
         const allUnique = [...new Set([...defaultCurrencies, ...dbCurrencies])];
-
-        // --- ЛОГИКА СОРТИРОВКИ ---
-        
-        // 1. Берем приоритетные (те, что есть в нашем общем списке)
         const top = defaultCurrencies.filter(c => allUnique.includes(c));
-        
-        // 2. Берем все остальные (которых НЕТ в приоритетных) и сортируем по алфавиту
         const others = allUnique.filter(c => !defaultCurrencies.includes(c)).sort();
-
-        // 3. Склеиваем: Сначала ТОП, потом Остальные
         setAllCurrencies([...top, ...others]);
 
       } catch (error) {
@@ -70,16 +61,41 @@ export default function Wallets() {
 
   const handleAdd = async () => {
     if (!name.trim()) return;
-    const newWallet = { id: uuidv4(), name: name.trim(), currency };
+    
+    const newWalletId = uuidv4();
+    const newWallet = { id: newWalletId, name: name.trim(), currency };
+    
+    // 1. Создаем кошелек
     await addWallet(newWallet);
+    
+    // 2. 🔥 Если введен начальный баланс, создаем транзакцию
+    if (initialBalance && parseFloat(initialBalance) !== 0) {
+        const amount = parseFloat(initialBalance);
+        // Если число положительное - это доход, отрицательное - расход (долг по кредитке)
+        const type = amount > 0 ? "income" : "expense";
+        
+        const newTx = {
+            id: uuidv4(),
+            walletId: newWalletId,
+            amount: Math.abs(amount), // В базу пишем абсолютное число
+            type: type,
+            categoryId: "initial_balance", // Можно оставить пустым или сделать спец. id
+            date: new Date().toISOString().split('T')[0], // Сегодняшняя дата
+            comment: "Saldo początkowe", // Комментарий "Начальный баланс"
+        };
+        
+        await addTransaction(newTx);
+    }
+
     setWallets((prev) => [...prev, newWallet]);
     setName("");
+    setInitialBalance(""); // Сброс поля
     setCurrency("PLN");
     setSearch("");
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Usunąć ten portfel?")) {
+    if (window.confirm("Usunąć ten portfel? Wszystkie transakcje z nim związane też mogą zniknąć (zależy od logiki DB).")) {
       await deleteWallet(id);
       setWallets((prev) => prev.filter((w) => w.id !== id));
     }
@@ -106,85 +122,101 @@ export default function Wallets() {
       </div>
 
       {/* --- ФОРМА ДОБАВЛЕНИЯ --- */}
-      {/* ВАЖНО: relative z-20 стоит здесь, на главной обертке */}
       <div className="glass-panel p-5 rounded-2xl mb-8 border border-white/5 relative z-20">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
-          
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Nazwa portfela</label>
-            <input
-              type="text"
-              placeholder="np. Główne konto"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all"
-            />
-          </div>
-
-          {/* Я убрал лишнюю вложенную glass-panel отсюда */}
-          <div className="w-full sm:w-36 relative" ref={dropdownRef}>
-             <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Waluta</label>
-             
-             <div 
-                className="relative cursor-pointer"
-                onClick={() => setIsDropdownOpen(true)}
-             >
-                <input
-                  type="text"
-                  value={isDropdownOpen ? search : currency}
-                  onChange={(e) => {
-                      setSearch(e.target.value);
-                      setIsDropdownOpen(true);
-                  }}
-                  placeholder={currency}
-                  className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pr-8 text-white focus:outline-none focus:border-indigo-500 font-mono transition-all uppercase"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                    {isDropdownOpen ? <Globe size={14} className="animate-pulse text-indigo-400"/> : <ChevronDown size={14} />}
+        <div className="flex flex-col gap-4">
+            {/* ВЕРХНИЙ РЯД: ИМЯ + ВАЛЮТА */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Nazwa portfela</label>
+                    <input
+                    type="text"
+                    placeholder="np. Główne konto"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all"
+                    />
                 </div>
-             </div>
 
-             {/* Выпадающий список */}
-             {isDropdownOpen && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-[#151A23] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-100 no-scrollbar">
-                    {filteredCurrencies.length === 0 ? (
-                        <div className="p-3 text-xs text-gray-500 text-center">Nie znaleziono</div>
-                    ) : (
-                        filteredCurrencies.map((cur) => (
-                            <button
-                                key={cur}
-                                onClick={() => {
-                                    setCurrency(cur);
-                                    setSearch("");
-                                    setIsDropdownOpen(false);
-                                }}
-                                className={`
-                                    w-full text-left px-4 py-3 text-sm font-mono flex items-center justify-between
-                                    hover:bg-indigo-500/20 hover:text-white transition-colors
-                                    ${currency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
-                                `}
-                            >
-                                {cur}
-                                {currency === cur && <Check size={14} />}
-                            </button>
-                        ))
+                <div className="w-full sm:w-36 relative" ref={dropdownRef}>
+                    <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Waluta</label>
+                    
+                    <div 
+                        className="relative cursor-pointer"
+                        onClick={() => setIsDropdownOpen(true)}
+                    >
+                        <input
+                        type="text"
+                        value={isDropdownOpen ? search : currency}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setIsDropdownOpen(true);
+                        }}
+                        placeholder={currency}
+                        className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pr-8 text-white focus:outline-none focus:border-indigo-500 font-mono transition-all uppercase"
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                            {isDropdownOpen ? <Globe size={14} className="animate-pulse text-indigo-400"/> : <ChevronDown size={14} />}
+                        </div>
+                    </div>
+
+                    {isDropdownOpen && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-[#151A23] border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-100 no-scrollbar">
+                            {filteredCurrencies.length === 0 ? (
+                                <div className="p-3 text-xs text-gray-500 text-center">Nie znaleziono</div>
+                            ) : (
+                                filteredCurrencies.map((cur) => (
+                                    <button
+                                        key={cur}
+                                        onClick={() => {
+                                            setCurrency(cur);
+                                            setSearch("");
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className={`
+                                            w-full text-left px-4 py-3 text-sm font-mono flex items-center justify-between
+                                            hover:bg-indigo-500/20 hover:text-white transition-colors
+                                            ${currency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
+                                        `}
+                                    >
+                                        {cur}
+                                        {currency === cur && <Check size={14} />}
+                                    </button>
+                                ))
+                            )}
+                        </div>
                     )}
                 </div>
-             )}
-          </div>
+            </div>
 
-          <button
-            onClick={handleAdd}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95"
-          >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Dodaj</span>
-          </button>
+            {/* НИЖНИЙ РЯД: БАЛАНС + КНОПКА */}
+            <div className="flex flex-col sm:flex-row gap-3 items-end">
+                 {/* 🔥 ПОЛЕ НАЧАЛЬНОГО БАЛАНСА */}
+                <div className="flex-1 w-full">
+                    <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Saldo początkowe (opcjonalne)</label>
+                    <div className="relative">
+                        <input
+                        type="number"
+                        placeholder="0.00"
+                        value={initialBalance}
+                        onChange={(e) => setInitialBalance(e.target.value)}
+                        className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                        />
+                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleAdd}
+                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95 h-[48px]"
+                >
+                    <Plus size={20} />
+                    <span>Dodaj</span>
+                </button>
+            </div>
         </div>
       </div>
 
       {/* --- СПИСОК КОШЕЛЬКОВ --- */}
-      {/* Здесь Z-index по умолчанию (auto/0), поэтому форма сверху перекроет это */}
       <h3 className="text-lg font-bold text-gray-300 mb-4 px-1">Twoje konta</h3>
 
       {wallets.length === 0 ? (
