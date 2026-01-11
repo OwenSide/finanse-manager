@@ -102,49 +102,66 @@ export default function Home() {
           </div>
         </section>
 
-        {/* --- БЛОК 2: КОШЕЛЬКИ (Cards) --- */}
+        {/* --- БЛОК 2: КОШЕЛЬКИ (Portfele) --- */}
         <section>
           <div className="flex items-center justify-between px-2 mb-3">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Wallet className="text-indigo-400" size={20} />
               Portfele
             </h3>
-            <Link to="/wallets" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-              Zobacz wszystkie
-            </Link>
+            {/* Ссылку "Показать все" показываем только если кошельки есть */}
+            {wallets.length > 0 && (
+              <Link to="/wallets" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+                Zobacz wszystkie
+              </Link>
+            )}
           </div>
 
-          <div className="
-              flex gap-3 min-[450px]:gap-5 overflow-x-auto snap-x snap-mandatory px-1 pb-4 no-scrollbar
-              md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:pb-0
-          ">
+          {/* ЛОГИКА ОТОБРАЖЕНИЯ: ПУСТО vs ЕСТЬ ДАННЫЕ */}
+          {wallets.length === 0 ? (
             
-            {wallets.length === 0 ? (
-              <div className="w-full col-span-3 text-center py-8 text-gray-500 border border-white/5 rounded-2xl border-dashed">
-                Brak portfeli.
-              </div>
-            ) : (
-              wallets.map((w) => {
+            /* ВАРИАНТ 1: КРАСИВОЕ "ПУСТОЕ СОСТОЯНИЕ" (Empty State) */
+            <div className="glass-panel p-8 rounded-[2rem] text-center flex flex-col items-center justify-center border border-white/5 relative overflow-hidden group">
+               {/* Декоративный фон */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-500/20 rounded-full blur-[50px] pointer-events-none group-hover:bg-indigo-500/30 transition-all"></div>
+               
+               <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 relative z-10 text-gray-400 group-hover:text-white group-hover:scale-110 transition-all">
+                  <Wallet size={32} />
+               </div>
+               
+               <h4 className="text-xl font-bold text-white mb-2 relative z-10">Brak portfeli</h4>
+               <p className="text-gray-400 text-sm mb-6 max-w-xs relative z-10">
+                 Dodaj swój pierwszy portfel, aby zacząć kontrolować finanse.
+               </p>
+
+               <Link 
+                 to="/wallets" 
+                 className="relative z-10 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-95"
+               >
+                 <Plus size={20} />
+                 Dodaj portfel
+               </Link>
+            </div>
+
+          ) : (
+
+            /* ВАРИАНТ 2: СПИСОК КОШЕЛЬКОВ (Слайдер) */
+            <div className="flex gap-3 min-[450px]:gap-5 overflow-x-auto snap-x snap-mandatory px-1 pb-4 no-scrollbar md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:pb-0">
+              
+              {wallets.map((w) => {
                 const balance = typeof w.balance === "number" ? w.balance : 0;
                 const rate = exchangeRates[w.currency] || 1;
 
                 return (
                   <div
                     key={w.id}
-                    className="
-                      snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto
-                      h-40 min-[450px]:h-48 
-                      glass-card rounded-[1.5rem] p-5
-                      flex flex-col justify-between 
-                      relative group hover:border-indigo-500/30
-                    "
+                    className="snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-40 min-[450px]:h-48 glass-card rounded-[1.5rem] p-5 flex flex-col justify-between relative group hover:border-indigo-500/30 transition-all"
                   >
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">
                           {w.name}
                         </h4>
-                        {/* Бейдж валюты */}
                         <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/20">
                           {w.currency}
                         </span>
@@ -166,27 +183,20 @@ export default function Home() {
                     </div>
                   </div>
                 );
-              })
-            )}
+              })}
 
-            {/* Кнопка Добавить */}
-            <Link
-              to="/wallets"
-              className="
-                snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto
-                h-40 min-[450px]:h-48 
-                glass-card rounded-[1.5rem] p-5
-                flex flex-col items-center justify-center gap-1
-                text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/20
-                transition-all border border-dashed border-white/10
-              "
-            >
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                <Plus size={20} />
-              </div>
-              <span className="text-[10px] font-bold uppercase md:block hidden">Dodaj</span>
-            </Link>
-          </div>
+              {/* Кнопка "Добавить" в конце списка (маленькая карточка) */}
+              <Link
+                to="/wallets"
+                className="snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-40 min-[450px]:h-48 glass-card rounded-[1.5rem] p-5 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all border border-dashed border-white/10"
+              >
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                  <Plus size={20} />
+                </div>
+                <span className="text-[10px] font-bold uppercase md:block hidden">Dodaj</span>
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ --- */}

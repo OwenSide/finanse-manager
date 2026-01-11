@@ -4,7 +4,7 @@ import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check } 
 
 import { getAllWallets, addWallet, deleteWallet, getAllExchangeRates } from "../db.js";
 
-const defaultCurrencies = ["PLN", "USD", "EUR", "GBP", "CHF", "UAH", "JPY"];
+const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
 export default function Wallets() {
   const [wallets, setWallets] = useState([]);
@@ -25,12 +25,29 @@ export default function Wallets() {
         const walletsData = await getAllWallets();
         setWallets(walletsData || []);
 
+        // Загружаем курсы
         const rates = await getAllExchangeRates();
+        
+        // Собираем все валюты (из дефолтных и из базы)
+        let dbCurrencies = [];
         if (rates && rates.length > 0) {
-          const dbCurrencies = rates.map(r => r.currency);
-          const unique = [...new Set([...defaultCurrencies, ...dbCurrencies])].sort();
-          setAllCurrencies(unique);
+          dbCurrencies = rates.map(r => r.currency);
         }
+        
+        // Объединяем всё в кучу и убираем дубликаты
+        const allUnique = [...new Set([...defaultCurrencies, ...dbCurrencies])];
+
+        // --- ЛОГИКА СОРТИРОВКИ ---
+        
+        // 1. Берем приоритетные (те, что есть в нашем общем списке)
+        const top = defaultCurrencies.filter(c => allUnique.includes(c));
+        
+        // 2. Берем все остальные (которых НЕТ в приоритетных) и сортируем по алфавиту
+        const others = allUnique.filter(c => !defaultCurrencies.includes(c)).sort();
+
+        // 3. Склеиваем: Сначала ТОП, потом Остальные
+        setAllCurrencies([...top, ...others]);
+
       } catch (error) {
         console.error("Ошибка загрузки:", error);
       } finally {
