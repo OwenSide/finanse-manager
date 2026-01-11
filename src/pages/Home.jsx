@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, CreditCard, Plus, ArrowUpRight, TrendingUp } from "lucide-react";
+import { Wallet, CreditCard, Plus, ArrowUpRight, TrendingUp, TrendingDown, Minus} from "lucide-react";
 import CountUp from 'react-countup';
+import { useMonthlyStats } from "../hooks/useMonthlyStats";
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
@@ -10,6 +11,8 @@ export default function Home() {
   const [wallets, setWallets] = useState([]);
   const [exchangeRates, setExchangeRates] = useState({});
   const [totalPLN, setTotalPLN] = useState(0);
+  const [transactions, setTransactions] = useState([]);
+  const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
   useEffect(() => {
     async function loadData() {
@@ -21,6 +24,8 @@ export default function Home() {
         const walletsData = await getAllWallets() || [];
         const transactions = await getAllTransactions() || [];
         const ratesList = await getAllExchangeRates() || [];
+        const txsData = await getAllTransactions();
+        setTransactions(txsData || []);
 
         const ratesMap = {};
         ratesList.forEach(item => {
@@ -95,10 +100,31 @@ export default function Home() {
              </div>
 
              {/* Индикатор роста (фейковый для красоты) */}
-             <div className="absolute top-6 right-6 flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
-                <TrendingUp size={14} />
-                <span>+2.4%</span>
-             </div>
+             {/* Живой индикатор роста/падения/нейтральности */}
+            <div className={`
+                absolute top-6 right-6 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border 
+                ${stats.isNeutral
+                    ? "text-gray-400 bg-gray-400/10 border-gray-400/20" // СЕРЫЙ (Нейтрально)
+                    : stats.isPositive 
+                        ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" // ЗЕЛЕНЫЙ (Рост)
+                        : "text-rose-400 bg-rose-400/10 border-rose-400/20" // КРАСНЫЙ (Падение)
+                }
+            `}>
+                {/* ИКОНКА */}
+                {stats.isNeutral ? (
+                    <Minus size={14} /> 
+                ) : stats.isPositive ? (
+                    <TrendingUp size={14} />
+                ) : (
+                    <TrendingDown size={14} />
+                )}
+
+                {/* ТЕКСТ (Знак + ставим только если не ноль и не минус) */}
+                <span>
+                    {stats.isNeutral ? "" : (stats.isPositive ? "+" : "-")}
+                    {stats.percent}%
+                </span>
+            </div>
           </div>
         </section>
 
@@ -172,7 +198,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <p className="text-3xl font-bold text-white tracking-tight truncate">
+                      <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-rose-400" : "text-white"}`}>
                         {balance.toFixed(2)}
                       </p>
                       {w.currency !== "PLN" && (
