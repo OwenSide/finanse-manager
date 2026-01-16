@@ -2,7 +2,6 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Edit2, Trash2 } from "lucide-react";
 import CategoryIcon from "./CategoryIcon"; 
 
-// Added prop 'showDate' (default is true)
 export default function TransactionItem({ t, category, wallet, onEdit, onDelete, showDate = true }) {
   const isExpense = t.type === "expense";
   
@@ -17,6 +16,7 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
     <motion.div 
         style={{ background: canSwipe ? bg : "transparent" }}
         className="relative rounded-xl overflow-hidden mb-2"
+        layout // 🔥 ВАЖНО: Добавляет плавность при удалении соседних элементов
     >
       {canSwipe && (
           <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
@@ -35,14 +35,20 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
       <motion.div
         drag={canSwipe ? "x" : false} 
         dragConstraints={{ left: 0, right: 0 }} 
-        dragElastic={0.1} 
+        dragElastic={0.7} 
+        
+        // 🔥 ИСПРАВЛЕНИЕ РЫВКОВ:
+        dragMomentum={false} // Отключаем инерцию, чтобы карточка не "дрожала"
+        dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }} // Мягкий возврат назад
+        
         style={{ x }}
         
         onDragEnd={(_, info) => {
           if (!canSwipe) return; 
-          if (info.offset.x < -100) { 
+          // Порог срабатывания (80px)
+          if (info.offset.x < -80) { 
             onDelete(t.id);
-          } else if (info.offset.x > 100) { 
+          } else if (info.offset.x > 80) { 
             onEdit(t);
           }
         }}
@@ -61,7 +67,6 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                 
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-500 truncate mt-0.5">
                     <span>
-                        {/* LOGIC: If showDate is true, show date + time. If false, only time. */}
                         {showDate 
                            ? new Date(t.date).toLocaleTimeString('pl-PL', {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'})
                            : new Date(t.date).toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'})
