@@ -53,7 +53,7 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
           }
         }}
         
-        className={`relative z-10 glass-card p-3 flex items-center justify-between gap-3 group bg-[#151A23] border border-white/5 ${canSwipe ? 'active:cursor-grabbing cursor-grab' : ''}`}
+        className={`relative z-10 glass-card p-3 h-[80px] flex items-center justify-between gap-3 group bg-[#151A23] border border-white/5 ${canSwipe ? 'active:cursor-grabbing cursor-grab' : ''}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1 pointer-events-none">
             <div className={`w-10 h-10 min-w-[2.5rem] rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
@@ -83,7 +83,7 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                     )}
                 </div>
                 
-                {t.comment && <p className="text-[10px] text-gray-600 truncate opacity-80">{t.comment}</p>}
+                {t.comment && <p className="text-[10px] text-gray-500 truncate opacity-80">{t.comment}</p>}
             </div>
         </div>
         

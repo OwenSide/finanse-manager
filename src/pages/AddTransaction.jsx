@@ -124,7 +124,7 @@ export default function TransactionsPage() {
     <div className="max-w-3xl mx-auto p-4 pb-24 min-[450px]:p-6 relative">
       
       {/* HEADER: Заголовок + Кнопка Добавить */}
-      <div className="flex items-center justify-between mb-6 sticky top-0 z-10 bg-[#0B0E14]/80 backdrop-blur-md py-2">
+      <div className="flex items-center justify-between mb-6 sticky top-0 z-30 bg-[#0B0E14]/80 backdrop-blur-md py-2">
         <h2 className="text-2xl font-bold text-white">Historia</h2>
         <button 
             onClick={() => setIsAddModalOpen(true)}
@@ -178,11 +178,11 @@ export default function TransactionsPage() {
         ) : (
             Object.entries(groupedTransactions).map(([dateLabel, txs]) => (
                 <div key={dateLabel}>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 sticky top-14 bg-[#0B0E14] py-2 z-100">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest pb-3 sticky top-14 bg-[#0B0E14] py-2 z-20 shadow-sm shadow-[#0B0E14]">
                         {dateLabel}
                     </h3>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative z-0" >
                         {txs.map((t) => {
                             const category = categories.find((c) => c.id === t.categoryId);
                             const wallet = wallets.find((w) => w.id === t.walletId);

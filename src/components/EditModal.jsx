@@ -17,6 +17,8 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
         ...transaction,
         // Upewniamy się, że kwota jest liczbą lub pustym ciągiem
         amount: transaction.amount || "",
+        // 🔥 ИСПРАВЛЕНИЕ: Обрезаем дату до YYYY-MM-DD (первые 10 символов)
+        date: transaction.date ? transaction.date.slice(0, 10) : "",
       });
     }
   }, [transaction, isOpen]);
@@ -28,7 +30,9 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
         ...form, 
         amount: parseFloat(form.amount),
         // Zachowujemy typ transakcji z oryginalnej kategorii lub samej transakcji
-        type: categories.find(c => c.id === form.categoryId)?.type || form.type
+        type: categories.find(c => c.id === form.categoryId)?.type || form.type,
+        // При сохранении можно превратить дату обратно в полную строку, если нужно, 
+        // но обычно new Date(form.date) в db.js с этим справится.
     });
     onClose();
   };
