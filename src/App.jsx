@@ -1,7 +1,7 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar.jsx";
 import BottomNav from "./components/BottomNav.jsx"; // Импортируем нижнее меню
-import DodajTransakcje from "./pages/DodajTransakcje.jsx";
+import AddTransaction from "./pages/AddTransaction.jsx";
 import Home from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
@@ -31,7 +31,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/stats" element={<Home />} />
-              <Route path="/add-transaction" element={<DodajTransakcje />} />
+              <Route path="/add-transaction" element={<AddTransaction />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/wallets" element={<Wallets />} />
             </Routes>
