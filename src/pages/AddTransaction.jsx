@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
-import CategoryIcon from "../components/CategoryIcon"; 
+import TransactionItem from "../components/TransactionItem";
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets } from "../db.js";
-import { Plus, Calendar, Wallet, Tag, FileText, Filter, Trash2, Edit2, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Calendar, Wallet, Tag, FileText, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function TransactionsPage() {
@@ -178,44 +178,26 @@ export default function TransactionsPage() {
         ) : (
             Object.entries(groupedTransactions).map(([dateLabel, txs]) => (
                 <div key={dateLabel}>
-                    {/* Заголовок даты (Sticky) */}
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 sticky top-14 bg-[#0B0E14] py-2 z-0">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 sticky top-14 bg-[#0B0E14] py-2 z-100">
                         {dateLabel}
                     </h3>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         {txs.map((t) => {
                             const category = categories.find((c) => c.id === t.categoryId);
                             const wallet = wallets.find((w) => w.id === t.walletId);
-                            const isExpense = t.type === "expense";
 
                             return (
-                                <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                                            <CategoryIcon iconName={category?.icon} size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-white text-sm">{category?.name || "Bez kategorii"}</p>
-                                            <div className="flex gap-2">
-                                                 <span className="text-[10px] text-gray-500">{new Date(t.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                                 {wallet && <span className="text-[10px] text-indigo-400">{wallet.name}</span>}
-                                            </div>
-                                            {t.comment && <p className="text-[10px] text-gray-500 italic truncate max-w-[120px]">{t.comment}</p>}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="text-right">
-                                        <div className={`font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-                                            {isExpense ? '-' : '+'}{t.amount.toFixed(2)} {wallet?.currency}
-                                        </div>
-                                        {/* Кнопки действий */}
-                                        <div className="flex justify-end gap-3 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => { setEditingTransaction(t); }} className="text-gray-500 hover:text-blue-400 transition-colors"><Edit2 size={16}/></button>
-                                            <button onClick={() => handleDeleteTransaction(t.id)} className="text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
-                                        </div>
-                                    </div>
-                                </div>
+                                // ВОТ ЗДЕСЬ ИСПОЛЬЗУЕМ НОВЫЙ КОМПОНЕНТ
+                                <TransactionItem 
+                                    key={t.id}
+                                    t={t}
+                                    category={category}
+                                    wallet={wallet}
+                                    onEdit={setEditingTransaction}
+                                    onDelete={handleDeleteTransaction}
+                                    showDate={false}
+                                />
                             );
                         })}
                     </div>

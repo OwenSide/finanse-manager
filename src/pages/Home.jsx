@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Wallet, CreditCard, Plus, TrendingUp, TrendingDown, Minus, ArrowRightLeft, Loader2 } from "lucide-react";
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
-import CategoryIcon from "../components/CategoryIcon";
+// 1. ИМПОРТ КОМПОНЕНТА
+import TransactionItem from "../components/TransactionItem"; 
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
@@ -14,7 +15,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [totalPLN, setTotalPLN] = useState(0);
   const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true); // Добавили состояние загрузки
+  const [loading, setLoading] = useState(true);
 
   const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
@@ -24,14 +25,12 @@ export default function Home() {
         setLoading(true);
         console.log("🔄 Загрузка данных...");
 
-        // 1. Пробуем обновить курсы (если есть интернет), но не ломаем приложение при ошибке
         try {
             await syncExchangeRates();
         } catch (e) {
             console.warn("Не удалось обновить курсы, используем кэш:", e);
         }
 
-        // 2. Загружаем ВСЕ данные параллельно (быстрее)
         const [walletsData, txsData, catsData, ratesList] = await Promise.all([
             getAllWallets(),
             getAllTransactions(),
@@ -39,11 +38,9 @@ export default function Home() {
             getAllExchangeRates()
         ]);
 
-        // 3. Сохраняем "сырые" данные
         setTransactions(txsData || []);
         setCategories(catsData || []);
 
-        // 4. Обрабатываем курсы валют
         const ratesMap = {};
         if (ratesList) {
             ratesList.forEach(item => {
@@ -51,10 +48,8 @@ export default function Home() {
             });
         }
         ratesMap["PLN"] = 1;
-        console.log("💰 Курсы валют:", ratesMap);
         setExchangeRates(ratesMap);
 
-        // 5. Считаем балансы кошельков на основе транзакций
         const balancesByWalletId = {};
         if (walletsData) {
             walletsData.forEach((w) => { balancesByWalletId[w.id] = 0; });
@@ -76,7 +71,6 @@ export default function Home() {
 
         setWallets(walletsWithBalances);
 
-        // 6. Считаем общий капитал в PLN
         let sumPLN = 0;
         walletsWithBalances.forEach((w) => {
           const rate = ratesMap[w.currency] || 1;
@@ -93,12 +87,10 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Сортируем транзакции: сначала новые
   const recentTransactions = [...transactions]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5); // Берем только 5 последних
+    .slice(0, 5);
 
-  // Показываем красивый лоадер, пока данные грузятся
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] text-indigo-400 gap-3">
         <Loader2 className="animate-spin" size={48} />
@@ -107,15 +99,13 @@ export default function Home() {
   );
 
   return (
-    // ФОНОВЫЕ ПЯТНА (GLOW EFFECTS)
     <div className="min-h-screen w-full relative pb-24 p-2 min-[450px]:p-6 transition-all duration-300">
       
-      {/* Декоративный свет сверху (синее свечение) */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] bg-indigo-600/20 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
 
       <div className="max-w-5xl mx-auto space-y-6">
 
-        {/* --- БЛОК 1: ГЛАВНЫЙ БАЛАНС (Dashboard) --- */}
+        {/* --- БЛОК 1: ГЛАВНЫЙ БАЛАНС --- */}
         <section className="relative w-full">
           <div className=" p-6 min-[450px]:p-10 rounded-[2rem] text-center relative overflow-hidden">
               
@@ -124,7 +114,6 @@ export default function Home() {
              </h2>
              
              <div className="flex flex-col items-center justify-center w-full">
-               {/* СВЕТЯЩИЙСЯ ТЕКСТ (text-neon) */}
                <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
                  <CountUp 
                     end={totalPLN} 
@@ -137,14 +126,13 @@ export default function Home() {
                <span className="text-sm font-medium text-gray-500 mt-2">PLN</span>
              </div>
 
-             {/* Живой индикатор роста/падения/нейтральности */}
             <div className={`
                 absolute top-6 right-6 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border 
                 ${stats.isNeutral
-                    ? "text-gray-400 bg-gray-400/10 border-gray-400/20" // СЕРЫЙ (Нейтрально)
+                    ? "text-gray-400 bg-gray-400/10 border-gray-400/20" 
                     : stats.isPositive 
-                        ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" // ЗЕЛЕНЫЙ (Рост)
-                        : "text-rose-400 bg-rose-400/10 border-rose-400/20" // КРАСНЫЙ (Падение)
+                        ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" 
+                        : "text-rose-400 bg-rose-400/10 border-rose-400/20"
                 }
             `}>
                 {stats.isNeutral ? <Minus size={14} /> : stats.isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
@@ -153,7 +141,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* --- БЛОК 2: КОШЕЛЬКИ (Portfele) --- */}
+        {/* --- БЛОК 2: КОШЕЛЬКИ --- */}
         <section>
           <div className="flex items-center justify-between px-2 mb-3">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -216,7 +204,7 @@ export default function Home() {
           )}
         </section>
 
-        {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ --- */}
+        {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ (ИСПРАВЛЕНО) --- */}
         <section className="mt-8 px-4">
           <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -230,7 +218,7 @@ export default function Home() {
               )}
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-2"> 
               {recentTransactions.length === 0 ? (
                   <div className="glass-panel p-6 rounded-2xl text-center border border-dashed border-white/10">
                       <p className="text-gray-500 text-sm mb-2">Brak transakcji</p>
@@ -238,32 +226,18 @@ export default function Home() {
                   </div>
               ) : (
                   recentTransactions.map(t => {
-                      const isExpense = t.type === 'expense';
                       const wallet = wallets.find(w => w.id === t.walletId);
                       const category = categories.find(c => c.id === t.categoryId);
 
+                      // 2. ВОТ ЗДЕСЬ МЫ ИСПОЛЬЗУЕМ НОВЫЙ КОМПОНЕНТ
                       return (
-                          <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
-                              <div className="flex items-center gap-4">
-                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
-                                      <CategoryIcon iconName={category?.icon} size={20} />
-                                  </div>
-                                  <div>
-                                      <p className="font-bold text-white text-sm">{category?.name || "Bez kategorii"}</p>
-                                      <div className="flex gap-2">
-                                            <span className="text-[10px] text-gray-500">{new Date(t.date).toLocaleTimeString([], {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit'})}</span>
-                                            {wallet && <span className="text-[10px] text-indigo-400">{wallet.name}</span>}
-                                      </div>
-                                      {t.comment && <p className="text-[10px] text-gray-500 italic truncate max-w-[120px]">{t.comment}</p>}
-                                  </div>
-                              </div>
-                              
-                              <div className="text-right">
-                                  <div className={`font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-                                      {isExpense ? '-' : '+'}{t.amount.toFixed(2)} {wallet?.currency}
-                                  </div>
-                              </div>
-                          </div>
+                          <TransactionItem 
+                              key={t.id}
+                              t={t}
+                              category={category}
+                              wallet={wallet}
+                              // Не передаем onEdit и onDelete -> Свайпы отключены!
+                          />
                       )
                   })
               )}
