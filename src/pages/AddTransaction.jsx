@@ -4,6 +4,7 @@ import EditModal from "../components/EditModal";
 import CategoryIcon from "../components/CategoryIcon"; 
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets } from "../db.js";
 import { Plus, Calendar, Wallet, Tag, FileText, Filter, Trash2, Edit2, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
@@ -223,29 +224,56 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* --- МОДАЛЬНОЕ ОКНО (BOTTOM SHEET / ШТОРКА) --- */}
-      {isAddModalOpen && (
-        // z-[100] гарантирует, что окно будет ПОВЕРХ нижнего меню и кнопки +
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            
-            {/* Клик по фону закрывает окно */}
-            <div className="absolute inset-0" onClick={() => setIsAddModalOpen(false)}></div>
+      {/* --- МОДАЛЬНОЕ ОКНО С ЖЕСТАМИ (SWIPE DOWN) --- */}
+        <AnimatePresence>
+        {isAddModalOpen && (
+            <>
+            {/* 1. Фон (Backdrop) */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsAddModalOpen(false)}
+                className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
+            />
 
-            {/* Само окно */}
-            <div className="relative w-full max-w-lg bg-[#151A23] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+            {/* 2. Само окно (Bottom Sheet) */}
+            <motion.div
+                // Анимация появления (выезд снизу)
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 
-                {/* Декоративная полоска сверху ("ручка" для шторки) */}
-                <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6 opacity-50"></div>
+                // Логика перетаскивания (ЖЕСТЫ)
+                drag="y" // Разрешаем тянуть только по вертикали
+                dragConstraints={{ top: 0 }} // Не даем тянуть вверх выше экрана
+                dragElastic={{ top: 0, bottom: 0.2 }} // Сопротивление при тяге вниз
+                onDragEnd={(_, info) => {
+                // Если потянули вниз больше чем на 100px или быстро смахнули
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                    setIsAddModalOpen(false);
+                }
+                }}
+                
+                className="fixed bottom-0 left-0 right-0 z-[101] w-full max-w-lg mx-auto bg-[#151A23] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl pb-10"
+            >
+                {/* Ручка для шторки (визуальная подсказка) */}
+                <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6 opacity-50 cursor-grab active:cursor-grabbing"></div>
 
+                {/* Заголовок и крестик */}
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-white">Nowa transakcja</h3>
-                    <button onClick={() => setIsAddModalOpen(false)} className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-full transition-colors">
-                        <X size={20}/>
-                    </button>
+                <h3 className="text-xl font-bold text-white">Nowa transakcja</h3>
+                <button 
+                    onClick={() => setIsAddModalOpen(false)} 
+                    className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-full transition-colors"
+                >
+                    <X size={20}/>
+                </button>
                 </div>
-                
+
+                {/* ТВОЯ ФОРМА (без изменений) */}
                 <div className="space-y-4">
-                    {/* СУММА */}
                     <input 
                         type="number" 
                         placeholder="0.00" 
@@ -256,33 +284,30 @@ export default function TransactionsPage() {
                     />
                     
                     <div className="grid grid-cols-2 gap-3">
-                         {/* ДАТА */}
-                         <div className="relative">
-                             <input 
-                                 type="date" 
-                                 className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
-                                 value={form.date} 
-                                 onChange={(e) => setForm({ ...form, date: e.target.value })} 
-                             />
-                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                         </div>
-                         
-                         {/* КОШЕЛЕК */}
-                         <div className="relative">
-                             <select 
-                                 className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
-                                 value={form.walletId} 
-                                 onChange={(e) => setForm({ ...form, walletId: e.target.value })}
-                             >
+                        <div className="relative">
+                            <input 
+                                type="date" 
+                                className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
+                                value={form.date} 
+                                onChange={(e) => setForm({ ...form, date: e.target.value })} 
+                            />
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                        </div>
+                        
+                        <div className="relative">
+                            <select 
+                                className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
+                                value={form.walletId} 
+                                onChange={(e) => setForm({ ...form, walletId: e.target.value })}
+                            >
                                 <option value="">Portfel</option>
                                 {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                             </select>
                             <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
-                         </div>
+                        </div>
                     </div>
 
-                    {/* КАТЕГОРИЯ */}
                     <div className="relative">
                         <select 
                             className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
@@ -296,7 +321,6 @@ export default function TransactionsPage() {
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
                     </div>
 
-                    {/* КОММЕНТАРИЙ */}
                     <div className="relative">
                         <input 
                             type="text" 
@@ -308,18 +332,17 @@ export default function TransactionsPage() {
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
                     </div>
 
-                    {/* КНОПКА СОХРАНИТЬ */}
                     <button onClick={handleAddTransaction} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 mt-4 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
                         <Plus size={24} />
                         Dodaj transakcję
                     </button>
                     
-                    {/* Отступ снизу для безопасной зоны на iPhone */}
                     <div className="h-6 w-full"></div>
                 </div>
-            </div>
-        </div>
-      )}
+            </motion.div>
+            </>
+        )}
+        </AnimatePresence>
 
       {/* Модалка редактирования (уже была у тебя) */}
       <EditModal isOpen={!!editingTransaction} transaction={editingTransaction} onSave={async (updated) => {
