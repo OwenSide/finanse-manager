@@ -1,16 +1,16 @@
 import { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check, Banknote } from "lucide-react"; // Добавил иконку Banknote
+import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check, Banknote } from "lucide-react";
 
-// 🔥 Добавил addTransaction в импорт
-import { getAllWallets, addWallet, deleteWallet, getAllExchangeRates, addTransaction } from "../db.js";
+// 🔥 Убрал addTransaction из импорта, так как мы больше не создаем транзакцию
+import { getAllWallets, addWallet, deleteWallet, getAllExchangeRates } from "../db.js";
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
 export default function Wallets() {
   const [wallets, setWallets] = useState([]);
   const [name, setName] = useState("");
-  const [initialBalance, setInitialBalance] = useState(""); // 🔥 Новое состояние для баланса
+  const [initialBalance, setInitialBalance] = useState(""); 
   const [loading, setLoading] = useState(true);
 
   // --- ЛОГИКА ВЫБОРА ВАЛЮТЫ ---
@@ -63,39 +63,34 @@ export default function Wallets() {
     if (!name.trim()) return;
     
     const newWalletId = uuidv4();
-    const newWallet = { id: newWalletId, name: name.trim(), currency };
+    
+    // 🔥 ИЗМЕНЕНИЕ: Сохраняем начальный баланс прямо в объект кошелька
+    const startBalance = initialBalance && parseFloat(initialBalance) !== 0 
+        ? parseFloat(initialBalance) 
+        : 0;
+
+    const newWallet = { 
+        id: newWalletId, 
+        name: name.trim(), 
+        currency,
+        initialBalance: startBalance // Сохраняем сумму здесь
+    };
     
     // 1. Создаем кошелек
     await addWallet(newWallet);
     
-    // 2. 🔥 Если введен начальный баланс, создаем транзакцию
-    if (initialBalance && parseFloat(initialBalance) !== 0) {
-        const amount = parseFloat(initialBalance);
-        // Если число положительное - это доход, отрицательное - расход (долг по кредитке)
-        const type = amount > 0 ? "income" : "expense";
-        
-        const newTx = {
-            id: uuidv4(),
-            walletId: newWalletId,
-            amount: Math.abs(amount), // В базу пишем абсолютное число
-            type: type,
-            categoryId: "initial_balance", // Можно оставить пустым или сделать спец. id
-            date: new Date().toISOString().split('T')[0], // Сегодняшняя дата
-            comment: "Saldo początkowe", // Комментарий "Начальный баланс"
-        };
-        
-        await addTransaction(newTx);
-    }
+    // 🔥 УБРАНО: Блок создания транзакции (addTransaction) удален.
+    // Теперь история транзакций останется чистой.
 
     setWallets((prev) => [...prev, newWallet]);
     setName("");
-    setInitialBalance(""); // Сброс поля
+    setInitialBalance(""); 
     setCurrency("PLN");
     setSearch("");
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Usunąć ten portfel? Wszystkie transakcje z nim związane też mogą zniknąć (zależy od logiki DB).")) {
+    if (window.confirm("Usunąć ten portfel? Wszystkie transakcje z nim związane też mogą zniknąć.")) {
       await deleteWallet(id);
       setWallets((prev) => prev.filter((w) => w.id !== id));
     }
@@ -190,7 +185,6 @@ export default function Wallets() {
 
             {/* НИЖНИЙ РЯД: БАЛАНС + КНОПКА */}
             <div className="flex flex-col sm:flex-row gap-3 items-end">
-                 {/* 🔥 ПОЛЕ НАЧАЛЬНОГО БАЛАНСА */}
                 <div className="flex-1 w-full">
                     <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Saldo początkowe (opcjonalne)</label>
                     <div className="relative">
@@ -241,6 +235,8 @@ export default function Wallets() {
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-white/5 inline-block mt-1">
                         {w.currency}
                     </span>
+                    {/* Если хочешь показать баланс прямо здесь (опционально) */}
+                    {/* <div className="text-sm font-mono text-gray-400 mt-1">{w.initialBalance} {w.currency}</div> */}
                 </div>
               </div>
               

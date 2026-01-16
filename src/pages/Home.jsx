@@ -52,7 +52,7 @@ export default function Home() {
 
         const balancesByWalletId = {};
         if (walletsData) {
-            walletsData.forEach((w) => { balancesByWalletId[w.id] = 0; });
+            walletsData.forEach((w) => { balancesByWalletId[w.id] = w.initialBalance || 0; });
         }
         
         if (txsData) {
