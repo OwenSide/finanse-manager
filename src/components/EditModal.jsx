@@ -75,20 +75,39 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
           
           {/* Kwota */}
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Kwota</label>
+            {/* Flex-контейнер для лейбла и предупреждения */}
+            <div className="flex justify-between items-center mb-1 ml-1">
+                <label className="block text-xs font-medium text-gray-400">Kwota</label>
+                
+                {/* 🔥 ПРЕДУПРЕЖДЕНИЕ (Появляется справа от слова "Kwota") */}
+                {transaction && form.walletId && wallets.find(w => w.id === form.walletId)?.currency !== wallets.find(w => w.id === transaction.walletId)?.currency && (
+                    <span className="text-[10px] text-orange-400 font-bold animate-pulse">
+                        ⚠️ Zmieniono walutę!
+                    </span>
+                )}
+            </div>
+
             <div className="relative">
                 <input
                     type="number"
-                    className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white focus:outline-none focus:border-indigo-500 font-mono text-lg transition-all"
+                    className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 pr-16 text-white focus:outline-none focus:border-indigo-500 font-mono text-lg transition-all"
                     value={form.amount}
                     onChange={(e) => {
-                        if (e.target.value.length > 10) return;
+                        if (e.target.value.length > 9) return;
                         setForm({ ...form, amount: e.target.value });
                     }}
                     onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
                 />
+                
+                {/* Валюта внутри инпута */}
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-                    <DollarSign size={18} />
+                    {form.walletId ? (
+                        <span className="text-xs font-bold text-indigo-400">
+                            {wallets.find(w => w.id === form.walletId)?.currency}
+                        </span>
+                    ) : (
+                        <DollarSign size={18} />
+                    )}
                 </div>
             </div>
           </div>
@@ -107,7 +126,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                     <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                 </select>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
                     <Tag size={18} />
                 </div>
             </div>
@@ -124,7 +143,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                     value={form.date}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
                 />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
                     <Calendar size={18} />
                 </div>
             </div>
@@ -144,7 +163,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                     <option key={w.id} value={w.id}>{w.name} ({w.currency})</option>
                     ))}
                 </select>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
                     <Wallet size={18} />
                 </div>
             </div>
@@ -162,7 +181,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                     value={form.comment}
                     onChange={(e) => setForm({ ...form, comment: e.target.value })}
                 />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none">
                     <FileText size={18} />
                 </div>
                 <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] pointer-events-none font-mono transition-colors ${(form.comment || "").length === 20 ? "text-rose-500 font-bold" : "text-gray-500"}`}>

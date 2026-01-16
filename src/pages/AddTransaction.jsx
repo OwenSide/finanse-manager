@@ -107,10 +107,36 @@ export default function TransactionsPage() {
   // 2. Потом ГРУППИРУЕМ по датам для красивого отображения
   const groupedTransactions = useMemo(() => {
       const groups = {};
+
+      // Получаем "Сегодня" и "Вчера" без времени (00:00:00) для корректного сравнения
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
       filteredTransactions.forEach(t => {
-          const dateKey = new Date(t.date).toLocaleDateString('pl-PL', { 
-              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-          });
+          const tDate = new Date(t.date);
+          // Сбрасываем время у даты транзакции для сравнения
+          const tDateOnly = new Date(tDate);
+          tDateOnly.setHours(0, 0, 0, 0);
+
+          let dateKey;
+
+          // 🔥 ЛОГИКА ОТОБРАЖЕНИЯ ЗАГОЛОВКОВ
+          if (tDateOnly.getTime() === today.getTime()) {
+              dateKey = "Dzisiaj";
+          } else if (tDateOnly.getTime() === yesterday.getTime()) {
+              dateKey = "Wczoraj";
+          } else {
+              // Обычная дата: убрал 'weekday', оставил только день, месяц и год
+              dateKey = tDate.toLocaleDateString('pl-PL', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+              });
+          }
+
           if (!groups[dateKey]) groups[dateKey] = [];
           groups[dateKey].push(t);
       });
@@ -149,7 +175,7 @@ export default function TransactionsPage() {
         
         {isFilterOpen && (
             <div className="p-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 mt-3">
                     <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateFrom} onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })} />
                     <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateTo} onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })} />
                 </div>
@@ -269,6 +295,7 @@ export default function TransactionsPage() {
                         }} 
                         onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
                     />
+                    
                     
                     <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
