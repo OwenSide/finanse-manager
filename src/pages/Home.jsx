@@ -243,42 +243,25 @@ export default function Home() {
                       const category = categories.find(c => c.id === t.categoryId);
 
                       return (
-                          <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-colors">
+                          <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
                               <div className="flex items-center gap-4">
-                                  {/* Иконка категории */}
-                                  <div className={`
-                                      w-12 h-12 rounded-full flex items-center justify-center border
-                                      ${isExpense 
-                                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
-                                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}
-                                  `}>
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
                                       <CategoryIcon iconName={category?.icon} size={20} />
                                   </div>
-                                  
                                   <div>
-                                      <p className="font-bold text-white text-sm">
-                                          {category?.name || "Bez kategorii"}
-                                      </p>
-                                      <div className="flex items-center gap-2">
-                                          <span className="text-[10px] text-gray-500">{new Date(t.date).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                          {t.comment && (
-                                              <span className="text-[10px] text-gray-600 max-w-[100px] truncate block sm:inline">
-                                                  — {t.comment}
-                                              </span>
-                                          )}
+                                      <p className="font-bold text-white text-sm">{category?.name || "Bez kategorii"}</p>
+                                      <div className="flex gap-2">
+                                            <span className="text-[10px] text-gray-500">{new Date(t.date).toLocaleTimeString([], {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit'})}</span>
+                                            {wallet && <span className="text-[10px] text-indigo-400">{wallet.name}</span>}
                                       </div>
+                                      {t.comment && <p className="text-[10px] text-gray-500 italic truncate max-w-[120px]">{t.comment}</p>}
                                   </div>
                               </div>
                               
                               <div className="text-right">
-                                  <span className={`block font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                  <div className={`font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
                                       {isExpense ? '-' : '+'}{t.amount.toFixed(2)} {wallet?.currency}
-                                  </span>
-                                  {wallet && (
-                                      <span className="text-[10px] text-gray-600 uppercase">
-                                          {wallet.name}
-                                      </span>
-                                  )}
+                                  </div>
                               </div>
                           </div>
                       )

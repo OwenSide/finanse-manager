@@ -10,6 +10,8 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "gh-pages": "^6.3.0",
     "idb": "^8.0.3",
     "lucide-react": "^0.513.0",
@@ -17,6 +19,8 @@
     "react-countup": "^6.5.3",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.6.2",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

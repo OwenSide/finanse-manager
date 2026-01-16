@@ -1,64 +1,53 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
 import CategoryIcon from "../components/CategoryIcon"; 
+import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets } from "../db.js";
+import { Plus, Calendar, Wallet, Tag, FileText, Filter, Trash2, Edit2, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 
-import {
-  getAllCategories,
-  getAllTransactions,
-  addTransaction,
-  updateTransaction,
-  deleteTransaction,
-  getAllWallets,
-} from "../db.js";
-
-import { 
-  Plus, Calendar, Wallet, Tag, FileText, Search, 
-  Filter, Trash2, Edit2, Loader2 
-} from "lucide-react";
-
-export default function DodajTransakcje() {
+export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]); 
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  function getTodayDate() {
-    const today = new Date();
-    return today.toISOString().slice(0, 10);
-  }
+  // Состояния интерфейса
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // Модалка добавления
+  const [isFilterOpen, setIsFilterOpen] = useState(false);     // Сворачивание фильтров
+  const [editingTransaction, setEditingTransaction] = useState(null); // Модалка редактирования
 
+  // Форма (используем внутри модалки)
+  const [form, setForm] = useState({
+    amount: "",
+    categoryId: "",
+    date: new Date().toISOString().slice(0, 10),
+    comment: "",
+    walletId: "",
+  });
+
+  // Фильтры
   const [filter, setFilter] = useState({
-    dateFrom: getTodayDate(),
-    dateTo: getTodayDate(),
+    dateFrom: "", // Пусто по умолчанию = за все время
+    dateTo: "",
     categoryId: "",
     type: "",
     walletId: "",
   });
 
-  const [form, setForm] = useState({
-    amount: "",
-    categoryId: "",
-    date: getTodayDate(),
-    comment: "",
-    walletId: "",
-  });
-
-  const [editingTransaction, setEditingTransaction] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const categoriesData = await getAllCategories();
-        setCategories(categoriesData || []);
-        const txs = await getAllTransactions();
+        const [cats, txs, walls] = await Promise.all([
+            getAllCategories(),
+            getAllTransactions(),
+            getAllWallets()
+        ]);
+        setCategories(cats || []);
         setTransactions(txs || []);
-        const walletList = await getAllWallets();
-        setWallets(walletList || []);
+        setWallets(walls || []);
       } catch (error) {
-        console.error("Błąd:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
@@ -73,44 +62,26 @@ export default function DodajTransakcje() {
     }
     const category = categories.find((c) => c.id === form.categoryId);
 
-    // --- ЛОГИКА ВРЕМЕНИ ---
-    const now = new Date(); // Текущее время
-    const selectedDate = new Date(form.date); // Дата из календаря (00:00:00)
-    
-    // Добавляем к выбранной дате текущее время
-    selectedDate.setHours(now.getHours());
-    selectedDate.setMinutes(now.getMinutes());
-    selectedDate.setSeconds(now.getSeconds());
-    // ----------------------
+    const now = new Date();
+    const selectedDate = new Date(form.date);
+    selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
 
     const newTransaction = {
       id: uuidv4(),
       amount: parseFloat(form.amount),
       categoryId: form.categoryId,
-      
-      // Сохраняем полную дату со временем в формате ISO (2026-01-11T14:45:00.000Z)
-      date: selectedDate.toISOString(), 
-      
+      date: selectedDate.toISOString(),
       comment: form.comment,
       walletId: form.walletId,
       type: category?.type || "expense",
     };
 
     await addTransaction(newTransaction);
-    // Добавляем в НАЧАЛО списка
     setTransactions((prev) => [newTransaction, ...prev]);
+    
+    // Сброс и закрытие
     setForm({ ...form, amount: "", comment: "" });
-  };
-
-  const handleEditTransaction = (transaction) => {
-    setEditingTransaction(transaction);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveEdit = async (updatedTx) => {
-    await updateTransaction(updatedTx);
-    setTransactions((prev) => prev.map((t) => (t.id === updatedTx.id ? updatedTx : t)));
-    setIsModalOpen(false);
+    setIsAddModalOpen(false);
   };
 
   const handleDeleteTransaction = async (id) => {
@@ -120,159 +91,243 @@ export default function DodajTransakcje() {
     }
   };
 
-  const filteredTransactions = transactions.filter((t) => {
-    const dateMatch = (!filter.dateFrom || t.date >= filter.dateFrom) && (!filter.dateTo || t.date <= filter.dateTo);
-    const categoryMatch = !filter.categoryId || t.categoryId === filter.categoryId;
-    const typeMatch = !filter.type || t.type === filter.type;
-    const walletMatch = !filter.walletId || t.walletId === filter.walletId;
-    return dateMatch && categoryMatch && typeMatch && walletMatch;
-  });
+  // 1. Сначала фильтруем
+  const filteredTransactions = useMemo(() => {
+      return transactions.filter((t) => {
+        const tDate = t.date.slice(0, 10);
+        const dateMatch = (!filter.dateFrom || tDate >= filter.dateFrom) && (!filter.dateTo || tDate <= filter.dateTo);
+        const categoryMatch = !filter.categoryId || t.categoryId === filter.categoryId;
+        const typeMatch = !filter.type || t.type === filter.type;
+        const walletMatch = !filter.walletId || t.walletId === filter.walletId;
+        return dateMatch && categoryMatch && typeMatch && walletMatch;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [transactions, filter]);
 
-  filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+  // 2. Потом ГРУППИРУЕМ по датам для красивого отображения
+  const groupedTransactions = useMemo(() => {
+      const groups = {};
+      filteredTransactions.forEach(t => {
+          const dateKey = new Date(t.date).toLocaleDateString('pl-PL', { 
+              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+          });
+          if (!groups[dateKey]) groups[dateKey] = [];
+          groups[dateKey].push(t);
+      });
+      return groups;
+  }, [filteredTransactions]);
 
-  if (loading) return (
-    <div className="flex h-64 items-center justify-center text-indigo-400">
-        <Loader2 className="animate-spin" size={32} />
-    </div>
-  );
+
+  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40}/></div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-4 pb-24 min-[450px]:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/10">
-          <Plus size={20} />
-        </div>
-        <h2 className="text-2xl font-bold text-white">Transakcje</h2>
+    <div className="max-w-3xl mx-auto p-4 pb-24 min-[450px]:p-6 relative">
+      
+      {/* HEADER: Заголовок + Кнопка Добавить */}
+      <div className="flex items-center justify-between mb-6 sticky top-0 z-10 bg-[#0B0E14]/80 backdrop-blur-md py-2">
+        <h2 className="text-2xl font-bold text-white">Historia</h2>
+        <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+        >
+            <Plus size={24} />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEWA KOLUMNA */}
-        <div className="space-y-6 lg:col-span-1">
-          <div className="glass-panel p-5 rounded-2xl border border-white/5">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Dodaj nową</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-gray-500 ml-1">Kwota</label>
-                <input type="number" placeholder="0.00" className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 transition-all font-mono text-lg" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 ml-1">Data</label>
-                <div className="relative">
-                    <input type="date" className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+      {/* ФИЛЬТРЫ (Сворачиваемые) */}
+      <div className="glass-panel rounded-2xl border border-white/5 mb-6 overflow-hidden">
+        <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="w-full flex items-center justify-between p-4 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+        >
+            <div className="flex items-center gap-2">
+                <Filter size={18} />
+                <span className="text-sm font-bold uppercase tracking-wider">Filtrowanie</span>
+            </div>
+            {isFilterOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+        
+        {isFilterOpen && (
+            <div className="p-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2">
+                <div className="grid grid-cols-2 gap-2">
+                    <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateFrom} onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })} />
+                    <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateTo} onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })} />
                 </div>
-              </div>
-              <div className="relative">
-                <select className="w-full appearance-none bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-                  <option value="">Wybierz kategorię</option>
-                  {categories.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                {/* ... остальные селекты (категория, кошелек, тип) ... */}
+                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}>
+                    <option value="">Wszystkie kategorie</option>
+                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <Tag className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
-              </div>
-              <div className="relative">
-                <select className="w-full appearance-none bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500" value={form.walletId} onChange={(e) => setForm({ ...form, walletId: e.target.value })}>
-                  <option value="">Wybierz portfel</option>
-                  {wallets.map((w) => (<option key={w.id} value={w.id}>{w.name} ({w.currency})</option>))}
+                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}>
+                    <option value="">Wszystkie kategorie</option>
+                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <Wallet className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
-              </div>
-              <div className="relative">
-                <input type="text" placeholder="Komentarz" className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500" value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} />
-                <FileText className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
-              </div>
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg mt-2 flex items-center justify-center gap-2" onClick={handleAddTransaction}>
-                <Plus size={20} /> Dodaj Transakcję
-              </button>
+                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, type: e.target.value })}>
+                    <option value="">Wszystkie typy</option>
+                    <option value="income">Przychód</option>
+                    <option value="expense">Wydatek</option>
+                </select>
             </div>
-          </div>
-          
-          {/* FILTRY */}
-          <div className="glass-panel p-5 rounded-2xl border border-white/5">
-             <div className="flex items-center gap-2 mb-4 text-gray-400">
-                <Filter size={16} />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Filtrowanie</h3>
-            </div>
-            <div className="space-y-3">
-               <div className="grid grid-cols-2 gap-2">
-                 <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateFrom} onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })} />
-                 <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateTo} onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })} />
-               </div>
-               <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}>
-                   <option value="">Wszystkie kategorie</option>
-                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-               </select>
-               <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}>
-                   <option value="">Wszystkie portfele</option>
-                   {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-               </select>
-               <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, type: e.target.value })}>
-                   <option value="">Wszystkie typy</option>
-                   <option value="income">Przychód</option>
-                   <option value="expense">Wydatek</option>
-               </select>
-            </div>
-          </div>
-        </div>
-
-        {/* PRAWA KOLUMNA: СПИСОК */}
-        <div className="lg:col-span-2">
-           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-             <Search size={20} className="text-indigo-400"/> Historia operacji
-           </h3>
-           <div className="space-y-3">
-             {filteredTransactions.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 bg-white/5 rounded-2xl border border-dashed border-white/10">Brak transakcji.</div>
-             ) : (
-                filteredTransactions.map((t) => {
-                    const category = categories.find((c) => c.id === t.categoryId);
-                    const wallet = wallets.find((w) => w.id === t.walletId);
-                    const isExpense = t.type === "expense";
-
-                    return (
-                        <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
-                            <div className="flex items-center gap-4">
-                                {/* ИСПОЛЬЗУЕМ НОВЫЙ КОМПОНЕНТ ИКОНКИ */}
-                                <div className={`
-                                    w-12 h-12 rounded-full flex items-center justify-center border
-                                    ${isExpense 
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
-                                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}
-                                `}>
-                                    {/* Передаем имя иконки из категории. Если категории нет - будет Tag */}
-                                    <CategoryIcon iconName={category?.icon} size={24} />
-                                </div>
-                                
-                                <div>
-                                    <p className="font-bold text-white text-sm sm:text-base">
-                                        {category?.name || "Brak kategorii"}
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                      {/* КРАСИВЫЙ ВЫВОД ДАТЫ И ВРЕМЕНИ */}
-                                      <span className="text-[10px] sm:text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                                          {new Date(t.date).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                      </span>
-                                      {wallet && (<span className="text-[10px] sm:text-xs text-indigo-300">{wallet.name}</span>)}
-                                  </div>
-                                    {t.comment && (<p className="text-xs text-gray-400 mt-1 italic max-w-[150px] sm:max-w-xs truncate">"{t.comment}"</p>)}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                                <span className={`font-mono font-bold text-sm sm:text-lg ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-                                    {isExpense ? '-' : '+'}{t.amount.toFixed(2)} {wallet?.currency}
-                                </span>
-                                <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEditTransaction(t)} className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg"><Edit2 size={16} /></button>
-                                    <button onClick={() => handleDeleteTransaction(t.id)} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"><Trash2 size={16} /></button>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })
-             )}
-           </div>
-        </div>
+        )}
       </div>
-      <EditModal isOpen={isModalOpen} transaction={editingTransaction} onSave={handleSaveEdit} onClose={() => setIsModalOpen(false)} categories={categories} wallets={wallets} />
+
+      {/* СПИСОК ТРАНЗАКЦИЙ (С Группировкой) */}
+      <div className="space-y-6">
+        {Object.keys(groupedTransactions).length === 0 ? (
+           <div className="text-center py-12 text-gray-500">Brak transakcji.</div>
+        ) : (
+            Object.entries(groupedTransactions).map(([dateLabel, txs]) => (
+                <div key={dateLabel}>
+                    {/* Заголовок даты (Sticky) */}
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 sticky top-14 bg-[#0B0E14] py-2 z-0">
+                        {dateLabel}
+                    </h3>
+                    
+                    <div className="space-y-3">
+                        {txs.map((t) => {
+                            const category = categories.find((c) => c.id === t.categoryId);
+                            const wallet = wallets.find((w) => w.id === t.walletId);
+                            const isExpense = t.type === "expense";
+
+                            return (
+                                <div key={t.id} className="glass-card p-4 rounded-xl flex items-center justify-between group hover:bg-white/5 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+                                            <CategoryIcon iconName={category?.icon} size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-white text-sm">{category?.name || "Bez kategorii"}</p>
+                                            <div className="flex gap-2">
+                                                 <span className="text-[10px] text-gray-500">{new Date(t.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                 {wallet && <span className="text-[10px] text-indigo-400">{wallet.name}</span>}
+                                            </div>
+                                            {t.comment && <p className="text-[10px] text-gray-500 italic truncate max-w-[120px]">{t.comment}</p>}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="text-right">
+                                        <div className={`font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                            {isExpense ? '-' : '+'}{t.amount.toFixed(2)} {wallet?.currency}
+                                        </div>
+                                        {/* Кнопки действий */}
+                                        <div className="flex justify-end gap-3 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => { setEditingTransaction(t); }} className="text-gray-500 hover:text-blue-400 transition-colors"><Edit2 size={16}/></button>
+                                            <button onClick={() => handleDeleteTransaction(t.id)} className="text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))
+        )}
+      </div>
+
+      {/* --- МОДАЛЬНОЕ ОКНО (BOTTOM SHEET / ШТОРКА) --- */}
+      {isAddModalOpen && (
+        // z-[100] гарантирует, что окно будет ПОВЕРХ нижнего меню и кнопки +
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            
+            {/* Клик по фону закрывает окно */}
+            <div className="absolute inset-0" onClick={() => setIsAddModalOpen(false)}></div>
+
+            {/* Само окно */}
+            <div className="relative w-full max-w-lg bg-[#151A23] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+                
+                {/* Декоративная полоска сверху ("ручка" для шторки) */}
+                <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6 opacity-50"></div>
+
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-white">Nowa transakcja</h3>
+                    <button onClick={() => setIsAddModalOpen(false)} className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-full transition-colors">
+                        <X size={20}/>
+                    </button>
+                </div>
+                
+                <div className="space-y-4">
+                    {/* СУММА */}
+                    <input 
+                        type="number" 
+                        placeholder="0.00" 
+                        autoFocus 
+                        className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white text-4xl font-mono text-center focus:border-indigo-500 outline-none placeholder-gray-700 transition-all shadow-inner" 
+                        value={form.amount} 
+                        onChange={(e) => setForm({ ...form, amount: e.target.value })} 
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                         {/* ДАТА */}
+                         <div className="relative">
+                             <input 
+                                 type="date" 
+                                 className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
+                                 value={form.date} 
+                                 onChange={(e) => setForm({ ...form, date: e.target.value })} 
+                             />
+                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                         </div>
+                         
+                         {/* КОШЕЛЕК */}
+                         <div className="relative">
+                             <select 
+                                 className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
+                                 value={form.walletId} 
+                                 onChange={(e) => setForm({ ...form, walletId: e.target.value })}
+                             >
+                                <option value="">Portfel</option>
+                                {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                            </select>
+                            <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
+                         </div>
+                    </div>
+
+                    {/* КАТЕГОРИЯ */}
+                    <div className="relative">
+                        <select 
+                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
+                            value={form.categoryId} 
+                            onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                        >
+                            <option value="">Kategoria</option>
+                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
+                    </div>
+
+                    {/* КОММЕНТАРИЙ */}
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            placeholder="Komentarz (opcjonalnie)" 
+                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none placeholder-gray-600 h-[50px]" 
+                            value={form.comment} 
+                            onChange={(e) => setForm({ ...form, comment: e.target.value })} 
+                        />
+                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                    </div>
+
+                    {/* КНОПКА СОХРАНИТЬ */}
+                    <button onClick={handleAddTransaction} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 mt-4 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                        <Plus size={24} />
+                        Dodaj transakcję
+                    </button>
+                    
+                    {/* Отступ снизу для безопасной зоны на iPhone */}
+                    <div className="h-6 w-full"></div>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Модалка редактирования (уже была у тебя) */}
+      <EditModal isOpen={!!editingTransaction} transaction={editingTransaction} onSave={async (updated) => {
+           await updateTransaction(updated);
+           setTransactions(prev => prev.map(t => t.id === updated.id ? updated : t));
+           setEditingTransaction(null);
+      }} onClose={() => setEditingTransaction(null)} categories={categories} wallets={wallets} />
+      
     </div>
   );
 }
