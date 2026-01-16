@@ -262,7 +262,12 @@ export default function TransactionsPage() {
                         autoFocus 
                         className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white text-4xl font-mono text-center focus:border-indigo-500 outline-none placeholder-gray-700 transition-all shadow-inner" 
                         value={form.amount} 
-                        onChange={(e) => setForm({ ...form, amount: e.target.value })} 
+                        onChange={(e) => {
+                            // Ограничение длины до 9 символов (хватит для 999 999.99)
+                            if (e.target.value.length > 9) return; 
+                            setForm({ ...form, amount: e.target.value })
+                        }} 
+                        onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
                     />
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -307,11 +312,17 @@ export default function TransactionsPage() {
                         <input 
                             type="text" 
                             placeholder="Komentarz (opcjonalnie)" 
-                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none placeholder-gray-600 h-[50px]" 
+                            maxLength={20} // Ограничение на 40 символов
+                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 pr-12 text-white text-sm focus:border-indigo-500 outline-none placeholder-gray-600 h-[50px]" 
                             value={form.comment} 
                             onChange={(e) => setForm({ ...form, comment: e.target.value })} 
                         />
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
+                        
+                        {/* Счетчик символов */}
+                        <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] transition-colors ${form.comment.length === 20 ? "text-rose-500" : "text-gray-600"}`}>
+                            {form.comment.length}/20
+                        </div>
                     </div>
 
                     <button onClick={handleAddTransaction} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 mt-4 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
