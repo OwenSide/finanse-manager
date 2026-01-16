@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getAllCategories, addCategory, deleteCategory } from '../db.js';
-
-// 1. Оставляем только UI иконки (стрелочки, корзина, плюсик)
-import { FolderOpen, Plus, Trash2, ArrowUpCircle, ArrowDownCircle, Loader2 } from 'lucide-react';
-
-// 2. ИМПОРТИРУЕМ НАШ ОБЩИЙ КОМПОНЕНТ
+import { FolderOpen, Plus, Trash2, ArrowDownCircle, Loader2 } from 'lucide-react';
 import CategoryIcon from '../components/CategoryIcon';
+import IconPicker from '../components/IconPicker'; // 🔥 Импорт нового компонента
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Форма
   const [name, setName] = useState('');
   const [type, setType] = useState('expense');
-  const [loading, setLoading] = useState(true);
+  const [icon, setIcon] = useState('tag'); 
+
+  // ❌ УДАЛЕНО: pickerRef, isIconPickerOpen, AVAILABLE_ICONS, useEffect с document.addEventListener
+  // Вся эта сложная логика теперь внутри <IconPicker />
 
   useEffect(() => {
     async function loadCategories() {
@@ -30,14 +33,16 @@ export default function Categories() {
         id: uuidv4(), 
         name: name.trim(), 
         type, 
-        // При создании ставим иконку по умолчанию (или можно сделать выбор иконки позже)
-        icon: "tag", 
+        icon, 
         color: "gray" 
     };
     
     await addCategory(newCategory);
     setCategories((prev) => [...prev, newCategory]);
+    
     setName('');
+    setIcon('tag'); 
+    // setIsIconPickerOpen(false) — больше не нужно, компонент сам разберется
   };
 
   const handleDelete = async (id) => {
@@ -64,48 +69,77 @@ export default function Categories() {
       </div>
 
       {/* ФОРМА ДОБАВЛЕНИЯ */}
-      <div className="glass-panel p-5 rounded-2xl mb-8 border border-white/5">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+      <div className="glass-panel p-5 rounded-2xl mb-8 border border-white/5 relative z-10">
+        
+        {/* Заголовок формы (опционально, для красоты) */}
+        <div className="mb-4 flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+          <Plus size={12} />
+          Nowa kategoria
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
           
-          <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Nazwa</label>
-            <input
-              type="text"
-              placeholder="np. Zakupy, Paliwo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all"
-            />
+          {/* ГРУППА 1: Иконка + Название (Занимает все свободное место) */}
+          <div className="flex-1 flex gap-3 w-full">
+              {/* 1. ИКОНКА */}
+              <div className="relative z-20"> {/* z-20 чтобы выпадающий список был поверх всего */}
+                  <IconPicker 
+                      selectedIcon={icon} 
+                      onSelect={setIcon} 
+                  />
+              </div>
+
+              {/* 2. НАЗВАНИЕ */}
+              <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Nazwa</label>
+                  <input
+                      type="text"
+                      placeholder="np. Zakupy"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 h-[50px] transition-all"
+                  />
+              </div>
           </div>
 
-          <div className="w-full sm:w-40">
-             <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Typ</label>
-             <div className="relative">
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full appearance-none bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
-                >
-                  <option value="expense">Wydatek</option>
-                  <option value="income">Przychód</option>
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                    <ArrowDownCircle size={14} />
-                </div>
-             </div>
+          {/* ГРУППА 2: Тип + Кнопка (На мобильном - на всю ширину, на ПК - компактно) */}
+          <div className="flex gap-3 w-full lg:w-auto">
+              
+              {/* 3. ТИП */}
+              <div className="flex-1 lg:w-40">
+                  <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Typ</label>
+                  <div className="relative">
+                      <select
+                          value={type}
+                          onChange={(e) => setType(e.target.value)}
+                          className="w-full appearance-none bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer h-[50px]"
+                      >
+                          <option value="expense">Wydatek</option>
+                          <option value="income">Przychód</option>
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                          <ArrowDownCircle size={14} />
+                      </div>
+                  </div>
+              </div>
+
+              {/* 4. КНОПКА */}
+              <div className="w-[100px] lg:w-auto"> {/* На мобильном кнопка пошире */}
+                  <label className="block text-xs font-medium text-transparent mb-1 ml-1 select-none">Action</label> {/* Невидимый лейбл для выравнивания */}
+                  <button
+                      onClick={handleAdd}
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 h-[50px] rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95"
+                  >
+                      <Plus size={20} />
+                      <span className="hidden lg:inline">Dodaj</span>
+                  </button>
+              </div>
           </div>
 
-          <button
-            onClick={handleAdd}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95"
-          >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Dodaj</span>
-          </button>
         </div>
       </div>
 
-      {/* СПИСОК КАТЕГОРИЙ */}
+      {/* СПИСОК КАТЕГОРИЙ (без изменений) */}
       <h3 className="text-lg font-bold text-gray-300 mb-4 px-1">Lista kategorii</h3>
       
       {categories.length === 0 ? (
@@ -126,8 +160,7 @@ export default function Categories() {
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                       : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}
                   `}>
-                     {/* 🔥 ИСПОЛЬЗУЕМ ОБЩИЙ КОМПОНЕНТ */}
-                     <CategoryIcon iconName={icon} size={20} />
+                      <CategoryIcon iconName={icon} size={20} />
                   </div>
                   
                   <div>

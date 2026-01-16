@@ -184,15 +184,23 @@ export default function TransactionsPage() {
                     <option value="">Wszystkie kategorie</option>
                     {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}>
-                    <option value="">Wszystkie kategorie</option>
-                    {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.walletId} onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}>
+                    <option value="">Portfele</option>
+                    {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                 </select>
                 <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, type: e.target.value })}>
                     <option value="">Wszystkie typy</option>
                     <option value="income">Przychód</option>
                     <option value="expense">Wydatek</option>
                 </select>
+
+                <button 
+                    onClick={() => setFilter({ dateFrom: "", dateTo: "", categoryId: "", type: "", walletId: "" })}
+                    className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg py-2.5 text-xs font-medium text-gray-300 hover:text-white transition-all active:scale-95 mt-2"
+                >
+                    <X size={14} />
+                    Wyczyść filtry
+                </button>
             </div>
         )}
       </div>
