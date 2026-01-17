@@ -1,33 +1,25 @@
 import { useState, useEffect, useMemo } from "react";
-import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
 import TransactionItem from "../components/TransactionItem";
 import TransactionDetailModal from "../components/TransactionDetailModal";
-// Добавил getAllExchangeRates
+import AddTransactionModal from "../components/AddTransactionModal"; // 🔥 1. Импорт
+
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
-import { Plus, Calendar, Wallet, Tag, FileText, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]); 
   const [wallets, setWallets] = useState([]);
-  const [exchangeRates, setExchangeRates] = useState({}); // Стейт для курсов
+  const [exchangeRates, setExchangeRates] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   
-  const [activeId, setActiveId] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  const [form, setForm] = useState({
-    amount: "",
-    categoryId: "",
-    date: new Date().toISOString().slice(0, 10),
-    comment: "",
-    walletId: "",
-  });
+  // Стейт 'form' здесь больше не нужен, он переехал в модалку!
 
   const [filter, setFilter] = useState({
     dateFrom: "",
@@ -41,7 +33,6 @@ export default function TransactionsPage() {
     async function loadData() {
       try {
         setLoading(true);
-        // 🔥 1. ИСПРАВЛЕНО: Достаем ratesList из Promise.all
         const [cats, txs, walls, ratesList] = await Promise.all([
             getAllCategories(),
             getAllTransactions(),
@@ -53,7 +44,6 @@ export default function TransactionsPage() {
         setTransactions(txs || []);
         setWallets(walls || []);
 
-        // 🔥 2. ИСПРАВЛЕНО: Обрабатываем курсы и сохраняем в стейт
         const ratesMap = {};
         if (ratesList) {
             ratesList.forEach(item => { ratesMap[item.currency] = item.rate || item.mid || 1; });
@@ -70,32 +60,10 @@ export default function TransactionsPage() {
     loadData();
   }, []);
 
-  const handleAddTransaction = async () => {
-    if (!form.amount || !form.categoryId || !form.date || !form.walletId) {
-      alert("Uzupełnij wszystkie pola");
-      return;
-    }
-    const category = categories.find((c) => c.id === form.categoryId);
-
-    const now = new Date();
-    const selectedDate = new Date(form.date);
-    selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
-
-    const newTransaction = {
-      id: uuidv4(),
-      amount: parseFloat(form.amount),
-      categoryId: form.categoryId,
-      date: selectedDate.toISOString(),
-      comment: form.comment,
-      walletId: form.walletId,
-      type: category?.type || "expense",
-    };
-
+  // 🔥 2. Функция сохранения (принимает готовую транзакцию из модалки)
+  const handleSaveTransaction = async (newTransaction) => {
     await addTransaction(newTransaction);
     setTransactions((prev) => [newTransaction, ...prev]);
-    
-    setForm({ ...form, amount: "", comment: "" });
-    setIsAddModalOpen(false);
   };
 
   const handleDeleteTransaction = async (id) => {
@@ -170,7 +138,6 @@ export default function TransactionsPage() {
       return groups;
   }, [filteredTransactions]);
 
-  // 🔥 3. ИСПРАВЛЕНО: Вычисляем currentExchangeRate перед рендером
   const selectedWallet = selectedTransaction 
     ? wallets.find(w => w.id === selectedTransaction.walletId) 
     : null;
@@ -272,139 +239,27 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* MODALKA DODAWANIA (SWIPE DOWN) */}
-        <AnimatePresence>
-        {isAddModalOpen && (
-            <>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsAddModalOpen(false)}
-                className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
-            />
+      {/* 🔥 3. НОВАЯ МОДАЛКА (ПОДКЛЮЧЕНА ВМЕСТО СТАРОЙ) */}
+      <AddTransactionModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleSaveTransaction}
+        categories={categories}
+        wallets={wallets}
+      />
 
-            <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                drag="y"
-                dragConstraints={{ top: 0 }}
-                dragElastic={{ top: 0, bottom: 0.2 }}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100 || info.velocity.y > 500) {
-                      setIsAddModalOpen(false);
-                  }
-                }}
-                className="fixed bottom-0 left-0 right-0 z-[101] w-full max-w-lg mx-auto bg-[#151A23] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl pb-10"
-            >
-                <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6 opacity-50 cursor-grab active:cursor-grabbing"></div>
-
-                <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">Nowa transakcja</h3>
-                <button 
-                    onClick={() => setIsAddModalOpen(false)} 
-                    className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-full transition-colors"
-                >
-                    <X size={20}/>
-                </button>
-                </div>
-
-                <div className="space-y-4">
-                    <input 
-                        type="number" 
-                        placeholder="0.00" 
-                        autoFocus 
-                        className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white text-4xl font-mono text-center focus:border-indigo-500 outline-none placeholder-gray-700 transition-all shadow-inner" 
-                        value={form.amount} 
-                        onChange={(e) => {
-                            if (e.target.value.length > 9) return; 
-                            setForm({ ...form, amount: e.target.value })
-                        }} 
-                        onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="relative">
-                            <input 
-                                type="date" 
-                                className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
-                                value={form.date} 
-                                onChange={(e) => setForm({ ...form, date: e.target.value })} 
-                            />
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                        </div>
-                        
-                        <div className="relative">
-                            <select 
-                                className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
-                                value={form.walletId} 
-                                onChange={(e) => setForm({ ...form, walletId: e.target.value })}
-                            >
-                                <option value="">Portfel</option>
-                                {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-                            </select>
-                            <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
-                        </div>
-                    </div>
-
-                    <div className="relative">
-                        <select 
-                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 text-white text-sm focus:border-indigo-500 outline-none appearance-none h-[50px]" 
-                            value={form.categoryId} 
-                            onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                        >
-                            <option value="">Kategoria</option>
-                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
-                    </div>
-
-                    <div className="relative">
-                        <input 
-                            type="text" 
-                            placeholder="Komentarz (opcjonalnie)" 
-                            maxLength={20} 
-                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 pr-12 text-white text-sm focus:border-indigo-500 outline-none placeholder-gray-600 h-[50px]" 
-                            value={form.comment} 
-                            onChange={(e) => setForm({ ...form, comment: e.target.value })} 
-                        />
-                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                        <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] transition-colors ${form.comment.length === 20 ? "text-rose-500" : "text-gray-600"}`}>
-                            {form.comment.length}/20
-                        </div>
-                    </div>
-
-                    <button onClick={handleAddTransaction} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 mt-4 text-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-                        <Plus size={24} />
-                        Dodaj transakcję
-                    </button>
-                    
-                    <div className="h-6 w-full"></div>
-                </div>
-            </motion.div>
-            </>
-        )}
-        </AnimatePresence>
-
-        {/* 🔥 ПОДКЛЮЧАЕМ НОВУЮ СТРАНИЦУ ДЕТАЛЕЙ 🔥 */}
-        <TransactionDetailModal 
-            isOpen={!!selectedTransaction}
-            transaction={selectedTransaction}
-            onClose={() => setSelectedTransaction(null)}
-
-            category={selectedTransaction ? categories.find(c => c.id === selectedTransaction.categoryId) : null}
-            wallet={selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null}
-
-            historicalBalance={getHistoricalBalance(selectedTransaction)} 
-            exchangeRate={currentExchangeRate}
-
-            onEdit={setEditingTransaction}
-            onDelete={handleDeleteTransaction}
-        />
+      {/* ДЕТАЛИ ТРАНЗАКЦИИ */}
+      <TransactionDetailModal 
+          isOpen={!!selectedTransaction}
+          transaction={selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
+          category={selectedTransaction ? categories.find(c => c.id === selectedTransaction.categoryId) : null}
+          wallet={selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null}
+          historicalBalance={getHistoricalBalance(selectedTransaction)} 
+          exchangeRate={currentExchangeRate}
+          onEdit={setEditingTransaction}
+          onDelete={handleDeleteTransaction}
+      />
 
       <EditModal isOpen={!!editingTransaction} transaction={editingTransaction} onSave={async (updated) => {
            await updateTransaction(updated);
