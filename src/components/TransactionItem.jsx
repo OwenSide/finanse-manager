@@ -1,7 +1,7 @@
-import { motion, useAnimation } from "framer-motion";
+import { motion, useMotionValue, animate } from "framer-motion";
 import { Edit2, Trash2 } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const SWIPE_WIDTH = 180;
 
@@ -17,9 +17,11 @@ export default function TransactionItem({
 }) {
   const isExpense = t.type === "expense";
   const canSwipe = !!onEdit && !!onDelete;
-  const controls = useAnimation();
 
-  // iOS-like spring (без дрожания)
+  const x = useMotionValue(0);
+  const rafRef = useRef(null);
+
+  // iOS-native feel
   const snapTransition = {
     type: "spring",
     stiffness: 580,
@@ -27,47 +29,57 @@ export default function TransactionItem({
     mass: 0.5,
   };
 
-  // Закрываем, если активна другая карточка
+  // Закрываем если не активна
   useEffect(() => {
     if (activeId !== t.id) {
-      controls.start({ x: 0, transition: snapTransition });
+      animate(x, 0, snapTransition);
     }
   }, [activeId, t.id]);
 
-  // ЖЁСТКИЙ clamp — ключ к отсутствию jitter на iOS
+  // 🔥 RAF-based drag (ключ к отсутствию freeze)
   const handleDrag = (_, info) => {
-    const clampedX = Math.max(
-      -SWIPE_WIDTH,
-      Math.min(0, info.offset.x)
-    );
-    controls.set({ x: clampedX });
+    if (rafRef.current) return;
+
+    rafRef.current = requestAnimationFrame(() => {
+      const clampedX = Math.max(
+        -SWIPE_WIDTH,
+        Math.min(0, info.offset.x)
+      );
+      x.set(clampedX);
+      rafRef.current = null;
+    });
   };
 
   const handleDragEnd = (_, info) => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
     const shouldOpen =
       info.offset.x < -60 || info.velocity.x < -220;
 
-    controls.start({
-      x: shouldOpen ? -SWIPE_WIDTH : 0,
-      transition: snapTransition,
-    });
+    animate(
+      x,
+      shouldOpen ? -SWIPE_WIDTH : 0,
+      snapTransition
+    );
 
     onSwipe?.(shouldOpen ? t.id : null);
   };
 
   const handleAction = (actionFn, arg) => {
-    navigator.vibrate?.(10); // Android PWA haptic
-    controls.start({ x: 0, transition: { duration: 0.15 } });
+    navigator.vibrate?.(10);
+    animate(x, 0, { duration: 0.15 });
     onSwipe?.(null);
     setTimeout(() => actionFn(arg), 120);
   };
 
   return (
     <div className="relative mb-2 h-[80px] w-full bg-[#0B0E14] rounded-xl overflow-hidden">
-      {/* --- ЗАДНИЙ СЛОЙ --- */}
+      {/* BACK */}
       {canSwipe && (
         <div className="absolute inset-y-0 right-0 w-full flex justify-end z-0">
-          {/* Edit */}
           <button
             onClick={() => handleAction(onEdit, t)}
             className="flex-grow h-full relative group bg-[#0B0E14] overflow-hidden"
@@ -82,7 +94,6 @@ export default function TransactionItem({
             <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-[1px] bg-white/5" />
           </button>
 
-          {/* Delete */}
           <button
             onClick={() => handleAction(onDelete, t.id)}
             className="w-[90px] flex-shrink-0 h-full flex flex-col items-center justify-center gap-1 group relative bg-[#0B0E14]"
@@ -97,19 +108,20 @@ export default function TransactionItem({
       )}
 
       {/* --- ПЕРЕДНИЙ СЛОЙ --- */}
+      {/* FRONT */}
       <motion.div
         drag={canSwipe ? "x" : false}
         dragElastic={0}
         dragMomentum={false}
-        animate={controls}
-        onDrag={handleDrag}
-        onDragStart={() => onSwipe?.(t.id)}
-        onDragEnd={handleDragEnd}
         style={{
+          x,
           touchAction: "pan-y",
           WebkitUserSelect: "none",
           WebkitTouchCallout: "none",
         }}
+        onDrag={handleDrag}
+        onDragStart={() => onSwipe?.(t.id)}
+        onDragEnd={handleDragEnd}
         className={`relative z-10 glass-card p-3 h-full flex items-center justify-between gap-3 bg-[#151A23] border border-white/5 rounded-xl shadow-lg transform-gpu will-change-transform ${
           canSwipe ? "cursor-grab active:cursor-grabbing" : ""
         }`}
