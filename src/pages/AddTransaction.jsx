@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
 import TransactionItem from "../components/TransactionItem";
 import TransactionDetailModal from "../components/TransactionDetailModal";
-import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets } from "../db.js";
+// Добавил getAllExchangeRates
+import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
 import { Plus, Calendar, Wallet, Tag, FileText, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,18 +12,15 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]); 
   const [wallets, setWallets] = useState([]);
+  const [exchangeRates, setExchangeRates] = useState({}); // Стейт для курсов
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   
-  // activeId теперь хранит ID раскрытой карточки (аккордеона)
   const [activeId, setActiveId] = useState(null);
-
-  // Состояния интерфейса
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Форма
   const [form, setForm] = useState({
     amount: "",
     categoryId: "",
@@ -31,7 +29,6 @@ export default function TransactionsPage() {
     walletId: "",
   });
 
-  // Фильтры
   const [filter, setFilter] = useState({
     dateFrom: "",
     dateTo: "",
@@ -44,14 +41,26 @@ export default function TransactionsPage() {
     async function loadData() {
       try {
         setLoading(true);
-        const [cats, txs, walls] = await Promise.all([
+        // 🔥 1. ИСПРАВЛЕНО: Достаем ratesList из Promise.all
+        const [cats, txs, walls, ratesList] = await Promise.all([
             getAllCategories(),
             getAllTransactions(),
-            getAllWallets()
+            getAllWallets(),
+            getAllExchangeRates()
         ]);
+        
         setCategories(cats || []);
         setTransactions(txs || []);
         setWallets(walls || []);
+
+        // 🔥 2. ИСПРАВЛЕНО: Обрабатываем курсы и сохраняем в стейт
+        const ratesMap = {};
+        if (ratesList) {
+            ratesList.forEach(item => { ratesMap[item.currency] = item.rate || item.mid || 1; });
+        }
+        ratesMap["PLN"] = 1;
+        setExchangeRates(ratesMap);
+        
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -96,6 +105,29 @@ export default function TransactionsPage() {
     }
   };
 
+  const getHistoricalBalance = (targetTransaction) => {
+    if (!targetTransaction) return null;
+
+    const walletTxs = transactions.filter(t => t.walletId === targetTransaction.walletId);
+    walletTxs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const wallet = wallets.find(w => w.id === targetTransaction.walletId);
+    let balance = wallet ? (wallet.initialBalance || 0) : 0; 
+
+    for (let t of walletTxs) {
+        if (t.type === 'income') {
+            balance += Number(t.amount);
+        } else {
+            balance -= Number(t.amount);
+        }
+
+        if (t.id === targetTransaction.id) {
+            return balance;
+        }
+    }
+    return balance;
+  };
+
   const filteredTransactions = useMemo(() => {
       return transactions.filter((t) => {
         const tDate = t.date.slice(0, 10);
@@ -137,6 +169,15 @@ export default function TransactionsPage() {
       });
       return groups;
   }, [filteredTransactions]);
+
+  // 🔥 3. ИСПРАВЛЕНО: Вычисляем currentExchangeRate перед рендером
+  const selectedWallet = selectedTransaction 
+    ? wallets.find(w => w.id === selectedTransaction.walletId) 
+    : null;
+    
+  const currentExchangeRate = selectedWallet 
+    ? (exchangeRates[selectedWallet.currency] || 1) 
+    : 1;
 
 
   if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40}/></div>;
@@ -221,7 +262,6 @@ export default function TransactionsPage() {
                                     t={t}
                                     category={category}
                                     wallet={wallet}
-                                    // 🔥 Просто клик, который открывает детальную страницу
                                     onClick={() => setSelectedTransaction(t)}
                                 />
                             );
@@ -355,10 +395,13 @@ export default function TransactionsPage() {
             isOpen={!!selectedTransaction}
             transaction={selectedTransaction}
             onClose={() => setSelectedTransaction(null)}
-            
+
             category={selectedTransaction ? categories.find(c => c.id === selectedTransaction.categoryId) : null}
             wallet={selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null}
-            
+
+            historicalBalance={getHistoricalBalance(selectedTransaction)} 
+            exchangeRate={currentExchangeRate}
+
             onEdit={setEditingTransaction}
             onDelete={handleDeleteTransaction}
         />
