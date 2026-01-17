@@ -1,59 +1,92 @@
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform, useAnimation } from "framer-motion";
 import { Edit2, Trash2 } from "lucide-react";
 import CategoryIcon from "./CategoryIcon"; 
 
 export default function TransactionItem({ t, category, wallet, onEdit, onDelete, showDate = true }) {
   const isExpense = t.type === "expense";
-  
   const canSwipe = !!onEdit && !!onDelete;
-  const x = useMotionValue(0);
   
-  const editOpacity = useTransform(x, [0, 50], [0, 1]);
-  const deleteOpacity = useTransform(x, [0, -50], [0, 1]);
-  const bg = useTransform(x, [-100, 0, 100], ["rgba(239, 68, 68, 0.2)", "rgba(255,255,255,0)", "rgba(59, 130, 246, 0.2)"]);
+  const controls = useAnimation();
+  const x = useMotionValue(0);
+
+  const buttonsOpacity = useTransform(x, [0, -50], [0, 1]);
+
+  // 🔥 КОНФИГУРАЦИЯ ФИЗИКИ (чтобы было быстро и резко)
+  const snapTransition = { type: "spring", stiffness: 500, damping: 30 };
+
+  const handleDragEnd = async (_, info) => {
+      const offset = info.offset.x;
+      const velocity = info.velocity.x;
+
+      // Если смахнули влево (>50px) или резко дернули
+      if (offset < -50 || velocity < -500) {
+          // Открываем меню
+          await controls.start({ x: -140, transition: snapTransition }); 
+      } else {
+          // Возвращаем обратно
+          await controls.start({ x: 0, transition: snapTransition }); 
+      }
+  };
+
+  const handleAction = async (actionFn, arg) => {
+      // Закрываем очень быстро перед действием
+      await controls.start({ x: 0, transition: { duration: 0.1 } });
+      setTimeout(() => {
+          actionFn(arg);
+      }, 100);
+  };
+
+  const handleCardClick = () => {
+      controls.start({ x: 0, transition: snapTransition });
+  };
 
   return (
-    <motion.div 
-        style={{ background: canSwipe ? bg : "transparent" }}
-        className="relative rounded-xl overflow-hidden mb-2"
-        layout // 🔥 ВАЖНО: Добавляет плавность при удалении соседних элементов
-    >
+    <div className="relative mb-2 h-[80px] w-full">
+      
+      {/* --- ЗАДНИЙ СЛОЙ (КНОПКИ) --- */}
       {canSwipe && (
-          <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
-            <motion.div style={{ opacity: editOpacity }} className="text-blue-400 flex items-center gap-2 font-bold text-xs">
-              <Edit2 size={20} />
-              <span className="hidden sm:inline">Edytuj</span>
-            </motion.div>
+          <motion.div 
+            style={{ opacity: buttonsOpacity }} 
+            // Ширина 160px для перекрытия дырки (визуально будет 140px)
+            className="absolute inset-y-0 right-0 w-[160px] flex rounded-r-xl overflow-hidden shadow-inner bg-[#0B0E14]"
+          >
+            {/* Кнопка Редактировать (смещена, чтобы быть по центру видимой части) */}
+            <button 
+                onClick={() => handleAction(onEdit, t)}
+                className="w-[90px] h-full flex flex-col items-center justify-center gap-1 transition-all group relative overflow-hidden pl-5"
+            >
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-blue-600/20 group-hover:from-blue-500/20 group-hover:to-blue-600/30 transition-colors"></div>
+                <Edit2 size={18} className="text-blue-400 relative z-10" />
+                <span className="text-[10px] font-bold text-blue-400 relative z-10">Edytuj</span>
+            </button>
 
-            <motion.div style={{ opacity: deleteOpacity }} className="text-rose-400 flex items-center gap-2 font-bold text-xs">
-              <span className="hidden sm:inline">Usuń</span>
-              <Trash2 size={20} />
-            </motion.div>
-          </div>
+            {/* Кнопка Удалить */}
+            <button 
+                onClick={() => handleAction(onDelete, t.id)}
+                className="flex-1 h-full flex flex-col items-center justify-center gap-1 transition-all group relative overflow-hidden"
+            >
+                <div className="absolute inset-0 bg-gradient-to-b from-rose-500/10 to-rose-600/20 group-hover:from-rose-500/20 group-hover:to-rose-600/30 transition-colors"></div>
+                <Trash2 size={18} className="text-rose-400 relative z-10" />
+                <span className="text-[10px] font-bold text-rose-400 relative z-10">Usuń</span>
+            </button>
+          </motion.div>
       )}
 
+      {/* --- ПЕРЕДНИЙ СЛОЙ (КАРТОЧКА) --- */}
       <motion.div
         drag={canSwipe ? "x" : false} 
-        dragConstraints={{ left: 0, right: 0 }} 
-        dragElastic={0.7} 
+        dragConstraints={{ left: -140, right: 0 }} 
+        // 🔥 dragElastic: 0.05 делает границы "жесткими", карточка не улетает далеко
+        dragElastic={0.05} 
+        dragMomentum={false} // Отключаем инерцию, чтобы контроль был полным
         
-        // 🔥 ИСПРАВЛЕНИЕ РЫВКОВ:
-        dragMomentum={false} // Отключаем инерцию, чтобы карточка не "дрожала"
-        dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }} // Мягкий возврат назад
-        
+        animate={controls} 
         style={{ x }}
+        onDragEnd={handleDragEnd}
+        onClick={handleCardClick}
         
-        onDragEnd={(_, info) => {
-          if (!canSwipe) return; 
-          // Порог срабатывания (80px)
-          if (info.offset.x < -80) { 
-            onDelete(t.id);
-          } else if (info.offset.x > 80) { 
-            onEdit(t);
-          }
-        }}
-        
-        className={`relative z-10 glass-card p-3 h-[80px] flex items-center justify-between gap-3 group bg-[#151A23] border border-white/5 ${canSwipe ? 'active:cursor-grabbing cursor-grab' : ''}`}
+        // 🔥 active:cursor-grabbing для визуальной отзывчивости
+        className={`relative z-20 glass-card p-3 h-full flex items-center justify-between gap-3 bg-[#151A23] border border-white/5 rounded-xl shadow-lg touch-pan-y ${canSwipe ? 'cursor-grab active:cursor-grabbing' : ''}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1 pointer-events-none">
             <div className={`w-10 h-10 min-w-[2.5rem] rounded-full flex items-center justify-center border ${isExpense ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
@@ -64,7 +97,6 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                 <p className="font-bold text-white text-sm truncate">
                     {category?.name || "Bez kategorii"}
                 </p>
-                
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-500 truncate mt-0.5">
                     <span>
                         {showDate 
@@ -72,7 +104,6 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                            : new Date(t.date).toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'})
                         }
                     </span>
-                    
                     {wallet && (
                         <>
                             <span className="w-1 h-1 bg-gray-600 rounded-full shrink-0"></span> 
@@ -82,7 +113,6 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                         </>
                     )}
                 </div>
-                
                 {t.comment && <p className="text-[10px] text-gray-500 truncate opacity-80">{t.comment}</p>}
             </div>
         </div>
@@ -92,15 +122,8 @@ export default function TransactionItem({ t, category, wallet, onEdit, onDelete,
                 {isExpense ? '-' : '+'}{Number(t.amount).toFixed(2)}
             </div>
             <div className="text-[10px] text-gray-500 uppercase">{wallet?.currency}</div>
-
-            {canSwipe && (
-                <div className="hidden md:flex gap-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
-                    <button onClick={(e) => { e.stopPropagation(); onEdit(t); }} className="text-gray-500 hover:text-blue-400"><Edit2 size={14}/></button>
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(t.id); }} className="text-gray-500 hover:text-red-400"><Trash2 size={14}/></button>
-                </div>
-            )}
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
