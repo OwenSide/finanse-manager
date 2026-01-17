@@ -11,6 +11,7 @@ export default function TransactionsPage() {
   const [categories, setCategories] = useState([]); 
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeId, setActiveId] = useState(null);
 
   // Состояния интерфейса
   const [isAddModalOpen, setIsAddModalOpen] = useState(false); // Модалка добавления
@@ -231,6 +232,8 @@ export default function TransactionsPage() {
                                     onEdit={setEditingTransaction}
                                     onDelete={handleDeleteTransaction}
                                     showDate={false}
+                                    activeId={activeId}
+                                    onSwipe={setActiveId}
                                 />
                             );
                         })}
