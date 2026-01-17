@@ -3,6 +3,8 @@ import { Edit2, Trash2 } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 import { useEffect } from "react";
 
+const SWIPE_WIDTH = 180;
+
 export default function TransactionItem({
   t,
   category,
@@ -15,10 +17,9 @@ export default function TransactionItem({
 }) {
   const isExpense = t.type === "expense";
   const canSwipe = !!onEdit && !!onDelete;
-
   const controls = useAnimation();
 
-  // МЯГКАЯ пружина — важно для телефона
+  // iOS-like spring (без дрожания)
   const snapTransition = {
     type: "spring",
     stiffness: 580,
@@ -26,27 +27,36 @@ export default function TransactionItem({
     mass: 0.5,
   };
 
-  // Закрываем карточку, если активна не она
+  // Закрываем, если активна другая карточка
   useEffect(() => {
     if (activeId !== t.id) {
       controls.start({ x: 0, transition: snapTransition });
     }
   }, [activeId, t.id]);
 
+  // ЖЁСТКИЙ clamp — ключ к отсутствию jitter на iOS
+  const handleDrag = (_, info) => {
+    const clampedX = Math.max(
+      -SWIPE_WIDTH,
+      Math.min(0, info.offset.x)
+    );
+    controls.set({ x: clampedX });
+  };
+
   const handleDragEnd = (_, info) => {
     const shouldOpen =
       info.offset.x < -60 || info.velocity.x < -220;
 
-    if (shouldOpen) {
-      controls.start({ x: -180, transition: snapTransition });
-      onSwipe?.(t.id);
-    } else {
-      controls.start({ x: 0, transition: snapTransition });
-      onSwipe?.(null);
-    }
+    controls.start({
+      x: shouldOpen ? -SWIPE_WIDTH : 0,
+      transition: snapTransition,
+    });
+
+    onSwipe?.(shouldOpen ? t.id : null);
   };
 
   const handleAction = (actionFn, arg) => {
+    navigator.vibrate?.(10); // Android PWA haptic
     controls.start({ x: 0, transition: { duration: 0.15 } });
     onSwipe?.(null);
     setTimeout(() => actionFn(arg), 120);
@@ -54,7 +64,7 @@ export default function TransactionItem({
 
   return (
     <div className="relative mb-2 h-[80px] w-full bg-[#0B0E14] rounded-xl overflow-hidden">
-      {/* --- ЗАДНИЙ СЛОЙ (КНОПКИ) --- */}
+      {/* --- ЗАДНИЙ СЛОЙ --- */}
       {canSwipe && (
         <div className="absolute inset-y-0 right-0 w-full flex justify-end z-0">
           {/* Edit */}
@@ -63,14 +73,12 @@ export default function TransactionItem({
             className="flex-grow h-full relative group bg-[#0B0E14] overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-blue-600/20 group-hover:from-blue-500/20 group-hover:to-blue-600/30 transition-colors" />
-
             <div className="absolute top-0 right-0 bottom-0 w-[90px] flex flex-col items-center justify-center gap-1">
               <Edit2 size={18} className="text-blue-400 relative z-10" />
               <span className="text-[10px] font-bold text-blue-400 relative z-10">
                 Edytuj
               </span>
             </div>
-
             <div className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-[1px] bg-white/5" />
           </button>
 
@@ -88,16 +96,21 @@ export default function TransactionItem({
         </div>
       )}
 
-      {/* --- ПЕРЕДНИЙ СЛОЙ (КАРТОЧКА) --- */}
+      {/* --- ПЕРЕДНИЙ СЛОЙ --- */}
       <motion.div
         drag={canSwipe ? "x" : false}
-        dragConstraints={{ left: -180, right: 0 }}
-        dragElastic={0.18}
+        dragElastic={0}
         dragMomentum={false}
         animate={controls}
+        onDrag={handleDrag}
         onDragStart={() => onSwipe?.(t.id)}
         onDragEnd={handleDragEnd}
-        className={`relative z-10 glass-card p-3 h-full flex items-center justify-between gap-3 bg-[#151A23] border border-white/5 rounded-xl shadow-lg touch-pan-y transform-gpu will-change-transform ${
+        style={{
+          touchAction: "pan-y",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
+        }}
+        className={`relative z-10 glass-card p-3 h-full flex items-center justify-between gap-3 bg-[#151A23] border border-white/5 rounded-xl shadow-lg transform-gpu will-change-transform ${
           canSwipe ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
