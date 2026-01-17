@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import EditModal from "../components/EditModal";
 import TransactionItem from "../components/TransactionItem";
+import TransactionDetailModal from "../components/TransactionDetailModal";
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets } from "../db.js";
 import { Plus, Calendar, Wallet, Tag, FileText, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,14 +12,17 @@ export default function TransactionsPage() {
   const [categories, setCategories] = useState([]); 
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  
+  // activeId теперь хранит ID раскрытой карточки (аккордеона)
   const [activeId, setActiveId] = useState(null);
 
   // Состояния интерфейса
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // Модалка добавления
-  const [isFilterOpen, setIsFilterOpen] = useState(false);     // Сворачивание фильтров
-  const [editingTransaction, setEditingTransaction] = useState(null); // Модалка редактирования
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Форма (используем внутри модалки)
+  // Форма
   const [form, setForm] = useState({
     amount: "",
     categoryId: "",
@@ -29,7 +33,7 @@ export default function TransactionsPage() {
 
   // Фильтры
   const [filter, setFilter] = useState({
-    dateFrom: "", // Пусто по умолчанию = за все время
+    dateFrom: "",
     dateTo: "",
     categoryId: "",
     type: "",
@@ -81,7 +85,6 @@ export default function TransactionsPage() {
     await addTransaction(newTransaction);
     setTransactions((prev) => [newTransaction, ...prev]);
     
-    // Сброс и закрытие
     setForm({ ...form, amount: "", comment: "" });
     setIsAddModalOpen(false);
   };
@@ -93,7 +96,6 @@ export default function TransactionsPage() {
     }
   };
 
-  // 1. Сначала фильтруем
   const filteredTransactions = useMemo(() => {
       return transactions.filter((t) => {
         const tDate = t.date.slice(0, 10);
@@ -105,32 +107,24 @@ export default function TransactionsPage() {
       }).sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [transactions, filter]);
 
-  // 2. Потом ГРУППИРУЕМ по датам для красивого отображения
   const groupedTransactions = useMemo(() => {
       const groups = {};
-
-      // Получаем "Сегодня" и "Вчера" без времени (00:00:00) для корректного сравнения
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 1);
 
       filteredTransactions.forEach(t => {
           const tDate = new Date(t.date);
-          // Сбрасываем время у даты транзакции для сравнения
           const tDateOnly = new Date(tDate);
           tDateOnly.setHours(0, 0, 0, 0);
 
           let dateKey;
-
-          // 🔥 ЛОГИКА ОТОБРАЖЕНИЯ ЗАГОЛОВКОВ
           if (tDateOnly.getTime() === today.getTime()) {
               dateKey = "Dzisiaj";
           } else if (tDateOnly.getTime() === yesterday.getTime()) {
               dateKey = "Wczoraj";
           } else {
-              // Обычная дата: убрал 'weekday', оставил только день, месяц и год
               dateKey = tDate.toLocaleDateString('pl-PL', { 
                   day: 'numeric', 
                   month: 'long', 
@@ -150,7 +144,7 @@ export default function TransactionsPage() {
   return (
     <div className="max-w-3xl mx-auto p-4 pb-24 min-[450px]:p-6 relative">
       
-      {/* HEADER: Заголовок + Кнопка Добавить */}
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-6 sticky top-0 z-30 bg-[#0B0E14]/80 backdrop-blur-md py-2">
         <h2 className="text-2xl font-bold text-white">Historia</h2>
         <button 
@@ -161,7 +155,7 @@ export default function TransactionsPage() {
         </button>
       </div>
 
-      {/* ФИЛЬТРЫ (Сворачиваемые) */}
+      {/* FILTERS */}
       <div className="glass-panel rounded-2xl border border-white/5 mb-6 overflow-hidden">
         <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -180,7 +174,6 @@ export default function TransactionsPage() {
                     <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateFrom} onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })} />
                     <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateTo} onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })} />
                 </div>
-                {/* ... остальные селекты (категория, кошелек, тип) ... */}
                 <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}>
                     <option value="">Wszystkie kategorie</option>
                     {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -206,7 +199,7 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* СПИСОК ТРАНЗАКЦИЙ (С Группировкой) */}
+      {/* LISTA TRANSAKCJI */}
       <div className="space-y-6">
         {Object.keys(groupedTransactions).length === 0 ? (
            <div className="text-center py-12 text-gray-500">Brak transakcji.</div>
@@ -223,17 +216,13 @@ export default function TransactionsPage() {
                             const wallet = wallets.find((w) => w.id === t.walletId);
 
                             return (
-                                // ВОТ ЗДЕСЬ ИСПОЛЬЗУЕМ НОВЫЙ КОМПОНЕНТ
                                 <TransactionItem 
                                     key={t.id}
                                     t={t}
                                     category={category}
                                     wallet={wallet}
-                                    onEdit={setEditingTransaction}
-                                    onDelete={handleDeleteTransaction}
-                                    showDate={false}
-                                    activeId={activeId}
-                                    onSwipe={setActiveId}
+                                    // 🔥 Просто клик, который открывает детальную страницу
+                                    onClick={() => setSelectedTransaction(t)}
                                 />
                             );
                         })}
@@ -243,11 +232,10 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* --- МОДАЛЬНОЕ ОКНО С ЖЕСТАМИ (SWIPE DOWN) --- */}
+      {/* MODALKA DODAWANIA (SWIPE DOWN) */}
         <AnimatePresence>
         {isAddModalOpen && (
             <>
-            {/* 1. Фон (Backdrop) */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -256,31 +244,23 @@ export default function TransactionsPage() {
                 className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
             />
 
-            {/* 2. Само окно (Bottom Sheet) */}
             <motion.div
-                // Анимация появления (выезд снизу)
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                
-                // Логика перетаскивания (ЖЕСТЫ)
-                drag="y" // Разрешаем тянуть только по вертикали
-                dragConstraints={{ top: 0 }} // Не даем тянуть вверх выше экрана
-                dragElastic={{ top: 0, bottom: 0.2 }} // Сопротивление при тяге вниз
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={{ top: 0, bottom: 0.2 }}
                 onDragEnd={(_, info) => {
-                // Если потянули вниз больше чем на 100px или быстро смахнули
-                if (info.offset.y > 100 || info.velocity.y > 500) {
-                    setIsAddModalOpen(false);
-                }
+                  if (info.offset.y > 100 || info.velocity.y > 500) {
+                      setIsAddModalOpen(false);
+                  }
                 }}
-                
                 className="fixed bottom-0 left-0 right-0 z-[101] w-full max-w-lg mx-auto bg-[#151A23] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl pb-10"
             >
-                {/* Ручка для шторки (визуальная подсказка) */}
                 <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6 opacity-50 cursor-grab active:cursor-grabbing"></div>
 
-                {/* Заголовок и крестик */}
                 <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-white">Nowa transakcja</h3>
                 <button 
@@ -291,7 +271,6 @@ export default function TransactionsPage() {
                 </button>
                 </div>
 
-                {/* ТВОЯ ФОРМА (без изменений) */}
                 <div className="space-y-4">
                     <input 
                         type="number" 
@@ -300,13 +279,11 @@ export default function TransactionsPage() {
                         className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white text-4xl font-mono text-center focus:border-indigo-500 outline-none placeholder-gray-700 transition-all shadow-inner" 
                         value={form.amount} 
                         onChange={(e) => {
-                            // Ограничение длины до 9 символов (хватит для 999 999.99)
                             if (e.target.value.length > 9) return; 
                             setForm({ ...form, amount: e.target.value })
                         }} 
                         onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
                     />
-                    
                     
                     <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
@@ -350,14 +327,12 @@ export default function TransactionsPage() {
                         <input 
                             type="text" 
                             placeholder="Komentarz (opcjonalnie)" 
-                            maxLength={20} // Ограничение на 40 символов
+                            maxLength={20} 
                             className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 pl-10 pr-12 text-white text-sm focus:border-indigo-500 outline-none placeholder-gray-600 h-[50px]" 
                             value={form.comment} 
                             onChange={(e) => setForm({ ...form, comment: e.target.value })} 
                         />
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={18} />
-                        
-                        {/* Счетчик символов */}
                         <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] transition-colors ${form.comment.length === 20 ? "text-rose-500" : "text-gray-600"}`}>
                             {form.comment.length}/20
                         </div>
@@ -375,7 +350,19 @@ export default function TransactionsPage() {
         )}
         </AnimatePresence>
 
-      {/* Модалка редактирования (уже была у тебя) */}
+        {/* 🔥 ПОДКЛЮЧАЕМ НОВУЮ СТРАНИЦУ ДЕТАЛЕЙ 🔥 */}
+        <TransactionDetailModal 
+            isOpen={!!selectedTransaction}
+            transaction={selectedTransaction}
+            onClose={() => setSelectedTransaction(null)}
+            
+            category={selectedTransaction ? categories.find(c => c.id === selectedTransaction.categoryId) : null}
+            wallet={selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null}
+            
+            onEdit={setEditingTransaction}
+            onDelete={handleDeleteTransaction}
+        />
+
       <EditModal isOpen={!!editingTransaction} transaction={editingTransaction} onSave={async (updated) => {
            await updateTransaction(updated);
            setTransactions(prev => prev.map(t => t.id === updated.id ? updated : t));
