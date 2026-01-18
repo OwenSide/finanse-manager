@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 
 export default function TransactionDetailModal({ 
@@ -12,10 +12,20 @@ export default function TransactionDetailModal({
   wallet,
   mainCurrency = "PLN",
   historicalBalance = null,
-  exchangeRate = 1 // 🔥 Получаем курс из родителя
+  exchangeRate = 1 
 }) {
   const isExpense = transaction?.type === "expense";
   const isForeignCurrency = wallet?.currency !== mainCurrency;
+
+  // Функция для красивого текста частоты
+  const getFrequencyText = (freq) => {
+      switch (freq) {
+          case 'weekly': return 'Co tydzień';
+          case 'monthly': return 'Co miesiąc';
+          case 'yearly': return 'Co rok';
+          default: return 'Cykliczne';
+      }
+  };
 
   return (
     <AnimatePresence>
@@ -60,9 +70,6 @@ export default function TransactionDetailModal({
                         <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center border-4 border-[#0B0E14] shadow-2xl ${isExpense ? 'bg-gradient-to-br from-rose-500 to-rose-600' : 'bg-gradient-to-br from-emerald-500 to-emerald-600'}`}>
                             <CategoryIcon iconName={category?.icon} size={32} className="text-white drop-shadow-md" />
                         </div>
-                        <div className="absolute -bottom-1.5 -right-1.5 bg-[#151A23] p-1 rounded-lg border border-white/10 shadow-lg">
-                            <Wallet size={12} className="text-indigo-400" />
-                        </div>
                     </div>
 
                     <h2 className="text-lg font-bold text-white text-center leading-tight mb-1">
@@ -88,7 +95,28 @@ export default function TransactionDetailModal({
                     </div>
                 </div>
 
-                {/* 2. INFO CARDS */}
+                {/* 🔥 ИНДИКАТОР ПОДПИСКИ С ЧАСТОТОЙ */}
+                {(transaction.isRecurring || transaction.wasRecurring) && (
+                    <div className="mb-6 flex justify-center">
+                        <div className={`inline-flex items-center gap-2 border px-4 py-2 rounded-full ${
+                            transaction.isRecurring 
+                            ? "bg-indigo-500/10 border-indigo-500/20" // Активная (Синяя)
+                            : "bg-gray-800/50 border-white/10"        // Архивная (Серая)
+                        }`}>
+                            <Repeat size={14} className={transaction.isRecurring ? "text-indigo-400" : "text-gray-500"} />
+                            <div className="flex flex-col items-start leading-none">
+                                <span className={`text-[10px] font-bold uppercase tracking-wide ${transaction.isRecurring ? "text-indigo-300" : "text-gray-400"}`}>
+                                    {transaction.isRecurring ? "Płatność cykliczna" : "Płatność archiwalna"}
+                                </span>
+                                <span className={`text-[10px] font-medium mt-0.5 ${transaction.isRecurring ? "text-indigo-400/70" : "text-gray-600"}`}>
+                                    {getFrequencyText(transaction.frequency)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* 2. INFO CARDS (Кошелек) */}
                 <div className="mb-4">
                     <div className="bg-[#151A23] p-4 rounded-2xl border border-white/5 flex flex-col justify-between h-24 relative overflow-hidden group w-full">
                         <div className="absolute -top-3 -right-3 text-white opacity-[0.03] group-hover:opacity-[0.07] transition-opacity rotate-12">
@@ -109,9 +137,8 @@ export default function TransactionDetailModal({
                     </div>
                 </div>
 
-                {/* 3. FINANCE DETAILS */}
+                {/* 3. FINANCE DETAILS (Баланс, Курс) */}
                 <div className="space-y-2 mb-6">
-                    {/* Saldo */}
                     <div className="bg-[#151A23] rounded-xl p-3 border border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
@@ -132,7 +159,6 @@ export default function TransactionDetailModal({
                         </div>
                     </div>
 
-                    {/* 🔥 ОТОБРАЖЕНИЕ КУРСА ВАЛЮТ */}
                     {isForeignCurrency && (
                         <div className="bg-[#151A23] rounded-xl p-3 border border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -148,7 +174,6 @@ export default function TransactionDetailModal({
                             </div>
                             <div className="text-right">
                                 <p className="text-white font-mono font-bold text-sm">
-                                    {/* Сумма в основной валюте */}
                                     ≈ {(transaction.amount * exchangeRate).toFixed(2)} <span className="text-[10px] text-gray-500">{mainCurrency}</span>
                                 </p>
                             </div>

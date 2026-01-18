@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import EditModal from "../components/EditModal";
 import TransactionItem from "../components/TransactionItem";
 import TransactionDetailModal from "../components/TransactionDetailModal";
 import AddTransactionModal from "../components/AddTransactionModal"; // 🔥 1. Импорт
+import { processRecurringTransactions } from "../utils/recurringEngine";
 
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
 import { Plus, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
@@ -29,6 +30,9 @@ export default function TransactionsPage() {
     walletId: "",
   });
 
+  // 🔥 2. Создаем флаг, чтобы запомнить, запускали ли мы уже проверку
+  const hasCheckedRecurring = useRef(false);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -40,6 +44,16 @@ export default function TransactionsPage() {
             getAllExchangeRates()
         ]);
         
+        // Если проверка еще не выполнялась — выполняем
+        if (!hasCheckedRecurring.current) {
+            hasCheckedRecurring.current = true; // Сразу ставим флаг "выполняется"
+            
+            const hasUpdates = await processRecurringTransactions();
+            if (hasUpdates) {
+                console.log("♻️ Подписки обновлены");
+            }
+        }
+
         setCategories(cats || []);
         setTransactions(txs || []);
         setWallets(walls || []);

@@ -1,3 +1,4 @@
+import { Repeat } from "lucide-react";
 import CategoryIcon from "./CategoryIcon"; 
 
 export default function TransactionItem({ t, category, wallet, onClick, showDate = true }) {
@@ -19,9 +20,20 @@ export default function TransactionItem({ t, category, wallet, onClick, showDate
 
             {/* Текст */}
             <div className="flex flex-col min-w-0">
-                <p className="font-bold text-white text-sm truncate">
-                    {category?.name || "Bez kategorii"}
-                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-white font-bold text-sm truncate">
+                      {category?.name || "Brak kategorii"}
+                    </p>
+                    
+                    {/* 🔥 2. ДОБАВЛЯЕМ ИНДИКАТОР ПОДПИСКИ */}
+                    {(t.isRecurring || t.wasRecurring) && (
+                      <div className="flex items-center gap-1 bg-indigo-500/20 px-1.5 py-0.5 rounded text-[10px] text-indigo-400 font-bold border border-indigo-500/20">
+                          <Repeat size={10} />
+                          {/* Можно менять текст, если хочешь: Активная или История */}
+                          <span>{t.isRecurring ? "Subskrypcja" : "Opłacono"}</span> 
+                      </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-500 truncate mt-0.5">
                     <span>
                         {showDate 
