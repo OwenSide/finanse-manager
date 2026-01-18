@@ -39,7 +39,6 @@ export async function getDB() {
       }
 
       // 4. Создаем таблицу Категорий и НАПОЛНЯЕМ ЕЁ
-      // Этот код сработает только один раз при создании таблицы
       if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
         const store = db.createObjectStore(STORE_CATEGORIES, { keyPath: "id" });
         
@@ -123,4 +122,14 @@ export async function updateTransaction(transaction) {
 export async function deleteTransaction(id) {
   const db = await getDB();
   return db.delete(STORE_TRANSACTIONS, id);
+}
+
+// --- 🔥 ФУНКЦИЯ ДЛЯ СБРОСА ДАННЫХ ---
+export async function clearAllData() {
+  const db = await getDB();
+  // Используем константы, чтобы не ошибиться в названиях
+  await db.clear(STORE_TRANSACTIONS); 
+  await db.clear(STORE_WALLETS);      
+  await db.clear(STORE_CATEGORIES);
+  return true;
 }

@@ -1,46 +1,46 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar.jsx";
-import BottomNav from "./components/BottomNav.jsx"; // Импортируем нижнее меню
+import BottomNav from "./components/BottomNav.jsx"; 
 import AddTransaction from "./pages/AddTransaction.jsx";
 import Home from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
 
-export default function App() {
-  // Нам больше не нужны стейты для меню и свайпов, 
-  // так как навигация теперь разделена (Sidebar для ПК, BottomNav для телефона)
+// 🔥 ИСПРАВЛЕНИЕ: Импортируем SettingsPage (так мы назвали файл в прошлом шаге)
+import SettingsPage from "./pages/SettingsPage.jsx"; 
 
+export default function App() {
   return (
     <Router>
-      {/* Глобальный контейнер: Темный фон, белый текст */}
       <div className="flex min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-indigo-500/30">
         
-        {/* 1. Сайдбар (Слева). 
-            Внутри него уже прописан класс 'hidden md:flex', 
-            поэтому он сам скроется на телефоне. */}
+        {/* Сайдбар (ПК) */}
         <Sidebar />
 
-        {/* 2. Основной контент */}
+        {/* Основной контент */}
         <main className="flex-1 w-full min-h-screen relative transition-all duration-300">
-          
-          {/* Отступы контента:
-              md:pl-64 -> На ПК сдвигаем контент вправо (место под Sidebar)
-              pb-24    -> На телефоне добавляем отступ снизу (место под BottomNav)
-          */}
           <div className="md:pl-64 pb-24 md:pb-0 h-full">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/stats" element={<Home />} />
+              
+              {/* Заглушка для статистики, пока нет отдельной страницы, ведем на главную */}
+              <Route path="/stats" element={<div className="p-10">Strona w budowie (stats)</div>} />
+              
               <Route path="/add-transaction" element={<AddTransaction />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/wallets" element={<Wallets />} />
+              
+              {/* 🔥 ИСПРАВЛЕНИЕ: Используем SettingsPage */}
+              <Route path="/settings" element={<SettingsPage />} />
+              
+              {/* Заглушки для новых кнопок меню */}
+              <Route path="/achievements" element={<div className="p-10">Strona w budowie (achievements)</div>} />
+              <Route path="/more" element={<div className="p-10">Strona w budowie (more)</div>} />
             </Routes>
           </div>
         </main>
 
-        {/* 3. Нижнее меню (Снизу).
-            Внутри него прописан класс 'md:hidden',
-            поэтому оно покажется только на телефоне. */}
+        {/* Нижнее меню (Телефон) */}
         <BottomNav />
 
       </div>
