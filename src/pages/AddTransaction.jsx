@@ -6,7 +6,7 @@ import AddTransactionModal from "../components/AddTransactionModal"; // 🔥 1. 
 import { processRecurringTransactions } from "../utils/recurringEngine";
 
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
-import { Plus, Filter, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Filter, Loader2, Repeat, X, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
@@ -28,6 +28,7 @@ export default function TransactionsPage() {
     categoryId: "",
     type: "",
     walletId: "",
+    onlyRecurring: false,
   });
 
   // 🔥 2. Создаем флаг, чтобы запомнить, запускали ли мы уже проверку
@@ -87,6 +88,28 @@ export default function TransactionsPage() {
     }
   };
 
+  const handleStopRecurring = async (id) => {
+    if (window.confirm("Zatrzymać płatność cykliczną?")) {
+      const tx = transactions.find((t) => t.id === id);
+      if (!tx) return;
+
+      const updatedTransaction = {
+        ...tx,
+        isRecurring: false, // Выключаем автомат
+        wasRecurring: true, // Оставляем метку для истории
+      };
+
+      await updateTransaction(updatedTransaction);
+      
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === id ? updatedTransaction : t))
+      );
+      
+      // Обновляем выбранную транзакцию, чтобы модалка сразу перерисовалась
+      setSelectedTransaction(updatedTransaction);
+    }
+  };
+
   const getHistoricalBalance = (targetTransaction) => {
     if (!targetTransaction) return null;
 
@@ -117,7 +140,12 @@ export default function TransactionsPage() {
         const categoryMatch = !filter.categoryId || t.categoryId === filter.categoryId;
         const typeMatch = !filter.type || t.type === filter.type;
         const walletMatch = !filter.walletId || t.walletId === filter.walletId;
-        return dateMatch && categoryMatch && typeMatch && walletMatch;
+        
+        // 🔥 Логика: если галочка включена, показываем ТОЛЬКО активные подписки
+        // Если выключена — показываем всё как обычно
+        const recurringMatch = !filter.onlyRecurring || t.isRecurring === true;
+
+        return dateMatch && categoryMatch && typeMatch && walletMatch && recurringMatch;
       }).sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [transactions, filter]);
 
@@ -209,6 +237,26 @@ export default function TransactionsPage() {
                     <option value="income">Przychód</option>
                     <option value="expense">Wydatek</option>
                 </select>
+                <div 
+                    onClick={() => setFilter({ ...filter, onlyRecurring: !filter.onlyRecurring })}
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all mb-3 ${
+                        filter.onlyRecurring 
+                        ? "bg-indigo-500/10 border-indigo-500/50" 
+                        : "bg-[#0B0E14] border-white/10 hover:bg-white/5"
+                    }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <Repeat size={16} className={filter.onlyRecurring ? "text-indigo-400" : "text-gray-500"} />
+                        <span className={`text-xs font-bold ${filter.onlyRecurring ? "text-indigo-300" : "text-gray-400"}`}>
+                            Pokaż tylko aktywne subskrypcje
+                        </span>
+                    </div>
+                    
+                    {/* Переключатель */}
+                    <div className={`w-8 h-5 rounded-full p-0.5 transition-colors ${filter.onlyRecurring ? "bg-indigo-500" : "bg-gray-700"}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${filter.onlyRecurring ? "translate-x-3" : "translate-x-0"}`} />
+                    </div>
+                </div>
 
                 <button 
                     onClick={() => setFilter({ dateFrom: "", dateTo: "", categoryId: "", type: "", walletId: "" })}
@@ -273,6 +321,9 @@ export default function TransactionsPage() {
           exchangeRate={currentExchangeRate}
           onEdit={setEditingTransaction}
           onDelete={handleDeleteTransaction}
+          
+          // 🔥 Передаем новую функцию
+          onStopRecurring={handleStopRecurring} 
       />
 
       <EditModal isOpen={!!editingTransaction} transaction={editingTransaction} onSave={async (updated) => {

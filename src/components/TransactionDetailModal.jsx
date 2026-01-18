@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat } from "lucide-react";
+import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat, XCircle } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 
 export default function TransactionDetailModal({ 
@@ -10,6 +10,7 @@ export default function TransactionDetailModal({
   onDelete, 
   category, 
   wallet,
+  onStopRecurring,
   mainCurrency = "PLN",
   historicalBalance = null,
   exchangeRate = 1 
@@ -97,22 +98,37 @@ export default function TransactionDetailModal({
 
                 {/* 🔥 ИНДИКАТОР ПОДПИСКИ С ЧАСТОТОЙ */}
                 {(transaction.isRecurring || transaction.wasRecurring) && (
-                    <div className="mb-6 flex justify-center">
-                        <div className={`inline-flex items-center gap-2 border px-4 py-2 rounded-full ${
+                    <div className="mb-6 flex flex-col items-center gap-3">
+                        {/* Сама плашка */}
+                        <div className={`inline-flex items-center gap-3 border px-4 py-2.5 rounded-2xl transition-all ${
                             transaction.isRecurring 
-                            ? "bg-indigo-500/10 border-indigo-500/20" // Активная (Синяя)
-                            : "bg-gray-800/50 border-white/10"        // Архивная (Серая)
+                            ? "bg-indigo-500/10 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]" 
+                            : "bg-white/5 border-white/5 opacity-70"
                         }`}>
-                            <Repeat size={14} className={transaction.isRecurring ? "text-indigo-400" : "text-gray-500"} />
-                            <div className="flex flex-col items-start leading-none">
-                                <span className={`text-[10px] font-bold uppercase tracking-wide ${transaction.isRecurring ? "text-indigo-300" : "text-gray-400"}`}>
-                                    {transaction.isRecurring ? "Płatność cykliczna" : "Płatność archiwalna"}
+                            <div className={`p-1.5 rounded-full ${transaction.isRecurring ? "bg-indigo-500/20" : "bg-white/10"}`}>
+                                <Repeat size={16} className={transaction.isRecurring ? "text-indigo-400" : "text-gray-400"} />
+                            </div>
+                            
+                            <div className="flex flex-col items-start leading-none gap-1">
+                                <span className={`text-[11px] font-bold uppercase tracking-wider ${transaction.isRecurring ? "text-indigo-300" : "text-gray-400"}`}>
+                                    {transaction.isRecurring ? "Subskrypcja aktywna" : "Subskrypcja anulowana"}
                                 </span>
-                                <span className={`text-[10px] font-medium mt-0.5 ${transaction.isRecurring ? "text-indigo-400/70" : "text-gray-600"}`}>
+                                <span className={`text-[10px] font-medium ${transaction.isRecurring ? "text-indigo-400/60" : "text-gray-600"}`}>
                                     {getFrequencyText(transaction.frequency)}
                                 </span>
                             </div>
                         </div>
+
+                        {/* Кнопка отмены (показываем ТОЛЬКО если активна) */}
+                        {transaction.isRecurring && (
+                            <button 
+                                onClick={() => onStopRecurring(transaction.id)}
+                                className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-widest flex items-center gap-1.5 py-2 px-3 hover:bg-rose-500/10 rounded-lg transition-all"
+                            >
+                                <XCircle size={12} />
+                                Zatrzymaj płatności
+                            </button>
+                        )}
                     </div>
                 )}
 
