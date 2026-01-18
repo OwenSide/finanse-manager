@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, CreditCard, Plus, TrendingUp, TrendingDown, Minus, ArrowRightLeft, Loader2 } from "lucide-react";
+import { Wallet, CreditCard, Plus, TrendingUp, TrendingDown, Minus, ArrowRightLeft, Loader2, Settings, Trophy, BarChart3 } from "lucide-react";
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
-// 1. ИМПОРТ КОМПОНЕНТА
 import TransactionItem from "../components/TransactionItem"; 
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
@@ -105,6 +104,40 @@ export default function Home() {
 
       <div className="max-w-5xl mx-auto space-y-6">
 
+        {/* 🔥 ШАПКА: НАСТРОЙКИ СЛЕВА, ИКОНКИ СПРАВА 🔥 */}
+        <header className="flex items-center justify-between px-2 pt-1 pb-2">
+            
+            {/* Кнопка настроек (Слева) */}
+            <Link 
+                to="/settings" 
+                className="group w-6 h-6 rounded-full bg-[#151A23] border border-white/10 flex items-center justify-center hover:bg-[#1E2330] hover:border-white/20 transition-all active:scale-95 shadow-lg"
+            >
+                <Settings 
+                    size={17} 
+                    className="text-gray-400 group-hover:text-white group-hover:rotate-90 transition-all duration-500" 
+                />
+            </Link>
+
+            {/* Иконки Статистики и Достижений (Справа, без фона) */}
+            <div className="flex items-center gap-5 pr-2">
+                <Link 
+                    to="/stats" 
+                    className="text-gray-400 hover:text-indigo-400 transition-colors active:scale-95"
+                >
+                    <BarChart3 size={17} strokeWidth={1.5} />
+                </Link>
+
+                <Link 
+                    to="/achievements" 
+                    className="text-gray-400 hover:text-amber-400 transition-colors active:scale-95"
+                >
+                    <Trophy size={17} strokeWidth={1.5} />
+                </Link>
+            </div>
+            
+        </header>
+
+
         {/* --- БЛОК 1: ГЛАВНЫЙ БАЛАНС --- */}
         <section className="relative w-full">
           <div className=" p-6 min-[450px]:p-10 rounded-[2rem] text-center relative overflow-hidden">
@@ -116,11 +149,11 @@ export default function Home() {
              <div className="flex flex-col items-center justify-center w-full">
                <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
                  <CountUp 
-                    end={totalPLN} 
-                    duration={1.5} 
-                    decimals={2} 
-                    decimal="." 
-                    separator=" " 
+                   end={totalPLN} 
+                   duration={1.5} 
+                   decimals={2} 
+                   decimal="." 
+                   separator=" " 
                  />
                </span>
                <span className="text-sm font-medium text-gray-500 mt-2">PLN</span>
@@ -204,7 +237,7 @@ export default function Home() {
           )}
         </section>
 
-        {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ (ИСПРАВЛЕНО) --- */}
+        {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ --- */}
         <section className="mt-8 px-4">
           <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -229,14 +262,12 @@ export default function Home() {
                       const wallet = wallets.find(w => w.id === t.walletId);
                       const category = categories.find(c => c.id === t.categoryId);
 
-                      // 2. ВОТ ЗДЕСЬ МЫ ИСПОЛЬЗУЕМ НОВЫЙ КОМПОНЕНТ
                       return (
                           <TransactionItem 
                               key={t.id}
                               t={t}
                               category={category}
                               wallet={wallet}
-                              // Не передаем onEdit и onDelete -> Свайпы отключены!
                           />
                       )
                   })
