@@ -182,7 +182,6 @@ export default function AddTransactionModal({
                             value={form.walletId} 
                             onChange={(e) => setForm({ ...form, walletId: e.target.value })}
                             >
-                            <option value="" disabled>Wybierz</option>
                             {wallets.map((w) => <option key={w.id} value={w.id} className="bg-[#151A23]">{w.name}</option>)}
                             </select>
                             <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 z-0" size={18} />

@@ -186,7 +186,7 @@ export default function Home() {
                       <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white"><CreditCard size={20} /></div>
                     </div>
                     <div>
-                      <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-pink-400" : "text-white"}`}>
+                      <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-rose-400" : "text-white"}`}>
                         {balance.toFixed(2)}
                       </p>
                       {w.currency !== "PLN" && (
