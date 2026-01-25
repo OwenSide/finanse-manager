@@ -127,9 +127,20 @@ export async function deleteTransaction(id) {
 // --- 🔥 ФУНКЦИЯ ДЛЯ СБРОСА ДАННЫХ ---
 export async function clearAllData() {
   const db = await getDB();
-  // Используем константы, чтобы не ошибиться в названиях
+  
   await db.clear(STORE_TRANSACTIONS); 
   await db.clear(STORE_WALLETS);      
   await db.clear(STORE_CATEGORIES);
+
+  const txCat = db.transaction(STORE_CATEGORIES, 'readwrite');
+  
+  await Promise.all(
+    DEFAULT_CATEGORIES.map(cat => {
+      return txCat.store.add({ id: uuidv4(), ...cat });
+    })
+  );
+  
+  await txCat.done;
+
   return true;
 }
