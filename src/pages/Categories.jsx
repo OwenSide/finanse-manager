@@ -239,16 +239,28 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType }) {
                                 
                                 {/* Input Name */}
                                 <div className="mb-6 relative z-10">
-                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa</label>
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        placeholder="np. Zakupy"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-bold"
-                                    />
-                                </div>
+                                  <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa</label>
+                                  
+                                  <div className="relative">
+                                      <input
+                                          autoFocus
+                                          maxLength={13} // 🔥 1. Ограничение длины
+                                          type="text"
+                                          placeholder="np. Zakupy"
+                                          value={name}
+                                          onChange={(e) => setName(e.target.value)}
+                                          // 🔥 2. Добавил pr-16, чтобы текст не наезжал на цифры
+                                          className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 pr-16 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-bold"
+                                      />
+
+                                      {/* 🔥 3. Сам счетчик */}
+                                      <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs pointer-events-none transition-colors ${
+                                          name.length === 13 ? "text-rose-500 font-bold" : "text-gray-600"
+                                      }`}>
+                                          {name.length}/13
+                                      </span>
+                                  </div>
+                              </div>
 
                                 {/* 🔥 ВОТ ТВОЙ КОМПОНЕНТ 🔥 */}
                                 <div className="mb-2 relative z-10">
