@@ -27,55 +27,54 @@ const AVAILABLE_ICONS = [
   "book", "graduation-cap", "art", "travel", "heart", "smile", "other"
 ];
 
-export default function IconPicker({ selectedIcon, onSelect }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const pickerRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+export default function IconPicker({ selectedIcon, onSelect, type = 'expense' }) {
+  // Реф для скролла к выбранной иконке (опционально, для удобства)
+  const scrollContainerRef = useRef(null);
 
   return (
-    <div className="relative" ref={pickerRef}>
-      <label className="block text-xs font-medium text-gray-400 mb-1 ml-1">Ikona</label>
-      
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-[50px] h-[50px] bg-[#0B0E14] border border-white/10 rounded-xl flex items-center justify-center text-indigo-400 hover:border-indigo-500 hover:bg-white/5 transition-all"
+    <div className="relative w-full">
+      {/* 🔥 ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ 
+          flex           -> выстраивает в ряд
+          overflow-x-auto -> разрешает скролл
+          gap-3          -> отступы
+          snap-x         -> приятная доводка при скролле
+          scrollbar-hide -> прячет полосу прокрутки (если есть плагин tailwind-scrollbar-hide)
+      */}
+      <div 
+        ref={scrollContainerRef}
+        className="grid grid-rows-4 grid-flow-col gap-3 overflow-x-auto pt-1 pb-4 px-1 snap-x scrollbar-hide"
       >
-        <CategoryIcon iconName={selectedIcon} size={24} />
-      </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-[320px] bg-[#151A23] border border-white/10 rounded-xl shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-200">
-          <div className="grid grid-cols-6 gap-2 max-h-[250px] overflow-y-auto custom-scrollbar">
-            {AVAILABLE_ICONS.map((iconName) => (
-              <button
-                key={iconName}
-                onClick={() => {
-                  onSelect(iconName);
-                  setIsOpen(false);
-                }}
-                className={`
-                  w-10 h-10 rounded-lg flex items-center justify-center transition-all
-                  ${selectedIcon === iconName ? "bg-indigo-600 text-white" : "text-gray-400 hover:bg-white/10 hover:text-white"}
-                `}
-                title={iconName} 
-              >
-                <CategoryIcon iconName={iconName} size={20} />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        {AVAILABLE_ICONS.map((iconName) => {
+          // Сравниваем без учета регистра (tag === Tag)
+          const isSelected = selectedIcon.toLowerCase() === iconName.toLowerCase();
+
+          return (
+            <button
+              key={iconName}
+              onClick={() => onSelect(iconName)}
+              type="button"
+              // flex-shrink-0 ОБЯЗАТЕЛЬНО, иначе иконки сплющит
+              className={`
+                flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-all border outline-none snap-center
+                ${isSelected 
+                  ? (type === 'expense' 
+                      ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.3)] scale-105" 
+                      : "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] scale-105")
+                  : "bg-[#0B0E14] border-white/5 text-gray-500 hover:bg-white/5 hover:text-gray-300 hover:border-white/10"
+                }
+              `}
+            >
+              <CategoryIcon iconName={iconName} size={24} />
+            </button>
+          );
+        })}
+        
+        {/* Пустой отступ справа */}
+      </div>
+      
+      {/* Визуальная подсказка о скролле (градиент справа) */}
+      <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-[#151A23] to-transparent pointer-events-none" />
     </div>
   );
 }
