@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Calendar, Wallet, Tag, FileText, Plus, ChevronDown, Repeat, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Wallet, FileText, Plus, ChevronDown, Repeat, Clock } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import CategoryIcon from "./CategoryIcon";
 
@@ -22,6 +22,9 @@ export default function AddTransactionModal({
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState("monthly");
+  
+  // 🔥 НОВОЕ: Тип транзакции (expense/income)
+  const [transactionType, setTransactionType] = useState("expense");
 
   useEffect(() => {
     if (isOpen) {
@@ -35,6 +38,7 @@ export default function AddTransactionModal({
       setIsRecurring(false);
       setFrequency("monthly");
       setIsAmountFocused(true);
+      setTransactionType("expense"); // Сброс на расход по умолчанию
     }
   }, [isOpen, wallets]);
 
@@ -53,7 +57,8 @@ export default function AddTransactionModal({
       date: selectedDate.toISOString(),
       comment: form.comment,
       walletId: form.walletId,
-      type: category?.type || "expense",
+      // 🔥 Используем выбранный тип, или тип категории как запасной вариант
+      type: transactionType, 
       isRecurring: isRecurring,
       frequency: isRecurring ? frequency : null 
     };
@@ -70,6 +75,9 @@ export default function AddTransactionModal({
       { id: "yearly", label: "Co rok" }
   ];
 
+  // 🔥 Фильтруем категории по типу
+  const filteredCategories = categories.filter(c => c.type === transactionType);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -81,13 +89,13 @@ export default function AddTransactionModal({
           className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col font-sans"
         >
           {/* ФОНОВЫЙ БЛИК */}
-          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] bg-indigo-600/20 rounded-[100%] blur-[120px] pointer-events-none -z-10" />
+          <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] rounded-[100%] blur-[120px] pointer-events-none -z-10 transition-colors duration-500 ${transactionType === 'expense' ? 'bg-rose-600/20' : 'bg-emerald-600/20'}`} />
 
-          {/* 🔥 ЕДИНЫЙ СКРОЛЛ КОНТЕЙНЕР (HEADER ТЕПЕРЬ ВНУТРИ) */}
+          {/* ЕДИНЫЙ СКРОЛЛ КОНТЕЙНЕР */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide">
             
-            {/* HEADER (ВНУТРИ СКРОЛЛА) */}
-            <div className="flex items-center justify-between pt-8 pb-4 mb-4">
+            {/* HEADER */}
+            <div className="flex items-center justify-between pt-8 pb-4 mb-2">
                 <button 
                   onClick={onClose} 
                   className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors"
@@ -100,7 +108,31 @@ export default function AddTransactionModal({
 
             <div className="space-y-8 max-w-md mx-auto">
               
-              {/* 1. INPUT AMOUNT */}
+              {/* 🔥 1. TYPE SWITCHER (Расходы / Доходы) */}
+              <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
+                <button 
+                  onClick={() => { setTransactionType("expense"); setForm(f => ({...f, categoryId: ""})); }}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                      transactionType === "expense" 
+                      ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" 
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Wydatki
+                </button>
+                <button 
+                  onClick={() => { setTransactionType("income"); setForm(f => ({...f, categoryId: ""})); }}
+                  className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                      transactionType === "income" 
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Przychody
+                </button>
+              </div>
+
+              {/* 2. INPUT AMOUNT */}
               <div className="relative flex flex-col items-center">
                 <div className={`transition-all duration-300 ${isAmountFocused ? "scale-105" : "scale-100 opacity-80"}`}>
                     <div className="relative">
@@ -110,7 +142,9 @@ export default function AddTransactionModal({
                         autoFocus 
                         onFocus={() => setIsAmountFocused(true)}
                         onBlur={() => setIsAmountFocused(false)}
-                        className="w-full bg-transparent p-2 text-white text-5xl font-bold tracking-tighter text-center focus:outline-none placeholder-gray-700 transition-colors caret-indigo-500" 
+                        className={`w-full bg-transparent p-2 text-5xl font-bold tracking-tighter text-center focus:outline-none placeholder-gray-700 transition-colors ${
+                            transactionType === 'expense' ? 'text-rose-400 caret-rose-500' : 'text-emerald-400 caret-emerald-500'
+                        }`}
                         style={{ maxWidth: '280px' }}
                         value={form.amount} 
                         onChange={(e) => {
@@ -124,40 +158,62 @@ export default function AddTransactionModal({
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">Wprowadź kwotę</p>
               </div>
 
-              {/* 2. CATEGORY SELECTOR */}
-              <div>
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block">Wybierz kategorię</label>
-                <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-                    <div className="grid grid-rows-3 grid-flow-col gap-x-4 gap-y-4 w-max pb-2">
-                        {categories.map((cat) => {
-                            const isSelected = form.categoryId === cat.id;
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setForm({...form, categoryId: cat.id})}
-                                    className="group flex flex-col items-center gap-2 w-[72px]"
-                                >
-                                    <motion.div 
-                                        whileTap={{ scale: 0.9 }}
-                                        className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300 border ${
-                                            isSelected 
-                                                ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/30" 
-                                                : "bg-[#151A23] border-white/5 text-gray-400 group-hover:border-white/20 group-hover:text-white"
-                                        }`}
-                                    >
-                                        <CategoryIcon iconName={cat.icon} size={24} />
-                                    </motion.div>
-                                    <span className={`text-[10px] font-medium truncate w-full text-center transition-colors ${isSelected ? "text-white" : "text-gray-500"}`}>
-                                        {cat.name}
-                                    </span>
-                                </button>
-                            )
-                        })}
-                    </div>
+              {/* 3. CATEGORY SELECTOR (HORIZONTAL GRID) */}
+                <div>
+                    <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
+                        Kategoria
+                    </label>
+                    
+                    {filteredCategories.length === 0 ? (
+                        <div className="text-center py-8 border border-white/5 rounded-2xl bg-[#151A23]">
+                            <p className="text-sm text-gray-500 font-medium">Brak kategorii tego typu</p>
+                        </div>
+                    ) : (
+                        /* Контейнер скролла */
+                        <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
+                            {/* 🔥 МАГИЯ СЕТКИ:
+                            grid-rows-2    -> Всегда 2 ряда
+                            grid-flow-col  -> Элементы идут слева направо (а не вниз)
+                            w-max          -> Контейнер растягивается по ширине контента
+                            gap-x-2        -> Расстояние между колонками (по горизонтали)
+                            gap-y-4        -> Расстояние между рядами (по вертикали)
+                            */}
+                            <div className="grid grid-rows-2 grid-flow-col gap-x-2 gap-y-4 w-max pb-4">
+                                {filteredCategories.map((cat) => {
+                                    const isSelected = form.categoryId === cat.id;
+                                    return (
+                                        <button
+                                            key={cat.id}
+                                            onClick={() => setForm({...form, categoryId: cat.id})}
+                                            className="group flex flex-col items-center gap-2 w-[72px]" // 🔥 Фиксированная ширина для ровности
+                                        >
+                                            <motion.div 
+                                                whileTap={{ scale: 0.9 }}
+                                                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-all duration-300 border ${
+                                                    isSelected 
+                                                        ? (transactionType === 'expense' 
+                                                            ? "bg-rose-600 border-rose-500 text-white shadow-[0_4px_12px_rgba(225,29,72,0.4)]" 
+                                                            : "bg-emerald-600 border-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]")
+                                                        : "bg-[#151A23] border-white/5 text-gray-400 group-hover:border-white/20 group-hover:text-white"
+                                                }`}
+                                            >
+                                                <CategoryIcon iconName={cat.icon} size={22} />
+                                            </motion.div>
+                                            
+                                            <span className={`text-[10px] font-bold truncate w-full text-center px-1 transition-colors ${
+                                                isSelected ? "text-white" : "text-gray-500"
+                                            }`}>
+                                                {cat.name}
+                                            </span>
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
-              </div>
 
-              {/* 3. DETAILS GRID */}
+              {/* 4. DETAILS GRID */}
               <div className="space-y-4">
                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -207,16 +263,16 @@ export default function AddTransactionModal({
                     </div>
                  </div>
 
-                 {/* 4. RECURRING PAYMENT TOGGLE & SETTINGS */}
+                 {/* 5. RECURRING PAYMENT */}
                  <div className="space-y-3">
-                     <div 
+                      <div 
                         onClick={() => setIsRecurring(!isRecurring)}
                         className={`relative flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer active:scale-[0.98] ${
                             isRecurring 
                                 ? "bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.15)]" 
                                 : "bg-[#151A23] border-white/5 hover:border-white/10"
                         }`}
-                     >
+                      >
                         <div className="flex items-center gap-3">
                             <div className={`p-2.5 rounded-lg transition-colors ${isRecurring ? "bg-indigo-500 text-white" : "bg-white/5 text-gray-400"}`}>
                                 <Repeat size={20} />
@@ -237,10 +293,9 @@ export default function AddTransactionModal({
                                 className="w-5 h-5 bg-white rounded-full shadow-sm"
                             />
                         </div>
-                     </div>
+                      </div>
 
-                     {/* Настройки частоты */}
-                     <AnimatePresence>
+                      <AnimatePresence>
                         {isRecurring && (
                             <motion.div
                                 initial={{ height: 0, opacity: 0 }}
@@ -271,7 +326,7 @@ export default function AddTransactionModal({
                                 </div>
                             </motion.div>
                         )}
-                     </AnimatePresence>
+                      </AnimatePresence>
                  </div>
 
               </div>
@@ -284,7 +339,9 @@ export default function AddTransactionModal({
                     className={`w-full font-bold py-4 rounded-xl text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
                         !isFormValid
                         ? "bg-gray-800 text-gray-500 cursor-not-allowed border border-white/5"
-                        : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 active:scale-95"
+                        : transactionType === 'expense' 
+                            ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20 active:scale-95"
+                            : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20 active:scale-95"
                     }`}
                 >
                     <Plus size={22} strokeWidth={3} />
