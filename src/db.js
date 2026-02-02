@@ -102,6 +102,11 @@ export async function deleteCategory(id) {
   return db.delete(STORE_CATEGORIES, id);
 }
 
+export const updateCategory = async (updatedCategory) => {
+  const db = await initDB();
+  return db.put(STORE_CATEGORIES, updatedCategory);
+};
+
 // --- Transactions ---
 
 export async function getAllTransactions() {
