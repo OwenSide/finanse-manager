@@ -222,6 +222,7 @@ function CategoryCard({ cat, onDelete, onEdit }) {
 }
 
 // --- МОДАЛЬНОЕ ОКНО ---
+// --- 🔥 ПОЛНОЭКРАННОЕ ОКНО (SLIDE-IN) ---
 function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData }) {
     const [name, setName] = useState('');
     const [icon, setIcon] = useState('Tag');
@@ -230,12 +231,10 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                // 🔥 РЕЖИМ РЕДАКТИРОВАНИЯ
                 setName(initialData.name);
                 setIcon(initialData.icon);
                 setType(initialData.type);
             } else {
-                // 🔥 РЕЖИМ СОЗДАНИЯ
                 setName('');
                 setIcon('Tag');
                 setType(initialType);
@@ -251,79 +250,88 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
-                    />
+                <motion.div 
+                    // 🔥 АНИМАЦИЯ: Выезжает СПРАВА (x: 100% -> x: 0)
+                    initial={{ x: "100%" }} 
+                    animate={{ x: 0 }} 
+                    exit={{ x: "100%" }}
+                    // Настройка плавности (Spring physics)
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
                     
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-                        animate={{ opacity: 1, scale: 1, y: 0 }} 
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
-                    >
-                        <div className="bg-[#151A23] border border-white/10 w-full max-w-sm rounded-[32px] p-6 shadow-2xl pointer-events-auto relative overflow-hidden flex flex-col max-h-[85vh]">
+                    // Позиционирование: фиксировано, на весь экран, поверх всего
+                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
+                >
+                    
+                    {/* --- 1. ШАПКА (HEADER) --- */}
+                    <div className="flex items-center justify-between px-4 py-4 border-b border-white/5 bg-[#151A23]/50 backdrop-blur-xl sticky top-0 z-20">
+                        <button 
+                            onClick={onClose}
+                            className="p-2 -ml-2 text-gray-400 hover:text-white active:scale-95 transition-transform flex items-center gap-1"
+                        >
+                            {/* Вместо крестика - стрелка НАЗАД */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="m15 18-6-6 6-6"/>
+                            </svg>
+                            <span className="text-sm font-medium">Wróć</span>
+                        </button>
+
+                        <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
+                            {initialData ? "Edycja" : "Nowa kategoria"}
+                        </h3>
+
+                        {/* Пустой блок справа для баланса или кнопка "Сохранить" (опционально) */}
+                        <div className="w-16" />
+                    </div>
+
+                    {/* --- 2. КОНТЕНТ (SCROLLABLE) --- */}
+                    <div className="flex-1 overflow-y-auto p-6 relative">
+                        
+                        {/* Фоновый свет (Glow) */}
+                        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 blur-[90px] opacity-20 pointer-events-none transition-colors duration-500 ${type === 'expense' ? 'bg-rose-600' : 'bg-emerald-600'}`} />
+
+                        <div className="relative z-10 max-w-md mx-auto space-y-8 mt-4">
                             
-                            {/* Фоновый свет */}
-                            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-40 blur-[80px] opacity-20 pointer-events-none transition-colors duration-500 ${type === 'expense' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
-
-                            {/* Header */}
-                            <div className="flex justify-between items-center mb-6 relative z-10 shrink-0">
-                                <h3 className="text-xl font-bold text-white">
-                                    {initialData ? "Edytuj kategorię" : "Nowa kategoria"}
-                                </h3>
-                                <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-                                    <X size={20} className="text-gray-400" />
-                                </button>
-                            </div>
-
                             {/* Переключатель типа */}
-                            <div className="flex p-1 bg-[#0B0E14] rounded-xl border border-white/10 mb-6 relative z-10 shrink-0">
+                            <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/10 shadow-lg">
                                 <button 
                                     onClick={() => setType('expense')}
-                                    className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${type === 'expense' ? "bg-rose-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
+                                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'expense' ? "bg-rose-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
                                 >
                                     Wydatki
                                 </button>
                                 <button 
                                     onClick={() => setType('income')}
-                                    className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all ${type === 'income' ? "bg-emerald-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
+                                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'income' ? "bg-emerald-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
                                 >
                                     Przychody
                                 </button>
                             </div>
 
-                            {/* Scrollable Content */}
-                            <div className="overflow-y-auto -mx-2 px-2 pb-2 mb-4 scrollbar-hide">
-                                
-                                {/* Input Name */}
-                                <div className="mb-6 relative z-10">
-                                  <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa</label>
-                                  
-                                  <div className="relative">
-                                      <input
-                                          autoFocus
-                                          maxLength={13} 
-                                          type="text"
-                                          placeholder="np. Zakupy"
-                                          value={name}
-                                          onChange={(e) => setName(e.target.value)}
-                                          className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 pr-16 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-bold"
-                                      />
-                                      <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs pointer-events-none transition-colors ${
-                                          name.length === 13 ? "text-rose-500 font-bold" : "text-gray-600"
-                                      }`}>
-                                          {name.length}/13
-                                      </span>
-                                  </div>
+                            {/* Поле ввода */}
+                            <div>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa kategorii</label>
+                                <div className="relative group">
+                                    <input
+                                        autoFocus
+                                        maxLength={13} 
+                                        type="text"
+                                        placeholder="np. Zakupy"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-16 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-bold shadow-lg"
+                                    />
+                                    <span className={`absolute right-5 top-1/2 -translate-x-0 -translate-y-1/2 text-xs font-mono transition-colors ${
+                                        name.length === 13 ? "text-rose-500 font-bold" : "text-gray-500"
+                                    }`}>
+                                        {name.length}/13
+                                    </span>
                                 </div>
+                            </div>
 
-                                {/* Icon Picker */}
-                                <div className="mb-2 relative z-10">
-                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-3 block">Wybierz ikonę</label>
-                                    
+                            {/* Выбор иконки */}
+                            <div>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-3 block">Ikona</label>
+                                <div className="bg-[#151A23] border border-white/10 rounded-2xl p-4 shadow-lg">
                                     <IconPicker 
                                         selectedIcon={icon} 
                                         onSelect={setIcon} 
@@ -332,29 +340,30 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                                 </div>
                             </div>
 
-                            {/* Footer Button */}
-                            <div className="pt-2 mt-auto relative z-10 shrink-0 border-t border-white/5">
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={!name.trim()}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg mt-2 ${
-                                        !name.trim() 
-                                        ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
-                                        : type === 'expense' 
-                                            ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20" 
-                                            : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
-                                    }`}
-                                >
-                                    <Check size={20} strokeWidth={3} />
-                                    <span>
-                                        {initialData ? "Zapisz zmiany" : "Utwórz kategorię"}
-                                    </span>
-                                </button>
-                            </div>
-
                         </div>
-                    </motion.div>
-                </>
+                    </div>
+
+                    {/* --- 3. ФУТЕР (КНОПКА) --- */}
+                    <div className="p-4 border-t border-white/5 bg-[#0B0E14] pb-safe">
+                         <button
+                            onClick={handleSubmit}
+                            disabled={!name.trim()}
+                            className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg max-w-md mx-auto ${
+                                !name.trim() 
+                                ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
+                                : type === 'expense' 
+                                    ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20" 
+                                    : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
+                            }`}
+                        >
+                            <Check size={22} strokeWidth={3} />
+                            <span>
+                                {initialData ? "Zapisz zmiany" : "Utwórz kategorię"}
+                            </span>
+                        </button>
+                    </div>
+
+                </motion.div>
             )}
         </AnimatePresence>
     );

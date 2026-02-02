@@ -126,11 +126,10 @@ export default function Wallets() {
         </div>
 
         <button 
-            onClick={openCreateModal}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+            onClick={() => setIsModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
-            <Plus size={18} strokeWidth={2.5} />
-            <span>Dodaj</span>
+            <Plus size={24} />
         </button>
       </div>
 
