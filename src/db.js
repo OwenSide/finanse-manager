@@ -69,6 +69,11 @@ export async function deleteWallet(id) {
   return db.delete(STORE_WALLETS, id);
 }
 
+export const updateWallet = async (updatedWallet) => {
+  const db = await initDB();
+  return db.put(STORE_WALLETS, updatedWallet);
+};
+
 // --- Exchange Rates ---
 export async function saveExchangeRate(rate) {
   const db = await getDB();
