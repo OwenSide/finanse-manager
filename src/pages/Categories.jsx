@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 // 🔥 Добавил updateCategory в импорт
 import { getAllCategories, addCategory, deleteCategory, updateCategory, getAllTransactions } from '../db.js';
 // 🔥 Добавил Pencil (карандаш)
-import { FolderOpen, Plus, Trash2, Loader2, X, Check, Pencil } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Plus, Trash2, Loader2, X, Check, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import CategoryIcon from '../components/CategoryIcon';
 import IconPicker from '../components/IconPicker';
@@ -100,46 +100,52 @@ export default function Categories() {
   return (
     <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
         
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 border border-pink-500/10">
-                <FolderOpen size={20} />
+      {/* --- ОБЩИЙ ПРИЛИПАЮЩИЙ БЛОК (ШАПКА + ТАБЫ) --- */}
+    <div className="sticky top-0 z-20 bg-[#0B0E14]/85 backdrop-blur-xl -mx-4 px-4 pt-2 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 min-[450px]:pt-6 mb-2">
+        
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 border border-pink-500/10">
+                    <FolderOpen size={20} />
+                </div>
+                <h2 className="text-2xl font-bold text-white">Kategorie</h2>
             </div>
-            <h2 className="text-2xl font-bold text-white">Kategorie</h2>
-          </div>
 
-          <button 
-            onClick={openCreateModal} // Используем новую функцию
-            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
-        >
-            <Plus size={24} />
-        </button>
-      </div>
+            <button 
+                onClick={openCreateModal}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+            >
+                <Plus size={24} />
+            </button>
+        </div>
 
-      {/* TABS (Фильтр списка) */}
-      <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5 mb-6 sticky top-0 z-10 backdrop-blur-xl bg-opacity-80">
-        <button 
-            onClick={() => setActiveTab('expense')}
-            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
-                activeTab === "expense" 
-                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" 
-                : "text-gray-400 hover:text-white"
-            }`}
-        >
-            Wydatki
-        </button>
-        <button 
-            onClick={() => setActiveTab('income')}
-            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
-                activeTab === "income" 
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
-                : "text-gray-400 hover:text-white"
-            }`}
-        >
-            Przychody
-        </button>
-      </div>
+        {/* TABS (Фильтр списка) */}
+        {/* Обрати внимание: отсюда я убрал sticky и backdrop-blur, так как они теперь у родителя */}
+        <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
+            <button 
+                onClick={() => setActiveTab('expense')}
+                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === "expense" 
+                    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20" 
+                    : "text-gray-400 hover:text-white"
+                }`}
+            >
+                Wydatki
+            </button>
+            <button 
+                onClick={() => setActiveTab('income')}
+                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === "income" 
+                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
+                    : "text-gray-400 hover:text-white"
+                }`}
+            >
+                Przychody
+            </button>
+        </div>
+
+    </div>
 
       {/* СПИСОК */}
       {filteredCategories.length === 0 ? (
@@ -261,33 +267,30 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                     // Позиционирование: фиксировано, на весь экран, поверх всего
                     className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
                 >
-                    
+                    <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 blur-[90px] opacity-20 pointer-events-none transition-colors duration-500 ${type === 'expense' ? 'bg-rose-600' : 'bg-emerald-600'}`} />
                     {/* --- 1. ШАПКА (HEADER) --- */}
-                    <div className="flex items-center justify-between px-4 py-4 border-b border-white/5 bg-[#151A23]/50 backdrop-blur-xl sticky top-0 z-20">
+                    <div className="flex items-center justify-between px-4 pb-0 py-4 sticky top-0 z-20 bg-transparent">
                         <button 
                             onClick={onClose}
-                            className="p-2 -ml-2 text-gray-400 hover:text-white active:scale-95 transition-transform flex items-center gap-1"
+                            className="p-2 -ml-2 text-gray-400 hover:text-white active:scale-95 transition-transform flex items-center justify-center"
                         >
-                            {/* Вместо крестика - стрелка НАЗАД */}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m15 18-6-6 6-6"/>
-                            </svg>
-                            <span className="text-sm font-medium">Wróć</span>
+                            {/* Только стрелка */}
+                            <ArrowLeft size={24} />
                         </button>
 
                         <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
                             {initialData ? "Edycja" : "Nowa kategoria"}
                         </h3>
 
-                        {/* Пустой блок справа для баланса или кнопка "Сохранить" (опционально) */}
-                        <div className="w-16" />
+                        {/* Пустой блок справа, чтобы флекс-контейнер работал корректно */}
+                        <div className="w-10" /> 
                     </div>
 
                     {/* --- 2. КОНТЕНТ (SCROLLABLE) --- */}
                     <div className="flex-1 overflow-y-auto p-6 relative">
                         
                         {/* Фоновый свет (Glow) */}
-                        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 blur-[90px] opacity-20 pointer-events-none transition-colors duration-500 ${type === 'expense' ? 'bg-rose-600' : 'bg-emerald-600'}`} />
+                        
 
                         <div className="relative z-10 max-w-md mx-auto space-y-8 mt-4">
                             
@@ -341,27 +344,28 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                             </div>
 
                         </div>
+
+                        {/* --- 3. ФУТЕР (КНОПКА) --- */}
+                        <div className="p-4 bg-transparent pb-safe">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!name.trim()}
+                                className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg max-w-md mx-auto ${
+                                    !name.trim() 
+                                    ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
+                                    : type === 'expense' 
+                                        ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20" 
+                                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
+                                }`}
+                            >
+                                <Check size={22} strokeWidth={3} />
+                                <span>
+                                    {initialData ? "Zapisz zmiany" : "Utwórz kategorię"}
+                                </span>
+                            </button>
+                        </div>
                     </div>
 
-                    {/* --- 3. ФУТЕР (КНОПКА) --- */}
-                    <div className="p-4 border-t border-white/5 bg-[#0B0E14] pb-safe">
-                         <button
-                            onClick={handleSubmit}
-                            disabled={!name.trim()}
-                            className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg max-w-md mx-auto ${
-                                !name.trim() 
-                                ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
-                                : type === 'expense' 
-                                    ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20" 
-                                    : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20"
-                            }`}
-                        >
-                            <Check size={22} strokeWidth={3} />
-                            <span>
-                                {initialData ? "Zapisz zmiany" : "Utwórz kategorię"}
-                            </span>
-                        </button>
-                    </div>
 
                 </motion.div>
             )}
