@@ -257,7 +257,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                     className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col will-change-transform"
                 >
                     {/* Фоновое свечение */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[400px] bg-indigo-600 blur-[120px] opacity-20 pointer-events-none transition-colors duration-500" />
+                    <div className="absolute top-0 left-0 w-full h-[400px] opacity-30 pointer-events-none transition-colors duration-500 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-600/40 via-indigo-600/0 to-transparent" />
 
                     {/* --- 1. ШАПКА (HEADER) --- */}
                     <div className="flex items-center justify-between px-4 py-4 z-20 relative bg-transparent">
