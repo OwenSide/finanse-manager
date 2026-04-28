@@ -1,9 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-// 🔥 Добавил updateWallet в импорт
 import { getAllWallets, addWallet, deleteWallet, updateWallet, getAllExchangeRates, getAllTransactions } from "../db.js";
-// 🔥 Добавил Pencil
-import { Wallet, Plus, Trash2, CreditCard, Globe, Loader2, ChevronDown, Check, Banknote, X, Pencil } from "lucide-react";
+import { Wallet, Plus, Trash2, CreditCard, Globe, ChevronDown, Check, Banknote, Pencil, Loader2, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
@@ -14,8 +12,6 @@ export default function Wallets() {
   const [allCurrencies, setAllCurrencies] = useState(defaultCurrencies);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // 🔥 Новое состояние для редактирования
   const [editingWallet, setEditingWallet] = useState(null);
 
   useEffect(() => {
@@ -45,28 +41,24 @@ export default function Wallets() {
     loadData();
   }, []);
 
-  // Открытие модалки для СОЗДАНИЯ
   const openCreateModal = () => {
     setEditingWallet(null);
     setIsModalOpen(true);
   };
 
-  // Открытие модалки для РЕДАКТИРОВАНИЯ
   const openEditModal = (wallet) => {
     setEditingWallet(wallet);
     setIsModalOpen(true);
   };
 
   const handleSaveWallet = async (walletData) => {
-    // Подготовка баланса
     const startBalance = walletData.initialBalance && parseFloat(walletData.initialBalance) !== 0 
         ? parseFloat(walletData.initialBalance) 
         : 0;
 
     if (editingWallet) {
-        // --- ЛОГИКА ОБНОВЛЕНИЯ (UPDATE) ---
         const updatedWallet = { 
-            ...editingWallet,   // ID остается старым
+            ...editingWallet,
             name: walletData.name.trim(),
             currency: walletData.currency,
             initialBalance: startBalance 
@@ -76,7 +68,6 @@ export default function Wallets() {
         setWallets((prev) => prev.map(w => w.id === updatedWallet.id ? updatedWallet : w));
 
     } else {
-        // --- ЛОГИКА СОЗДАНИЯ (CREATE) ---
         const newWalletId = uuidv4();
         const newWallet = { 
             id: newWalletId, 
@@ -126,7 +117,7 @@ export default function Wallets() {
         </div>
 
         <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={openCreateModal}
             className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
         >
             <Plus size={24} />
@@ -151,19 +142,19 @@ export default function Wallets() {
                 key={w.id} 
                 wallet={w} 
                 onDelete={handleDelete}
-                onEdit={openEditModal} // 🔥 Передаем функцию редактирования
+                onEdit={openEditModal} 
             />
           ))}
         </div>
       )}
 
-      {/* МОДАЛЬНОЕ ОКНО */}
+      {/* ПОЛНОЭКРАННОЕ МОДАЛЬНОЕ ОКНО */}
       <AddWalletModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSave={handleSaveWallet}
         currencies={allCurrencies}
-        initialData={editingWallet} // 🔥 Передаем данные для редактирования
+        initialData={editingWallet}
       />
       
     </div>
@@ -191,7 +182,6 @@ function WalletCard({ wallet, onDelete, onEdit }) {
             </div>
             
             <div className="flex gap-2 relative z-10 opacity-60 group-hover:opacity-100 transition-opacity">
-                {/* 🔥 Кнопка РЕДАКТИРОВАТЬ */}
                 <button
                     onClick={() => onEdit(wallet)}
                     className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all"
@@ -199,10 +189,9 @@ function WalletCard({ wallet, onDelete, onEdit }) {
                     <Pencil size={18} />
                 </button>
 
-                {/* Кнопка УДАЛИТЬ */}
                 <button
                     onClick={() => onDelete(wallet.id)}
-                    className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                    className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
                 >
                     <Trash2 size={18} />
                 </button>
@@ -211,7 +200,7 @@ function WalletCard({ wallet, onDelete, onEdit }) {
     );
 }
 
-// --- МОДАЛЬНОЕ ОКНО ---
+// --- 🔥 ПОЛНОЭКРАННОЕ ОКНО (SLIDE-IN) ---
 function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
     const [name, setName] = useState("");
     const [currency, setCurrency] = useState("PLN");
@@ -224,12 +213,10 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                // 🔥 РЕЖИМ РЕДАКТИРОВАНИЯ
                 setName(initialData.name);
                 setCurrency(initialData.currency);
                 setInitialBalance(initialData.initialBalance?.toString() || "");
             } else {
-                // 🔥 РЕЖИМ СОЗДАНИЯ
                 setName("");
                 setCurrency("PLN");
                 setInitialBalance("");
@@ -262,144 +249,147 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
-                    />
-                    
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-                        animate={{ opacity: 1, scale: 1, y: 0 }} 
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
-                    >
-                        <div className="bg-[#151A23] border border-white/10 w-full max-w-sm rounded-[32px] p-6 shadow-2xl pointer-events-auto relative overflow-visible flex flex-col max-h-[90vh]">
+                <motion.div 
+                    initial={{ x: "100%" }} 
+                    animate={{ x: 0 }} 
+                    exit={{ x: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
+                >
+                    {/* Фоновое свечение */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[400px] bg-indigo-600 blur-[120px] opacity-20 pointer-events-none transition-colors duration-500" />
+
+                    {/* --- 1. ШАПКА (HEADER) --- */}
+                    <div className="flex items-center justify-between px-4 py-4 z-20 relative bg-transparent">
+                        <button 
+                            onClick={onClose}
+                            className="p-2 -ml-2 text-gray-400 hover:text-white active:scale-95 transition-transform flex items-center justify-center"
+                        >
+                            <ArrowLeft size={24} />
+                        </button>
+
+                        <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
+                            {initialData ? "Edycja portfela" : "Nowy portfel"}
+                        </h3>
+
+                        <div className="w-10" /> 
+                    </div>
+
+                    {/* --- 2. КОНТЕНТ (SCROLLABLE) --- */}
+                    <div className="flex-1 overflow-y-auto p-6 relative z-10">
+                        <div className="relative z-10 max-w-md mx-auto space-y-8 mt-2">
                             
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-40 bg-indigo-500 blur-[80px] opacity-20 pointer-events-none" />
-
-                            <div className="flex justify-between items-center mb-6 relative z-10">
-                                <h3 className="text-xl font-bold text-white">
-                                    {initialData ? "Edytuj portfel" : "Nowy portfel"}
-                                </h3>
-                                <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-                                    <X size={20} className="text-gray-400" />
-                                </button>
-                            </div>
-
-                            <div className="space-y-5 relative z-10">
-                                {/* Имя */}
-                                <div>
-                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa portfela</label>
-                                    <div className="relative">
-                                        <input
-                                            autoFocus
-                                            type="text"
-                                            maxLength={20}
-                                            placeholder="np. Główne konto"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-bold"
-                                        />
-                                        <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs pointer-events-none transition-colors ${
-                                            name.length === 20 ? "text-rose-500 font-bold" : "text-gray-600"
-                                        }`}>
-                                            {name.length}/20
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Валюта */}
-                                <div className="relative" ref={dropdownRef}>
-                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Waluta</label>
-                                    <div 
-                                        className="relative cursor-pointer"
-                                        onClick={() => setIsDropdownOpen(true)}
-                                    >
-                                        <input
-                                            type="text"
-                                            readOnly={!isDropdownOpen}
-                                            value={isDropdownOpen ? search : currency}
-                                            onChange={(e) => {
-                                                setSearch(e.target.value);
-                                                setIsDropdownOpen(true);
-                                            }}
-                                            placeholder={currency}
-                                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-indigo-500 font-mono transition-all uppercase cursor-pointer"
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                            {isDropdownOpen ? <Globe size={16} className="animate-pulse text-indigo-400"/> : <ChevronDown size={16} />}
-                                        </div>
-                                    </div>
-
-                                    {isDropdownOpen && (
-                                        <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-100 no-scrollbar ring-1 ring-black/50">
-                                            {filteredCurrencies.length === 0 ? (
-                                                <div className="p-4 text-xs text-gray-500 text-center">Nie znaleziono</div>
-                                            ) : (
-                                                filteredCurrencies.map((cur) => (
-                                                    <button
-                                                        key={cur}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setCurrency(cur);
-                                                            setSearch("");
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className={`
-                                                            w-full text-left px-4 py-3 text-sm font-mono flex items-center justify-between
-                                                            hover:bg-indigo-500/20 hover:text-white transition-colors border-b border-white/5 last:border-0
-                                                            ${currency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
-                                                        `}
-                                                    >
-                                                        <span className="font-bold">{cur}</span>
-                                                        {currency === cur && <Check size={14} />}
-                                                    </button>
-                                                ))
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Баланс */}
-                                <div>
-                                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Saldo początkowe (opcjonalne)</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            placeholder="0.00"
-                                            value={initialBalance}
-                                            onChange={(e) => setInitialBalance(e.target.value)}
-                                            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-4 pl-12 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-all font-mono font-bold"
-                                        />
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                            <Banknote size={18} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8">
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={!name.trim()}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg ${
-                                        !name.trim() 
-                                        ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
-                                        : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20"
-                                    }`}
-                                >
-                                    <Check size={20} strokeWidth={3} />
-                                    <span>
-                                        {initialData ? "Zapisz zmiany" : "Utwórz portfel"}
+                            {/* Имя кошелька */}
+                            <div>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa portfela</label>
+                                <div className="relative group">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        maxLength={20}
+                                        placeholder="np. Główne konto"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-16 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-bold shadow-lg"
+                                    />
+                                    <span className={`absolute right-5 top-1/2 -translate-y-1/2 text-xs font-mono transition-colors ${
+                                        name.length === 20 ? "text-rose-500 font-bold" : "text-gray-500"
+                                    }`}>
+                                        {name.length}/20
                                     </span>
-                                </button>
+                                </div>
                             </div>
 
+                            {/* Валюта */}
+                            <div className="relative z-50" ref={dropdownRef}>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Waluta</label>
+                                <div 
+                                    className="relative cursor-pointer group"
+                                    onClick={() => setIsDropdownOpen(true)}
+                                >
+                                    <input
+                                        type="text"
+                                        readOnly={!isDropdownOpen}
+                                        value={isDropdownOpen ? search : currency}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                            setIsDropdownOpen(true);
+                                        }}
+                                        placeholder={currency}
+                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-12 text-white text-xl focus:outline-none font-mono transition-all uppercase cursor-pointer shadow-lg"
+                                    />
+                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                        {isDropdownOpen ? <Globe size={20} className="animate-pulse text-indigo-400"/> : <ChevronDown size={20} />}
+                                    </div>
+                                </div>
+
+                                {isDropdownOpen && (
+                                    <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl max-h-56 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-100 no-scrollbar ring-1 ring-black/50">
+                                        {filteredCurrencies.length === 0 ? (
+                                            <div className="p-5 text-sm text-gray-500 text-center">Nie znaleziono</div>
+                                        ) : (
+                                            filteredCurrencies.map((cur) => (
+                                                <button
+                                                    key={cur}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCurrency(cur);
+                                                        setSearch("");
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                    className={`
+                                                        w-full text-left px-5 py-4 text-base font-mono flex items-center justify-between
+                                                        hover:bg-indigo-500/20 hover:text-white transition-colors border-b border-white/5 last:border-0
+                                                        ${currency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
+                                                    `}
+                                                >
+                                                    <span className="font-bold">{cur}</span>
+                                                    {currency === cur && <Check size={18} />}
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Начальный баланс */}
+                            <div>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Saldo początkowe (opcjonalne)</label>
+                                <div className="relative group">
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={initialBalance}
+                                        onChange={(e) => setInitialBalance(e.target.value)}
+                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pl-14 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-mono font-bold shadow-lg"
+                                    />
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500">
+                                        <Banknote size={22} />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </motion.div>
-                </>
+
+                        {/* --- 3. КНОПКА (Скроллится вместе с контентом) --- */}
+                        <div className="mt-12 pb-safe">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!name.trim()}
+                                className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg max-w-md mx-auto ${
+                                    !name.trim() 
+                                    ? "bg-gray-800 text-gray-500 cursor-not-allowed" 
+                                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20"
+                                }`}
+                            >
+                                <Check size={22} strokeWidth={3} />
+                                <span>
+                                    {initialData ? "Zapisz zmiany" : "Utwórz portfel"}
+                                </span>
+                            </button>
+                        </div>
+
+                    </div>
+                </motion.div>
             )}
         </AnimatePresence>
     );
