@@ -267,7 +267,12 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                     // Позиционирование: фиксировано, на весь экран, поверх всего
                     className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
                 >
-                    <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 blur-[90px] opacity-20 pointer-events-none transition-colors duration-500 ${type === 'expense' ? 'bg-rose-600' : 'bg-emerald-600'}`} />
+                    {/* 🔥 Оптимизированное свечение через градиент БЕЗ blur */}
+                    <div className={`absolute top-0 left-0 w-full h-[400px] opacity-30 pointer-events-none transition-colors duration-500 ${
+                        type === 'expense' 
+                        ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-600/40 via-rose-600/0 to-transparent' 
+                        : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
+                    }`} />
                     {/* --- 1. ШАПКА (HEADER) --- */}
                     <div className="flex items-center justify-between px-4 pb-0 py-4 sticky top-0 z-20 bg-transparent">
                         <button 

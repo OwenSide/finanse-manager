@@ -87,7 +87,11 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
           className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col font-sans"
         >
             {/* ФОНОВЫЙ БЛИК */}
-            <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] rounded-[100%] blur-[120px] pointer-events-none -z-10 transition-colors duration-500 ${transactionType === 'expense' ? 'bg-rose-600/20' : 'bg-emerald-600/20'}`} />
+            <div className={`fixed top-0 left-0 w-full h-[40vh] pointer-events-none -z-10 transition-colors duration-500 opacity-30 ${
+                transactionType === 'expense' 
+                ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-600/40 via-rose-600/0 to-transparent' 
+                : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
+            }`} />
 
             {/* SCROLLABLE CONTENT */}
             <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide relative z-10">
