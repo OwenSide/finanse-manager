@@ -253,8 +253,8 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                     initial={{ x: "100%" }} 
                     animate={{ x: 0 }} 
                     exit={{ x: "100%" }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
+                    transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col will-change-transform"
                 >
                     {/* Фоновое свечение */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[400px] bg-indigo-600 blur-[120px] opacity-20 pointer-events-none transition-colors duration-500" />
