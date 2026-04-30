@@ -105,24 +105,26 @@ export default function Wallets() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
       
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/10">
-              <Wallet size={20} />
-          </div>
-          <h2 className="text-2xl font-bold text-white">Portfele</h2>
-        </div>
+        <div className="sticky top-0 z-20 bg-[#0B0E14]/80 backdrop-blur-md -mx-4 px-4 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 mb-6 pt-[max(1rem,env(safe-area-inset-top))]">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/10">
+                    <Wallet size={20} />
+                </div>
+                <h2 className="text-2xl font-bold text-white">Portfele</h2>
+                </div>
 
-        <button 
-            onClick={openCreateModal}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
-        >
-            <Plus size={24} />
-        </button>
-      </div>
+                <button 
+                    onClick={openCreateModal}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+                >
+                    <Plus size={24} />
+                </button>
+            </div>
+        </div>
 
       {/* СПИСОК КОШЕЛЬКОВ */}
       {wallets.length === 0 ? (
