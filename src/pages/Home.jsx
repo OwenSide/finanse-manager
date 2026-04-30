@@ -98,7 +98,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen w-full relative pb-24 p-2 min-[450px]:p-6 transition-all duration-300">
+    <div className="min-h-screen w-full relative pb-24 p-2 min-[450px]:p-6 transition-all duration-300 pt-[max(1rem,env(safe-area-inset-top))]">
       
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] bg-indigo-600/20 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
 

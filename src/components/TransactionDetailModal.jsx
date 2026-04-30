@@ -53,7 +53,7 @@ export default function TransactionDetailModal({
           >
             
             {/* --- SCROLLABLE CONTENT --- */}
-            <div className="flex-1 overflow-y-auto px-5 pb-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-5 pb-8 scrollbar-hide pt-[max(1rem,env(safe-area-inset-top))]">
 
                 <div className="flex items-center justify-between p-4 pt-6">
                     <button 

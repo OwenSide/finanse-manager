@@ -105,7 +105,7 @@ export default function Wallets() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
+    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6 pt-[max(1rem,env(safe-area-inset-top))]">
       
       {/* HEADER */}
       <div className="flex items-center justify-between mb-8">
@@ -254,7 +254,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                     animate={{ x: 0 }} 
                     exit={{ x: "100%" }}
                     transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col will-change-transform"
+                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col will-change-transform pt-[max(1rem,env(safe-area-inset-top))]"
                 >
                     {/* Фоновое свечение */}
                     <div className="absolute top-0 left-0 w-full h-[400px] opacity-30 pointer-events-none transition-colors duration-500 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-600/40 via-indigo-600/0 to-transparent" />

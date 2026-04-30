@@ -98,7 +98,7 @@ export default function Categories() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
+    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6 pt-[max(1rem,env(safe-area-inset-top))]">
         
       {/* --- ОБЩИЙ ПРИЛИПАЮЩИЙ БЛОК (ШАПКА + ТАБЫ) --- */}
     <div className="sticky top-0 z-20 bg-[#0B0E14]/85 backdrop-blur-xl -mx-4 px-4 pt-2 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 min-[450px]:pt-6 mb-2">
@@ -265,7 +265,7 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
                     
                     // Позиционирование: фиксировано, на весь экран, поверх всего
-                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col"
+                    className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col pt-[max(1rem,env(safe-area-inset-top))]"
                 >
                     {/* 🔥 Оптимизированное свечение через градиент БЕЗ blur */}
                     <div className={`absolute top-0 left-0 w-full h-[400px] opacity-30 pointer-events-none transition-colors duration-500 ${

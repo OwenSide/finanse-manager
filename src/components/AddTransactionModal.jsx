@@ -96,7 +96,7 @@ export default function AddTransactionModal({
             }`} />
 
           {/* ЕДИНЫЙ СКРОЛЛ КОНТЕЙНЕР */}
-          <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide pt-[max(1rem,env(safe-area-inset-top))]">
             
             {/* HEADER */}
             <div className="flex items-center justify-between pt-8 pb-4 mb-2">

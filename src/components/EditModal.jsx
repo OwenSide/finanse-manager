@@ -94,7 +94,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
             }`} />
 
             {/* SCROLLABLE CONTENT */}
-            <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide relative z-10">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide relative z-10 pt-[max(1rem,env(safe-area-inset-top))]">
 
               <div className="flex items-center justify-between pt-8 pb-4 mb-2">
                 <button 
