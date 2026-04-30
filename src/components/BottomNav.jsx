@@ -50,7 +50,7 @@ export default function BottomNav() {
             <BottomNavItem to="/categories" icon={<Tags size={20} />} label="Kategorie" />
             
             {/* 🔥 КНОПКА "ЕЩЁ" */}
-            <BottomNavItem to="/menu" icon={<MoreHorizontal size={20} />} label="Więcej" />
+            <BottomNavItem to="/more" icon={<MoreHorizontal size={20} />} label="Więcej" />
         </div>
 
       </nav>
