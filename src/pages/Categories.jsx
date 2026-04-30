@@ -98,7 +98,7 @@ export default function Categories() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
         
       {/* --- ОБЩИЙ ПРИЛИПАЮЩИЙ БЛОК (ШАПКА + ТАБЫ) --- */}
     <div className="sticky top-0 z-20 bg-[#0B0E14]/85 backdrop-blur-xl -mx-4 px-4 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 min-[450px]:pt-6 mb-2 pt-[max(1rem,env(safe-area-inset-top))]">
