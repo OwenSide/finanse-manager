@@ -278,7 +278,7 @@ export default function TransactionsPage() {
         ) : (
             Object.entries(groupedTransactions).map(([dateLabel, txs]) => (
                 <div key={dateLabel}>
-                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest pb-3 sticky top-[calc(4rem+env(safe-area-inset-top))] bg-[#0B0E14] py-2 z-10 shadow-sm shadow-[#0B0E14]">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest pb-3 sticky top-[calc(3.5rem+env(safe-area-inset-top))] bg-[#0B0E14] py-2 z-10 shadow-sm shadow-[#0B0E14]">
                         {dateLabel}
                     </h3>
                     
