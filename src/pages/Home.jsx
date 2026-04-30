@@ -4,6 +4,7 @@ import { Wallet, CreditCard, Plus, TrendingUp, TrendingDown, Minus, ArrowRightLe
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import TransactionItem from "../components/TransactionItem"; 
+import { formatNumber } from "../utils/formatNumber"
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
@@ -220,10 +221,10 @@ export default function Home() {
                     </div>
                     <div>
                       <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-rose-400" : "text-white"}`}>
-                        {balance.toFixed(2)}
+                        {formatNumber(balance)}
                       </p>
                       {w.currency !== "PLN" && (
-                        <p className="text-[10px] font-medium text-gray-500 mt-1">≈ {(balance * rate).toFixed(2)} PLN</p>
+                        <p className="text-[10px] font-medium text-gray-500 mt-1">≈ {formatNumber(balance * rate)} PLN</p>
                       )}
                     </div>
                   </div>

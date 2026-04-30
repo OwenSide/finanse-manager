@@ -1,5 +1,6 @@
 import { Repeat } from "lucide-react";
 import CategoryIcon from "./CategoryIcon"; 
+import { formatNumber } from "../utils/formatNumber"
 
 export default function TransactionItem({ t, category, wallet, onClick, showDate = true }) {
   const isExpense = t.type === "expense";
@@ -57,7 +58,8 @@ export default function TransactionItem({ t, category, wallet, onClick, showDate
         {/* ПРАВАЯ ЧАСТЬ: Сумма */}
         <div className="text-right whitespace-nowrap pl-2 flex flex-col items-end pointer-events-none">
             <div className={`font-mono font-bold text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-                {isExpense ? '-' : '+'}{Number(t.amount).toFixed(2)}
+                {/* Заменили Number(t.amount).toFixed(2) на formatNumber(t.amount) */}
+                {isExpense ? '-' : '+'}{formatNumber(t.amount)}
             </div>
             <div className="text-[10px] text-gray-500 uppercase">{wallet?.currency}</div>
         </div>

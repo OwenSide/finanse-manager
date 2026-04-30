@@ -112,7 +112,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans pb-10 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="min-h-screen  text-white font-sans pb-10 pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="fixed top-0 right-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* HEADER */}
