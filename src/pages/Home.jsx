@@ -5,17 +5,21 @@ import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import TransactionItem from "../components/TransactionItem"; 
 import { formatNumber } from "../utils/formatNumber"
+import TrendBadge from '../components/TrendBadge';
+import { usePreferences } from '../context/PreferencesContext';
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
 
 export default function Home() {
+  const { mainCurrency } = usePreferences();
   const [wallets, setWallets] = useState([]);
   const [exchangeRates, setExchangeRates] = useState({});
   const [categories, setCategories] = useState([]);
-  const [totalPLN, setTotalPLN] = useState(0);
+  const [totalCapital, setTotalCapital] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+ 
 
   const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
@@ -71,12 +75,21 @@ export default function Home() {
 
         setWallets(walletsWithBalances);
 
-        let sumPLN = 0;
+        // 🔥 НОВАЯ ЛОГИКА РАСЧЕТА ГЛАВНОГО КАПИТАЛА 🔥
+        let sum = 0;
+        const mainCurrencyRate = ratesMap[mainCurrency] || 1; // Узнаем курс выбранной главной валюты к PLN
+
         walletsWithBalances.forEach((w) => {
-          const rate = ratesMap[w.currency] || 1;
-          sumPLN += w.balance * rate;
+          // 1. Переводим баланс кошелька в базовые PLN
+          const walletRateToPLN = ratesMap[w.currency] || 1;
+          const balanceInPLN = w.balance * walletRateToPLN;
+          
+          // 2. Переводим из PLN в выбранную главную валюту
+          sum += (balanceInPLN / mainCurrencyRate); 
         });
-        setTotalPLN(sumPLN);
+        
+        // Записываем итоговую сумму в стейт (убедись, что наверху ты переименовал setTotalPLN в setTotalCapital)
+        setTotalCapital(sum);
 
       } catch (error) {
         console.error("❌ ОШИБКА В HOME:", error);
@@ -85,7 +98,10 @@ export default function Home() {
       }
     }
     loadData();
-  }, []);
+    
+  // 🔥 ОЧЕНЬ ВАЖНО: Добавили mainCurrency в квадратные скобки!
+  // Теперь каждый раз, когда меняется валюта, эта функция запускается заново и пересчитывает сумму.
+  }, [mainCurrency]);
 
   const recentTransactions = [...transactions]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -150,28 +166,20 @@ export default function Home() {
              <div className="flex flex-col items-center justify-center w-full">
                <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
                  <CountUp 
-                   end={totalPLN} 
+                   end={totalCapital} 
                    duration={1.5} 
                    decimals={2} 
                    decimal="." 
                    separator=" " 
                  />
                </span>
-               <span className="text-sm font-medium text-gray-500 mt-2">PLN</span>
+               <span className="text-sm font-medium text-gray-500 mt-2">{mainCurrency}</span>
              </div>
 
-            <div className={`
-                absolute top-6 right-6 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border 
-                ${stats.isNeutral
-                    ? "text-gray-400 bg-gray-400/10 border-gray-400/20" 
-                    : stats.isPositive 
-                        ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" 
-                        : "text-rose-400 bg-rose-400/10 border-rose-400/20"
-                }
-            `}>
-                {stats.isNeutral ? <Minus size={14} /> : stats.isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                <span>{stats.isNeutral ? "" : (stats.isPositive ? "+" : "-")}{stats.percent}%</span>
-            </div>
+            <TrendBadge 
+              value={stats.percent} 
+              className="absolute top-6 right-6" 
+            />
           </div>
         </section>
 
@@ -223,8 +231,8 @@ export default function Home() {
                       <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-rose-400" : "text-white"}`}>
                         {formatNumber(balance)}
                       </p>
-                      {w.currency !== "PLN" && (
-                        <p className="text-[10px] font-medium text-gray-500 mt-1">≈ {formatNumber(balance * rate)} PLN</p>
+                      {w.currency !== mainCurrency && (
+                        <p className="text-[10px] font-medium text-gray-500 mt-1">≈ {formatNumber((balance * (exchangeRates[w.currency] || 1)) / (exchangeRates[mainCurrency] || 1))} {mainCurrency}</p>
                       )}
                     </div>
                   </div>

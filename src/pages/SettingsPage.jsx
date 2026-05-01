@@ -4,6 +4,7 @@ import {
   ArrowLeft, Globe, Coins, Download, Upload, 
   ChevronRight, FileJson, Trash2 
 } from "lucide-react";
+import { usePreferences } from '../context/PreferencesContext';
 
 // Импортируем clearAllData. Если ее нет в db.js, тут будет ошибка!
 import { 
@@ -16,7 +17,7 @@ export default function SettingsPage() {
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState("pl"); 
-  const [mainCurrency, setMainCurrency] = useState("PLN"); 
+  const { mainCurrency, setMainCurrency } = usePreferences();
 
   // --- ЭКСПОРТ ---
   const handleExport = async () => {
