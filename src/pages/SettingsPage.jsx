@@ -194,7 +194,7 @@ export default function SettingsPage() {
                 >
                     <div className="flex items-center gap-4 relative z-10 pointer-events-none">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400"><Coins size={20}/></div>
-                        <div><p className="text-sm font-sm">Waluta</p></div>
+                        <div><p className="text-sm font-bold">Waluta</p></div>
                     </div>
                     
                     {/* Строка поиска появляется только когда меню открыто */}
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                                         ${mainCurrency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
                                     `}
                                 >
-                                    <span className="font-bold">{cur}</span>
+                                    <span className="font-sm">{cur}</span>
                                     {mainCurrency === cur && <Check size={18} />}
                                 </button>
                             ))

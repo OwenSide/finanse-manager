@@ -6,6 +6,7 @@ import Home from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
 import { PreferencesProvider } from './context/PreferencesContext.jsx'
+import StatsPage from "./pages/StatsPage.jsx";
 
 // 🔥 ИСПРАВЛЕНИЕ: Импортируем SettingsPage (так мы назвали файл в прошлом шаге)
 import SettingsPage from "./pages/SettingsPage.jsx"; 
@@ -26,7 +27,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 
                 {/* Заглушка для статистики, пока нет отдельной страницы, ведем на главную */}
-                <Route path="/stats" element={<div className="p-10">Strona w budowie (stats)</div>} />
+                <Route path="/stats" element={<StatsPage/>} />
                 
                 <Route path="/add-transaction" element={<AddTransaction />} />
                 <Route path="/categories" element={<Categories />} />
