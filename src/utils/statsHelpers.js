@@ -2,15 +2,17 @@
  * Генерирует данные для графика баланса за последние 30 дней
  */
 export const prepareLineChartData = (transactions, wallets, mainCurrency, ratesMap) => {
-  if (!transactions || !wallets) return [];
+  if (!transactions || !wallets || !ratesMap) return [];
 
-  // 1. Считаем текущий суммарный баланс
-  let currentTotalBalance = wallets.reduce((sum, w) => sum + Number(w.balance || 0), 0);
+  // 1. Считаем текущий суммарный баланс (переводим все кошельки в PLN для базового расчета)
+  let currentTotalBalancePLN = wallets.reduce((sum, w) => {
+    return sum + (Number(w.balance || 0) * (ratesMap[w.currency] || 1));
+  }, 0);
 
   const lineData = [];
-  let tempBalance = currentTotalBalance;
+  let tempBalancePLN = currentTotalBalancePLN;
 
-  // 2. Генерируем точки за 30 дней
+  // 2. Идем от сегодня на 30 дней в прошлое
   for (let i = 0; i < 30; i++) {
     const date = new Date();
     date.setDate(date.getDate() - i);
@@ -20,18 +22,21 @@ export const prepareLineChartData = (transactions, wallets, mainCurrency, ratesM
     
     lineData.unshift({
       day: date.toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' }),
-      balance: tempBalance
+      balance: tempBalancePLN
     });
 
-    // "Отматываем" баланс назад
+    // "Отматываем" баланс назад (в базовой валюте PLN)
     dayTxs.forEach(t => {
       const amountInPLN = Number(t.amount) * (t.savedExchangeRate || 1);
-      if (t.type === 'expense') tempBalance += amountInPLN;
-      else tempBalance -= amountInPLN;
+      if (t.type === 'expense') {
+        tempBalancePLN += amountInPLN; // До расхода денег было больше
+      } else {
+        tempBalancePLN -= amountInPLN; // До дохода денег было меньше
+      }
     });
   }
 
-  // 3. Конвертируем в текущую валюту
+  // 3. Конвертируем все исторические точки из PLN в текущую валюту приложения (mainCurrency)
   const currentMainRate = ratesMap[mainCurrency] || 1;
   return lineData.map(point => ({
     ...point,
@@ -43,7 +48,7 @@ export const prepareLineChartData = (transactions, wallets, mainCurrency, ratesM
  * Генерирует данные для диаграммы (универсальная: расходы или доходы)
  */
 export const preparePieData = (transactions, categories, mainCurrency, ratesMap, type = 'expense') => {
-  if (!transactions || !categories) return [];
+  if (!transactions || !categories || !ratesMap) return [];
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -69,5 +74,5 @@ export const preparePieData = (transactions, categories, mainCurrency, ratesMap,
       };
     })
     .filter(d => d.value > 0)
-    .sort((a, b) => b.value - a.value);
+    .sort((a, b) => b.value - a.value); // Сортируем от большего к меньшему
 };
