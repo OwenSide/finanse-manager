@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat, XCircle } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
+import { formatNumber } from "../utils/formatNumber";
 
 export default function TransactionDetailModal({ 
   transaction, 
@@ -11,12 +12,21 @@ export default function TransactionDetailModal({
   category, 
   wallet,
   onStopRecurring,
-  mainCurrency = "PLN",
   historicalBalance = null,
   exchangeRate = 1 
 }) {
   const isExpense = transaction?.type === "expense";
-  const isForeignCurrency = wallet?.currency !== mainCurrency;
+
+  // 🔥 УМНАЯ ЛОГИКА ИСТОРИИ 🔥
+  // Какая была главная валюта в момент транзакции? 
+  // Если это старая транзакция из базы, по умолчанию считаем, что это был "PLN".
+  const targetCurrency = transaction?.savedMainCurrency || "PLN";
+
+  // Показываем блок конвертации ТОЛЬКО если валюта кошелька не совпадает с исторической главной валютой
+  const showConversion = wallet?.currency !== targetCurrency;
+
+  // Берем сохраненный курс (для новых) или пропс (для старых, он исторически был к PLN)
+  const actualRate = transaction?.savedExchangeRate || exchangeRate;
 
   // Функция для красивого текста частоты
   const getFrequencyText = (freq) => {
@@ -87,7 +97,7 @@ export default function TransactionDetailModal({
                     <div className="flex flex-col items-center">
                         <div className="flex items-baseline gap-1">
                             <span className={`text-4xl font-bold tracking-tighter ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
-                                {isExpense ? '-' : '+'}{Number(transaction.amount).toFixed(2)}
+                                {isExpense ? '-' : '+'}{formatNumber(transaction.amount)}
                             </span>
                         </div>
                         <span className="text-sm text-gray-500 font-medium uppercase tracking-wide mt-1">
@@ -99,7 +109,6 @@ export default function TransactionDetailModal({
                 {/* 🔥 ИНДИКАТОР ПОДПИСКИ С ЧАСТОТОЙ */}
                 {(transaction.isRecurring || transaction.wasRecurring) && (
                     <div className="mb-6 flex flex-col items-center gap-3">
-                        {/* Сама плашка */}
                         <div className={`inline-flex items-center gap-3 border px-4 py-2.5 rounded-2xl transition-all ${
                             transaction.isRecurring 
                             ? "bg-indigo-500/10 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]" 
@@ -119,7 +128,6 @@ export default function TransactionDetailModal({
                             </div>
                         </div>
 
-                        {/* Кнопка отмены (показываем ТОЛЬКО если активна) */}
                         {transaction.isRecurring && (
                             <button 
                                 onClick={() => onStopRecurring(transaction.id)}
@@ -167,15 +175,15 @@ export default function TransactionDetailModal({
                         <div className="text-right">
                             <p className="text-white font-mono font-bold text-sm">
                                 {historicalBalance !== null 
-                                    ? Number(historicalBalance).toFixed(2) 
-                                    : (wallet?.balance ? Number(wallet.balance).toFixed(2) : "---")
+                                    ? formatNumber(historicalBalance) 
+                                    : (wallet?.balance ? formatNumber(wallet.balance) : "---")
                                 } 
                                 <span className="text-[10px] text-gray-500 ml-1">{wallet?.currency}</span>
                             </p>
                         </div>
                     </div>
 
-                    {isForeignCurrency && (
+                    {showConversion && (
                         <div className="bg-[#151A23] rounded-xl p-3 border border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -184,13 +192,13 @@ export default function TransactionDetailModal({
                                 <div>
                                     <p className="text-xs text-gray-400 uppercase font-bold">Kurs waluty</p>
                                     <p className="text-xs text-gray-500">
-                                        1 {wallet.currency} ≈ {exchangeRate} {mainCurrency}
+                                        1 {wallet.currency} ≈ {Number(actualRate).toFixed(4)} {targetCurrency}
                                     </p>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <p className="text-white font-mono font-bold text-sm">
-                                    ≈ {(transaction.amount * exchangeRate).toFixed(2)} <span className="text-[10px] text-gray-500">{mainCurrency}</span>
+                                    ≈ {formatNumber(transaction.amount * actualRate)} <span className="text-[10px] text-gray-500">{targetCurrency}</span>
                                 </p>
                             </div>
                         </div>

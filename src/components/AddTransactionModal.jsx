@@ -4,6 +4,10 @@ import { ArrowLeft, Calendar, Wallet, FileText, Plus, ChevronDown, Repeat, Clock
 import { v4 as uuidv4 } from "uuid";
 import CategoryIcon from "./CategoryIcon";
 
+// 🔥 НОВЫЕ ИМПОРТЫ
+import { usePreferences } from "../context/PreferencesContext"; 
+import { getAllExchangeRates } from "../db.js";
+
 export default function AddTransactionModal({ 
   isOpen, 
   onClose, 
@@ -22,9 +26,10 @@ export default function AddTransactionModal({
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState("monthly");
-  
-  // 🔥 НОВОЕ: Тип транзакции (expense/income)
   const [transactionType, setTransactionType] = useState("expense");
+
+  // 🔥 Получаем текущую главную валюту из настроек
+  const { mainCurrency } = usePreferences();
 
   useEffect(() => {
     if (isOpen) {
@@ -38,17 +43,42 @@ export default function AddTransactionModal({
       setIsRecurring(false);
       setFrequency("monthly");
       setIsAmountFocused(true);
-      setTransactionType("expense"); // Сброс на расход по умолчанию
+      setTransactionType("expense");
     }
   }, [isOpen, wallets]);
 
-  const handleSubmit = () => {
+  // 🔥 ДЕЛАЕМ ФУНКЦИЮ АСИНХРОННОЙ
+  const handleSubmit = async () => {
     if (!form.amount || !form.categoryId || !form.date || !form.walletId) return;
 
     const category = categories.find((c) => c.id === form.categoryId);
+    const wallet = wallets.find((w) => w.id === form.walletId);
+    
     const now = new Date();
     const selectedDate = new Date(form.date);
     selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
+    // 🔥 ДОСТАЕМ ТЕКУЩИЙ КУРС ВАЛЮТЫ КОШЕЛЬКА К PLN
+    let crossRate = 1;
+    try {
+        const ratesList = await getAllExchangeRates();
+        const ratesMap = { PLN: 1 };
+        if (ratesList) {
+            ratesList.forEach(item => { ratesMap[item.currency] = item.rate || item.mid || 1; });
+        }
+        
+        // 1. Узнаем курс валюты кошелька к PLN (например, кошелек PLN = 1)
+        const walletRate = wallet ? (ratesMap[wallet.currency] || 1) : 1;
+        
+        // 2. Узнаем курс главной валюты к PLN (например, USD = 4.02)
+        const mainRate = ratesMap[mainCurrency] || 1;
+        
+        // 3. Считаем кросс-курс (1 / 4.02 = ~0.248)
+        crossRate = walletRate / mainRate;
+        
+    } catch (e) {
+        console.error("Błąd pobierania kursów walut:", e);
+    }
 
     const newTransaction = {
       id: uuidv4(),
@@ -57,10 +87,13 @@ export default function AddTransactionModal({
       date: selectedDate.toISOString(),
       comment: form.comment,
       walletId: form.walletId,
-      // 🔥 Используем выбранный тип, или тип категории как запасной вариант
       type: transactionType, 
       isRecurring: isRecurring,
-      frequency: isRecurring ? frequency : null 
+      frequency: isRecurring ? frequency : null,
+      
+      // 🔥 СОХРАНЯЕМ ПРАВИЛЬНЫЙ КРОСС-КУРС
+      savedMainCurrency: mainCurrency,
+      savedExchangeRate: crossRate
     };
 
     onSave(newTransaction);
@@ -75,7 +108,6 @@ export default function AddTransactionModal({
       { id: "yearly", label: "Co rok" }
   ];
 
-  // 🔥 Фильтруем категории по типу
   const filteredCategories = categories.filter(c => c.type === transactionType);
 
   return (
@@ -112,7 +144,7 @@ export default function AddTransactionModal({
 
             <div className="space-y-8 max-w-md mx-auto">
               
-              {/* 🔥 1. TYPE SWITCHER (Расходы / Доходы) */}
+              {/* 1. TYPE SWITCHER */}
               <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
                 <button 
                   onClick={() => { setTransactionType("expense"); setForm(f => ({...f, categoryId: ""})); }}
@@ -162,7 +194,7 @@ export default function AddTransactionModal({
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">Wprowadź kwotę</p>
               </div>
 
-              {/* 3. CATEGORY SELECTOR (HORIZONTAL GRID) */}
+              {/* 3. CATEGORY SELECTOR */}
                 <div>
                     <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
                         Kategoria
@@ -173,15 +205,7 @@ export default function AddTransactionModal({
                             <p className="text-sm text-gray-500 font-medium">Brak kategorii tego typu</p>
                         </div>
                     ) : (
-                        /* Контейнер скролла */
                         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-                            {/* 🔥 МАГИЯ СЕТКИ:
-                            grid-rows-2    -> Всегда 2 ряда
-                            grid-flow-col  -> Элементы идут слева направо (а не вниз)
-                            w-max          -> Контейнер растягивается по ширине контента
-                            gap-x-2        -> Расстояние между колонками (по горизонтали)
-                            gap-y-4        -> Расстояние между рядами (по вертикали)
-                            */}
                             <div className="grid grid-rows-2 grid-flow-col gap-x-2 gap-y-4 w-max pb-4">
                                 {filteredCategories.map((cat) => {
                                     const isSelected = form.categoryId === cat.id;
@@ -189,7 +213,7 @@ export default function AddTransactionModal({
                                         <button
                                             key={cat.id}
                                             onClick={() => setForm({...form, categoryId: cat.id})}
-                                            className="group flex flex-col items-center gap-2 w-[72px]" // 🔥 Фиксированная ширина для ровности
+                                            className="group flex flex-col items-center gap-2 w-[72px]" 
                                         >
                                             <motion.div 
                                                 whileTap={{ scale: 0.9 }}
