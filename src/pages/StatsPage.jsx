@@ -99,7 +99,11 @@ export default function StatsPage() {
   const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;
 
   // Обработчик клика по секторам и списку
-  const onPieClick = (_, index) => {
+  const onPieClick = (_, index, e) => {
+    // 🔥 Блокируем всплытие клика, чтобы он не дошел до фона и не сбросил выделение
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     setActiveIndex(index === activeIndex ? null : index);
   };
 
@@ -242,14 +246,24 @@ export default function StatsPage() {
         </h3>
         
         {/* График */}
-        <div className="h-[250px] relative">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+        <div className="h-[250px] relative outline-none focus:outline-none" onClick={() => setActiveIndex(null)}>
+          <style>{`
+            .recharts-wrapper:focus,
+            .recharts-surface:focus,
+            .recharts-pie:focus,
+            .recharts-layer:focus,
+            path:focus {
+              outline: none !important;
+            }
+          `}</style>
+          <ResponsiveContainer width="100%" height="100%" className="outline-none focus:outline-none">
+            <PieChart style={{ outline: 'none' }}>
               <Pie
                 data={stats.pieData}
                 innerRadius={70}
                 outerRadius={90}
                 paddingAngle={8}
+                minAngle={10}
                 dataKey="value"
                 stroke="none"
                 onClick={onPieClick}

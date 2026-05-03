@@ -48,14 +48,19 @@ export default function CategoryDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+      
+      {/* Затемнение фона */}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       />
 
-      <div className="relative bg-[#151A23] w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden transform transition-all max-h-[85vh] flex flex-col">
+      {/* Само модальное окно */}
+      {/* 🔥 4. Убрали rounded-t-3xl, теперь всегда rounded-3xl (круглые углы со всех сторон) */}
+      <div className="relative bg-[#151A23] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform transition-all max-h-[85vh] flex flex-col">
         
+        {/* Шапка модалки */}
         <div className="p-6 pb-4 border-b border-white/5 flex-shrink-0">
           <button 
             onClick={onClose}
