@@ -218,7 +218,7 @@ export default function StatsPage() {
         </div>
 
         {/* Список категорий под графиком СО СКРОЛЛОМ */}
-        <div className="space-y-3 max-h-[260px] overflow-y-auto custom-scrollbar pr-2">
+        <div className="space-y-3 max-h-[230px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-4 pl-1 py-1">
           {stats.pieData.length === 0 && (
             <p className="text-center text-sm text-gray-500 py-4">Brak danych za ten miesiąc.</p>
           )}
@@ -232,7 +232,7 @@ export default function StatsPage() {
                 key={`cat-list-${index}`} 
                 onClick={() => onPieClick(null, index)}
                 className={`flex items-center justify-between py-3 px-4 rounded-[24px] border transition-all duration-300 cursor-pointer
-                  ${isSelected ? 'bg-white/10 border-white/20 scale-[1.02]' : 'bg-white/5 border-transparent'}
+                  ${isSelected ? 'bg-white/10 border-white/20 scale-[1.01]' : 'bg-white/5 border-transparent'}
                   ${!isSelected && !isNothingSelected ? 'opacity-40 grayscale-[0.5]' : 'opacity-100 hover:bg-white/10'}
                 `}
               >
