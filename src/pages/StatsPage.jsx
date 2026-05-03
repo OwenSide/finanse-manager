@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area 
@@ -14,6 +14,8 @@ import { formatNumber } from '../utils/formatNumber';
 import { useNavigate } from 'react-router-dom';
 import { TrendingDown, TrendingUp, ArrowLeft } from 'lucide-react';
 import { prepareLineChartData, preparePieData } from '../utils/statsHelpers';
+import CategoryIcon from '../components/CategoryIcon';
+import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 
 export default function StatsPage() {
   const { mainCurrency } = usePreferences();
@@ -22,6 +24,7 @@ export default function StatsPage() {
   const [dbData, setDbData] = useState({ txs: [], cats: [], wallets: [] });
   const [rates, setRates] = useState({ PLN: 1 });
   const [loading, setLoading] = useState(true);
+  const itemRefs = useRef([]);
   
   // Состояния для интерактива
   const [activeTab, setActiveTab] = useState('expense'); // 'expense' | 'income'
@@ -58,6 +61,16 @@ export default function StatsPage() {
     loadData();
   }, []);
 
+  // Автоматический скролл списка к активному элементу
+  useEffect(() => {
+    if (activeIndex !== null && itemRefs.current[activeIndex]) {
+      itemRefs.current[activeIndex].scrollIntoView({
+        behavior: 'smooth', // Плавная прокрутка
+        block: 'center',    // Ставит активную карточку ровно по центру списка
+      });
+    }
+  }, [activeIndex]);
+
   // Сброс фокуса при переключении вкладок
   useEffect(() => {
     setActiveIndex(null);
@@ -77,9 +90,7 @@ export default function StatsPage() {
   }, [dbData, mainCurrency, rates, activeTab]);
 
   // Цветовые палитры для Расходов и Доходов
-  const COLORS = activeTab === 'expense' 
-    ? ['#f43f5e', '#fb923c', '#facc15', '#a855f7', '#ec4899'] 
-    : ['#10b981', '#34d399', '#6ee7b7', '#059669', '#14b8a6']; 
+  const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;
 
   // Обработчик клика по секторам и списку
   const onPieClick = (_, index) => {
@@ -90,7 +101,7 @@ export default function StatsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center text-indigo-400">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 bordeпr-b-2 border-indigo-500"></div>
       </div>
     );
   }
@@ -204,16 +215,45 @@ export default function StatsPage() {
           </ResponsiveContainer>
 
           {/* Текст в центре круга */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
-              {activeIndex !== null ? stats.pieData[activeIndex].name : 'Suma'}
-            </span>
-            <span className="text-2xl font-black text-white">
-              {formatNumber(activeIndex !== null 
-                ? stats.pieData[activeIndex].value 
-                : (activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes))}
-            </span>
-            <span className="text-[10px] text-gray-500 uppercase font-bold mt-1">{mainCurrency}</span>
+          {/* ТЕКСТ В ЦЕНТРЕ */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+            {activeIndex !== null && stats.pieData[activeIndex] ? (
+              <>
+                {/* Круглая плашка с иконкой */}
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 transition-all duration-300 shadow-lg"
+                  style={{ 
+                    backgroundColor: `${COLORS[activeIndex % COLORS.length]}20`, // 20 в конце hex дает 12% прозрачности фона
+                    color: COLORS[activeIndex % COLORS.length],
+                    boxShadow: `0 0 20px ${COLORS[activeIndex % COLORS.length]}40` // Легкое цветное свечение
+                  }}
+                >
+                  <CategoryIcon iconName={stats.pieData[activeIndex].icon} size={20} />
+                </div>
+                
+                {/* Название */}
+                <span className="text-[10px] text-gray-400 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
+                  {stats.pieData[activeIndex].name}
+                </span>
+                
+                {/* Сумма */}
+                <span className="text-2xl font-black text-white drop-shadow-md leading-none">
+                  {formatNumber(stats.pieData[activeIndex].value)}
+                </span>
+                <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
+              </>
+            ) : (
+              <>
+                {/* Состояние по умолчанию (если ничего не выбрано или нет данных) */}
+                <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
+                  {stats.pieData.length === 0 ? 'Brak danych' : 'Suma'}
+                </span>
+                <span className="text-2xl font-black text-white drop-shadow-md">
+                  {formatNumber(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
+                </span>
+                <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -230,6 +270,7 @@ export default function StatsPage() {
             return (
               <div 
                 key={`cat-list-${index}`} 
+                ref={(el) => (itemRefs.current[index] = el)}
                 onClick={() => onPieClick(null, index)}
                 className={`flex items-center justify-between py-3 px-4 rounded-[24px] border transition-all duration-300 cursor-pointer
                   ${isSelected ? 'bg-white/10 border-white/20 scale-[1.01]' : 'bg-white/5 border-transparent'}
@@ -238,9 +279,14 @@ export default function StatsPage() {
               >
                 <div className="flex items-center gap-4">
                   <div 
-                    className="w-1.5 h-10 rounded-full" 
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }} 
-                  />
+                    className="w-10 h-10 rounded-xl flex flex-shrink-0 items-center justify-center shadow-sm"
+                    style={{ 
+                      backgroundColor: `${COLORS[index % COLORS.length]}20`, 
+                      color: COLORS[index % COLORS.length] 
+                    }}
+                  >
+                    <CategoryIcon iconName={item.icon} size={20} />
+                  </div>
                   <div>
                     <p className="text-sm font-bold text-white">{item.name}</p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase">
