@@ -16,6 +16,7 @@ import { TrendingDown, TrendingUp, ArrowLeft } from 'lucide-react';
 import { prepareLineChartData, preparePieData } from '../utils/statsHelpers';
 import CategoryIcon from '../components/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
+import CategoryDetailsModal from '../components/CategoryDetailsModal';
 
 export default function StatsPage() {
   const { mainCurrency } = usePreferences();
@@ -24,6 +25,11 @@ export default function StatsPage() {
   const [dbData, setDbData] = useState({ txs: [], cats: [], wallets: [] });
   const [rates, setRates] = useState({ PLN: 1 });
   const [loading, setLoading] = useState(true);
+
+  // Стейты для модалки детализации категории
+  const [selectedCategoryDetails, setSelectedCategoryDetails] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  
   const itemRefs = useRef([]);
   
   // Состояния для интерактива
@@ -95,6 +101,55 @@ export default function StatsPage() {
   // Обработчик клика по секторам и списку
   const onPieClick = (_, index) => {
     setActiveIndex(index === activeIndex ? null : index);
+  };
+
+  // Открытие модалки с транзакциями категории
+  // Открытие модалки с транзакциями категории
+  const handleOpenCategoryDetails = (index) => {
+    const categoryData = stats.pieData[index];
+    if (!categoryData) return;
+
+    // 🔥 Ультимативный фильтр: проверяем имя категории для КАЖДОЙ транзакции индивидуально,
+    // чтобы идеально совпадать с тем, как график группирует данные.
+    const categoryTransactions = dbData.txs.filter(t => {
+      // 1. Игнорируем транзакции не из текущей вкладки (чтобы доходы не смешались с расходами)
+      if (t.type && t.type.toLowerCase() !== activeTab.toLowerCase()) return false;
+
+      // 2. Достаем ID категории из транзакции
+      const catId = String(t.categoryId || t.category);
+
+      // 3. Ищем, как эта категория реально называется в справочнике
+      const actualCategory = dbData.cats.find(c => String(c.id) === catId);
+
+      // 4. Получаем финальное имя (если категорию вдруг удалили, берем сырое значение)
+      const txCategoryName = actualCategory ? actualCategory.name : catId;
+
+      // 5. Сравниваем полученное имя с именем сектора на графике
+      return txCategoryName === categoryData.name;
+    });
+
+    // 3. Сортируем транзакции и ПОДТЯГИВАЕМ ВАЛЮТУ ИЗ КОШЕЛЬКА
+    const sortedTransactions = [...categoryTransactions]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .map(tx => {
+        // Ищем кошелек, с которого была совершена транзакция
+        const wallet = dbData.wallets.find(w => String(w.id) === String(tx.walletId));
+        
+        // Определяем реальную валюту: берем из транзакции, а если пусто — из кошелька
+        const realCurrency = tx.currency || (wallet ? wallet.currency : 'PLN');
+
+        return {
+          ...tx,
+          currency: realCurrency // Перезаписываем валюту на 100% правильную
+        };
+      });
+
+    setSelectedCategoryDetails({
+      category: categoryData,
+      transactions: sortedTransactions,
+      color: COLORS[index % COLORS.length]
+    });
+    setIsDetailsModalOpen(true);
   };
 
   // Экран загрузки
@@ -215,7 +270,6 @@ export default function StatsPage() {
           </ResponsiveContainer>
 
           {/* Текст в центре круга */}
-          {/* ТЕКСТ В ЦЕНТРЕ */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
             {activeIndex !== null && stats.pieData[activeIndex] ? (
               <>
@@ -271,40 +325,62 @@ export default function StatsPage() {
               <div 
                 key={`cat-list-${index}`} 
                 ref={(el) => (itemRefs.current[index] = el)}
-                onClick={() => onPieClick(null, index)}
+                onClick={() => {
+                  setActiveIndex(index); // Оставляем выделение на графике
+                  handleOpenCategoryDetails(index); // Открываем модалку
+                }}
                 className={`flex items-center justify-between py-3 px-4 rounded-[24px] border transition-all duration-300 cursor-pointer
                   ${isSelected ? 'bg-white/10 border-white/20 scale-[1.01]' : 'bg-white/5 border-transparent'}
                   ${!isSelected && !isNothingSelected ? 'opacity-40 grayscale-[0.5]' : 'opacity-100 hover:bg-white/10'}
                 `}
               >
-                <div className="flex items-center gap-4">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex flex-shrink-0 items-center justify-center shadow-sm"
-                    style={{ 
-                      backgroundColor: `${COLORS[index % COLORS.length]}20`, 
-                      color: COLORS[index % COLORS.length] 
-                    }}
-                  >
-                    <CategoryIcon iconName={item.icon} size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">{item.name}</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase">
-                      {((item.value / (activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)) * 100).toFixed(1)}%
-                    </p>
-                  </div>
+                {/* Левая часть (Иконка + Название) */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* Иконка */}
+                <div 
+                  className="w-10 h-10 rounded-xl flex flex-shrink-0 items-center justify-center shadow-sm"
+                  style={{ 
+                    backgroundColor: `${COLORS[index % COLORS.length]}20`,
+                    color: COLORS[index % COLORS.length]
+                  }}
+                >
+                  <CategoryIcon iconName={item.icon} size={20} />
                 </div>
-                <div className="text-right">
-                  <p className="font-mono font-bold text-white">
-                    {formatNumber(item.value)}
+                
+                {/* Название и проценты */}
+                {/* 🔥 Добавили flex-1 сюда, чтобы текст занимал всё пустое место */}
+                <div className="flex-1 min-w-0">
+                  {/* 🔥 Убрали truncate, добавили break-words и leading-tight */}
+                  <p className="text-sm font-bold text-white break-words leading-tight">{item.name}</p>
+                  
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">
+                    {((item.value / (activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)) * 100).toFixed(1)}%
                   </p>
-                  <p className="text-[10px] text-gray-500 uppercase">{mainCurrency}</p>
                 </div>
+              </div>
+
+              {/* Правая часть с суммой */}
+              {/* 🔥 Добавили pl-3, чтобы текст слева никогда не прилипал вплотную к цифрам */}
+              <div className="text-right flex-shrink-0 pl-3">
+                <p className="font-mono font-bold text-white whitespace-nowrap">{formatNumber(item.value)}</p>
+                <p className="text-[10px] text-gray-500 uppercase">{mainCurrency}</p>
+              </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* Модальное окно детализации */}
+      <CategoryDetailsModal 
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        category={selectedCategoryDetails?.category}
+        transactions={selectedCategoryDetails?.transactions || []}
+        mainCurrency={mainCurrency}
+        rates={rates} // <---- ВОТ ЭТО ОБЯЗАТЕЛЬНО
+        color={selectedCategoryDetails?.color}
+      />
     </div>
   );
 }
