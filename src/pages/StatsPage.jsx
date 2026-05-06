@@ -12,7 +12,7 @@ import {
 } from '../db';
 import { formatNumber } from '../utils/formatNumber';
 import { useNavigate } from 'react-router-dom';
-import { TrendingDown, TrendingUp, ArrowLeft, Wallet } from 'lucide-react';
+import { TrendingDown, TrendingUp, ArrowLeft, Wallet, PackageOpen } from 'lucide-react';
 import CategoryIcon from '../components/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
@@ -341,130 +341,129 @@ export default function StatsPage() {
       </div>
 
       {/* PIE CHART + LIST */}
-      <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6">
+      {/* 3. PIE CHART + LIST (Структура) */}
+      <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6 min-h-[400px] flex flex-col">
         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">
           Struktura {activeTab === 'expense' ? 'wydatków' : 'przychodów'}
         </h3>
         
-        <div className="h-[250px] relative outline-none focus:outline-none" onClick={() => setActiveIndex(null)}>
-          <style>{`
-            .recharts-wrapper:focus,
-            .recharts-surface:focus,
-            .recharts-pie:focus,
-            .recharts-layer:focus,
-            path:focus {
-              outline: none !important;
-            }
-          `}</style>
-          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} className="outline-none focus:outline-none">
-            <PieChart style={{ outline: 'none' }}>
-              <Pie
-                data={stats.pieData}
-                innerRadius={70}
-                outerRadius={90}
-                paddingAngle={8}
-                minAngle={20}
-                dataKey="value"
-                stroke="none"
-                onClick={onPieClick}
-                style={{ cursor: 'pointer', outline: 'none' }}
-              >
-                {stats.pieData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]} 
-                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.3}
-                    stroke={activeIndex === index ? '#fff' : 'none'}
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ display: 'none' }} />
-            </PieChart>
-          </ResponsiveContainer>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-            {activeIndex !== null && stats.pieData[activeIndex] ? (
-              <>
-                <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 transition-all duration-300 shadow-lg"
-                  style={{ 
-                    backgroundColor: `${COLORS[activeIndex % COLORS.length]}20`,
-                    color: COLORS[activeIndex % COLORS.length],
-                    boxShadow: `0 0 20px ${COLORS[activeIndex % COLORS.length]}40`
-                  }}
-                >
-                  <CategoryIcon iconName={stats.pieData[activeIndex].icon} size={20} />
-                </div>
-                <span className="text-[10px] text-gray-400 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
-                  {stats.pieData[activeIndex].name}
-                </span>
-                <span className="text-2xl font-black text-white drop-shadow-md leading-none">
-                  {formatNumber(stats.pieData[activeIndex].value)}
-                </span>
-                <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
-              </>
-            ) : (
-              <>
-                <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
-                  {stats.pieData.length === 0 ? 'Brak danych' : 'Suma'}
-                </span>
-                <span className="text-2xl font-black text-white drop-shadow-md">
-                  {formatNumber(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
-                </span>
-                <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
-              </>
-            )}
+        {stats.pieData.length === 0 ? (
+          /* 🔥 КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ (ВМЕСТО ГРАФИКА) */
+          <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6 shadow-inner">
+              <PackageOpen size={32} className="text-gray-600" />
+            </div>
+            <p className="text-white font-bold text-lg mb-2">Pustki...</p>
+            <p className="text-sm text-gray-500 max-w-[240px] leading-relaxed">
+              Brak transakcji w tym okresie. Czysta karta!
+            </p>
           </div>
-        </div>
-
-        <div className="space-y-3 max-h-[230px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-4 pl-1 py-1">
-          {stats.pieData.length === 0 && (
-            <p className="text-center text-sm text-gray-500 py-4">Brak danych w tym okresie.</p>
-          )}
-          
-          {stats.pieData.map((item, index) => {
-            const isSelected = activeIndex === index;
-            const isNothingSelected = activeIndex === null;
-
-            return (
-              <div 
-                key={`cat-list-${index}`} 
-                ref={(el) => (itemRefs.current[index] = el)}
-                onClick={() => {
-                  setActiveIndex(index);
-                  handleOpenCategoryDetails(index);
-                }}
-                className={`flex items-center justify-between py-3 px-4 rounded-[24px] border transition-all duration-300 cursor-pointer
-                  ${isSelected ? 'bg-white/10 border-white/20 scale-[1.01]' : 'bg-white/5 border-transparent'}
-                  ${!isSelected && !isNothingSelected ? 'opacity-40 grayscale-[0.5]' : 'opacity-100 hover:bg-white/10'}
-                `}
-              >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex flex-shrink-0 items-center justify-center shadow-sm"
-                    style={{ 
-                      backgroundColor: `${COLORS[index % COLORS.length]}20`,
-                      color: COLORS[index % COLORS.length]
-                    }}
+        ) : (
+          /* 🔥 КОНТЕНТ: ГРАФИК И СПИСОК (ПОКАЗЫВАЕМ ТОЛЬКО ЕСЛИ ЕСТЬ ДАННЫЕ) */
+          <>
+            <div className="h-[250px] relative outline-none focus:outline-none" onClick={() => setActiveIndex(null)}>
+              <style>{`
+                .recharts-wrapper:focus, .recharts-surface:focus, .recharts-pie:focus, .recharts-layer:focus, path:focus {
+                  outline: none !important;
+                }
+              `}</style>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} className="outline-none focus:outline-none">
+                <PieChart style={{ outline: 'none' }}>
+                  <Pie
+                    data={stats.pieData}
+                    innerRadius={70}
+                    outerRadius={90}
+                    paddingAngle={8}
+                    minAngle={20}
+                    dataKey="value"
+                    stroke="none"
+                    onClick={onPieClick}
+                    style={{ cursor: 'pointer', outline: 'none' }}
                   >
-                    <CategoryIcon iconName={item.icon} size={20} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white break-words leading-tight">{item.name}</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">
-                      {item.percentage}%
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0 pl-3">
-                  <p className="font-mono font-bold text-white whitespace-nowrap">{formatNumber(item.value)}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">{mainCurrency}</p>
-                </div>
+                    {stats.pieData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[index % COLORS.length]} 
+                        opacity={activeIndex === null || activeIndex === index ? 1 : 0.3}
+                        stroke={activeIndex === index ? '#fff' : 'none'}
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ display: 'none' }} />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                {activeIndex !== null && stats.pieData[activeIndex] ? (
+                  <>
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center mb-1.5 transition-all duration-300 shadow-lg"
+                      style={{ 
+                        backgroundColor: `${COLORS[activeIndex % COLORS.length]}20`,
+                        color: COLORS[activeIndex % COLORS.length],
+                        boxShadow: `0 0 20px ${COLORS[activeIndex % COLORS.length]}40`
+                      }}
+                    >
+                      <CategoryIcon iconName={stats.pieData[activeIndex].icon} size={20} />
+                    </div>
+                    <span className="text-[10px] text-gray-400 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
+                      {stats.pieData[activeIndex].name}
+                    </span>
+                    <span className="text-2xl font-black text-white drop-shadow-md leading-none">
+                      {formatNumber(stats.pieData[activeIndex].value)}
+                    </span>
+                    <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">Suma</span>
+                    <span className="text-2xl font-black text-white drop-shadow-md">
+                      {formatNumber(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
+                    </span>
+                    <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
+                  </>
+                )}
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            <div className="space-y-3 max-h-[230px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-4 pl-1 py-1">
+              {stats.pieData.map((item, index) => {
+                const isSelected = activeIndex === index;
+                const isNothingSelected = activeIndex === null;
+                return (
+                  <div 
+                    key={`cat-list-${index}`} 
+                    ref={(el) => (itemRefs.current[index] = el)}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      handleOpenCategoryDetails(index);
+                    }}
+                    className={`flex items-center justify-between py-3 px-4 rounded-[24px] border transition-all duration-300 cursor-pointer
+                      ${isSelected ? 'bg-white/10 border-white/20 scale-[1.01]' : 'bg-white/5 border-transparent'}
+                      ${!isSelected && !isNothingSelected ? 'opacity-40 grayscale-[0.5]' : 'opacity-100 hover:bg-white/10'}
+                    `}
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-xl flex flex-shrink-0 items-center justify-center shadow-sm"
+                        style={{ backgroundColor: `${COLORS[index % COLORS.length]}20`, color: COLORS[index % COLORS.length] }}>
+                        <CategoryIcon iconName={item.icon} size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white break-words leading-tight">{item.name}</p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">{item.percentage}%</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 pl-3">
+                      <p className="font-mono font-bold text-white whitespace-nowrap">{formatNumber(item.value)}</p>
+                      <p className="text-[10px] text-gray-500 uppercase">{mainCurrency}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* МОДАЛКА */}
