@@ -13,7 +13,6 @@ import {
 import { formatNumber } from '../utils/formatNumber';
 import { useNavigate } from 'react-router-dom';
 import { TrendingDown, TrendingUp, ArrowLeft, Wallet } from 'lucide-react';
-import { prepareLineChartData } from '../utils/statsHelpers';
 import CategoryIcon from '../components/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
@@ -198,8 +197,7 @@ export default function StatsPage() {
     return {
       pieData,
       totalExpenses: totalExp,
-      totalIncomes: totalInc,
-      lineData: prepareLineChartData(filteredTxs, dbData.wallets, mainCurrency, rates)
+      totalIncomes: totalInc
     };
   }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, dbData.wallets]);
 
@@ -296,7 +294,7 @@ export default function StatsPage() {
           </button>
         ))}
       </div>
-      
+
       {/* 🔥 НОВЫЙ БЛОК: УМНЫЙ ВЫБОР ПЕРИОДА */}
       <div className="relative z-40">
         <PeriodSelector 
@@ -339,34 +337,6 @@ export default function StatsPage() {
           <p className="text-xl font-bold text-white">
             {formatNumber(stats.totalIncomes)} <span className="text-xs opacity-50">{mainCurrency}</span>
           </p>
-        </div>
-      </div>
-
-      {/* LINE CHART */}
-      <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 min-h-[300px]">
-        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6 text-center">
-          Dynamika majątku
-        </h3>
-        <div className="h-[200px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-            <AreaChart data={stats.lineData}>
-              <defs>
-                <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-              <XAxis dataKey="day" hide />
-              <YAxis hide domain={['auto', 'auto']} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#1A1F2B', border: 'none', borderRadius: '12px', fontSize: '12px' }}
-                itemStyle={{ color: '#818cf8', fontWeight: 'bold' }}
-                labelStyle={{ color: '#9ca3af', marginBottom: '4px' }}
-              />
-              <Area type="monotone" dataKey="balance" stroke="#6366f1" strokeWidth={3} fill="url(#colorBalance)" />
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
       </div>
 
