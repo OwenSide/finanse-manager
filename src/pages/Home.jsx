@@ -136,7 +136,7 @@ export default function Home() {
             </Link>
 
             {/* Иконки Статистики и Достижений (Справа, без фона) */}
-            {/* <div className="flex items-center gap-5 pr-2">
+            <div className="flex items-center gap-5 pr-2">
                 <Link 
                     to="/stats" 
                     className="text-gray-400 hover:text-indigo-400 transition-colors active:scale-95"
@@ -150,18 +150,26 @@ export default function Home() {
                 >
                     <Trophy size={17} strokeWidth={1.5} />
                 </Link>
-            </div> */}
+            </div>
             
         </header>
 
 
         {/* --- БЛОК 1: ГЛАВНЫЙ БАЛАНС --- */}
         <section className="relative w-full">
-          <div className=" p-6 min-[450px]:p-10 rounded-[2rem] text-center relative overflow-hidden">
+          <div className="p-6 min-[450px]:p-10 rounded-[2rem] text-center relative overflow-hidden">
               
-             <h2 className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-2">
-               Całkowity Kapitał
-             </h2>
+             {/* Заголовок с "приклеенным" бейджем */}
+             <div className="relative inline-flex items-center justify-center mb-2">
+               <h2 className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase relative z-10 pr-2">
+                 Całkowity Kapitał
+               </h2>
+               
+               {/* Бейдж наезжает прямо на край надписи */}
+               <div className="absolute left-full -translate-x-3 z-20">
+                 <TrendBadge value={stats.percent} className="scale-90 shadow-md shadow-black/50" />
+               </div>
+             </div>
              
              <div className="flex flex-col items-center justify-center w-full">
                <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
@@ -176,10 +184,6 @@ export default function Home() {
                <span className="text-sm font-medium text-gray-500 mt-2">{mainCurrency}</span>
              </div>
 
-            <TrendBadge 
-              value={stats.percent} 
-              className="absolute top-6 right-6" 
-            />
           </div>
         </section>
 

@@ -7,7 +7,7 @@ export function useMonthlyStats(wallets, transactions, exchangeRates) {
     // Считаем текущий общий баланс
     wallets.forEach(w => {
       const rate = exchangeRates[w.currency] || 1;
-      currentTotal += (Number(w.balance) || 0) * rate; // Добавили страховку Number()
+      currentTotal += (Number(w.balance) || 0) * rate;
     });
 
     const now = new Date();
@@ -38,7 +38,7 @@ export function useMonthlyStats(wallets, transactions, exchangeRates) {
 
     // Если у нас вообще не было движений денег в этом месяце
     if (netChangeInPln === 0 && incomeInPln === 0) {
-        return { percent: "0.0", isPositive: false, isNeutral: true };
+        return { percent: 0 }; // Отдаем просто 0, бейдж сам поймет
     }
 
     // 1. Стандартный сценарий: у нас был какой-то капитал на начало месяца
@@ -46,23 +46,19 @@ export function useMonthlyStats(wallets, transactions, exchangeRates) {
        const percentChange = ((currentTotal - startBalance) / Math.abs(startBalance)) * 100;
        
        return {
-         percent: Math.abs(percentChange).toFixed(1), // Округлит 0.003 до 0.0
-         isPositive: netChangeInPln > 0, // 🔥 Цвет зависит от реальных денег, а не от процента!
-         isNeutral: false
+         percent: percentChange, // 🔥 Убрали Math.abs(), отдаем как есть (с минусом, если он есть)
        };
     }
 
     // 2. Сценарий: начали с 0, но были только расходы (ушли в минус)
     if (incomeInPln === 0) {
-        return { percent: "100.0", isPositive: false, isNeutral: false };
+        return { percent: -100 }; // 🔥 Отдаем -100, бейдж сделает красным
     }
 
     // 3. Сценарий: начали с 0, и появились доходы
     const savingsRate = (currentTotal / incomeInPln) * 100;
     return {
-        percent: savingsRate.toFixed(1),
-        isPositive: netChangeInPln > 0, 
-        isNeutral: false
+        percent: savingsRate
     };
 
   }, [wallets, transactions, exchangeRates]);
