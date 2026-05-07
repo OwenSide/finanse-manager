@@ -37,7 +37,6 @@ export default function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 
                 {/* Заглушки для новых кнопок меню */}
-                <Route path="/achievements" element={<div className="p-10">Strona w budowie (achievements)</div>} />
                 <Route path="/more" element={<div className="p-10">Strona w budowie (more)</div>} />
               </Routes>
             </div>

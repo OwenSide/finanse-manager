@@ -1,4 +1,4 @@
-import { LayoutDashboard, PlusCircle, Tags, Wallet, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Tags, Wallet, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
@@ -20,7 +20,7 @@ export default function Sidebar() {
         <NavItem to="/add-transaction" icon={<PlusCircle size={20} />} label="Dodaj transakcję" />
         <NavItem to="/wallets" icon={<Wallet size={20} />} label="Portfele" />
         <NavItem to="/categories" icon={<Tags size={20} />} label="Kategorie" />
-        <NavItem to="/more" icon={<MoreHorizontal size={20} />} label="Więcej" />
+        <NavItem to="/stats" icon={<BarChart3 size={20} />} label="Analityka" />
       </nav>
 
       {/* Футер сайдбара (можно добавить версию или выход) */}

@@ -136,7 +136,7 @@ export default function Home() {
             </Link>
 
             {/* Иконки Статистики и Достижений (Справа, без фона) */}
-            <div className="flex items-center gap-5 pr-2">
+            {/* <div className="flex items-center gap-5 pr-2">
                 <Link 
                     to="/stats" 
                     className="text-gray-400 hover:text-indigo-400 transition-colors active:scale-95"
@@ -150,7 +150,7 @@ export default function Home() {
                 >
                     <Trophy size={17} strokeWidth={1.5} />
                 </Link>
-            </div>
+            </div> */}
             
         </header>
 

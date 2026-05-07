@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 // 🔥 Добавил MoreHorizontal
-import { LayoutDashboard, Plus, Tags, Wallet, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, Plus, Tags, Wallet, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function BottomNav() {
@@ -50,7 +50,7 @@ export default function BottomNav() {
             <BottomNavItem to="/categories" icon={<Tags size={20} />} label="Kategorie" />
             
             {/* 🔥 КНОПКА "ЕЩЁ" */}
-            <BottomNavItem to="/more" icon={<MoreHorizontal size={20} />} label="Więcej" />
+            <BottomNavItem to="/stats" icon={<BarChart3 size={20} />} label="Analityka" />
         </div>
 
       </nav>
