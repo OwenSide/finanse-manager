@@ -18,6 +18,7 @@ import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
 import PeriodSelector from '../components/PeriodSelector'; // 🔥 Подключаем наш новый фильтр
 import WeekdayBarChart from '../components/WeekdayBarChart';
+import ExpenseHighlights from '../components/ExpenseHighlights';
 
 // Помощник: получаем локальную дату в формате YYYY-MM-DD
 const getLocalYYYYMMDD = (date) => {
@@ -516,6 +517,13 @@ export default function StatsPage() {
         data={stats.barData} 
         mainCurrency={mainCurrency} 
         activeTab={activeTab} 
+      />
+
+      {/* 🔥 НАШИ НОВЫЕ БЛОКИ: СРЕДНЕЕ И ТОП-3 */}
+      <ExpenseHighlights 
+        activeTab={activeTab} 
+        stats={stats} 
+        mainCurrency={mainCurrency} 
       />
       
       {/* МОДАЛКА */}
