@@ -17,6 +17,7 @@ import CategoryIcon from '../components/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
 import PeriodSelector from '../components/PeriodSelector'; // 🔥 Подключаем наш новый фильтр
+import WeekdayBarChart from '../components/WeekdayBarChart';
 
 // Помощник: получаем локальную дату в формате YYYY-MM-DD
 const getLocalYYYYMMDD = (date) => {
@@ -151,6 +152,10 @@ export default function StatsPage() {
     let totalExp = 0;
     let totalInc = 0;
     const pieMap = {};
+    const topExpList = [];
+    
+    // Возвращаем массив для 7 дней недели (0=Вс, 1=Пн, ... 6=Сб)
+    const weekDaysRaw = [0, 0, 0, 0, 0, 0, 0];
 
     filteredTxs.forEach(tx => {
       const isExp = tx.type === 'expense';
@@ -165,41 +170,80 @@ export default function StatsPage() {
       const amount = Number(tx.amount || 0);
       const convertedAmount = (amount * rate) / mainRate;
 
-      if (isExp) totalExp += convertedAmount;
+      if (isExp) {
+        totalExp += convertedAmount;
+        
+        // Для Top-3
+        const cat = dbData.cats.find(c => String(c.id) === String(tx.categoryId || tx.category));
+        topExpList.push({
+          ...tx,
+          convertedAmount,
+          catName: cat ? cat.name : 'Inne',
+          catIcon: cat ? cat.icon : 'help-circle'
+        });
+      }
+      
       if (isInc) totalInc += convertedAmount;
 
+      // Считаем структуру и графики ТОЛЬКО для активной вкладки
       if (tx.type === activeTab) {
+        // 1. Для Pie Chart (Круговой)
         const catId = String(tx.categoryId || tx.category || 'unknown');
-        
         if (!pieMap[catId]) {
           const actualCat = dbData.cats.find(cat => String(cat.id) === catId);
-          pieMap[catId] = {
-            id: catId,
-            name: actualCat ? actualCat.name : catId,
-            icon: actualCat ? actualCat.icon : 'help-circle',
-            value: 0
-          };
+          pieMap[catId] = { id: catId, name: actualCat ? actualCat.name : catId, icon: actualCat ? actualCat.icon : 'help-circle', value: 0 };
         }
         pieMap[catId].value += convertedAmount;
+
+        // 2. Для Bar Chart (Дни недели)
+        const txDate = new Date(tx.date);
+        const dayIndex = txDate.getDay(); 
+        weekDaysRaw[dayIndex] += convertedAmount;
       }
     });
 
-    let pieData = Object.values(pieMap)
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value);
-
+    // Формируем данные
     const activeTotal = activeTab === 'expense' ? totalExp : totalInc;
-    pieData = pieData.map(item => ({
-      ...item,
-      percentage: activeTotal > 0 ? ((item.value / activeTotal) * 100).toFixed(1) : 0
-    }));
+    let pieData = Object.values(pieMap).filter(item => item.value > 0).sort((a, b) => b.value - a.value);
+    pieData = pieData.map(item => ({ ...item, percentage: activeTotal > 0 ? ((item.value / activeTotal) * 100).toFixed(1) : 0 }));
 
-    return {
-      pieData,
-      totalExpenses: totalExp,
-      totalIncomes: totalInc
-    };
-  }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, dbData.wallets]);
+    // 🔥 ВОЗВРАЩАЕМ 7 ДНЕЙ НЕДЕЛИ С ПОЛНЫМИ ИМЕНАМИ
+    const labels = [
+      { short: 'Ndz', full: 'Niedziela' },
+      { short: 'Pon', full: 'Poniedziałek' },
+      { short: 'Wto', full: 'Wtorek' },
+      { short: 'Śro', full: 'Środa' },
+      { short: 'Czw', full: 'Czwartek' },
+      { short: 'Pią', full: 'Piątek' },
+      { short: 'Sob', full: 'Sobota' }
+    ];
+    let barData = labels.map((label, i) => ({ 
+      name: label.short, 
+      fullName: label.full, 
+      value: weekDaysRaw[i] 
+    }));
+    barData = [...barData.slice(1), barData[0]]; // Начинаем с Понедельника
+
+    const top3 = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
+
+    let daysPassed = 1;
+    const now = new Date();
+    if (periodType === 'this_month') daysPassed = now.getDate();
+    else if (periodType === 'last_month') daysPassed = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    else if (periodType === 'this_year') {
+      const start = new Date(now.getFullYear(), 0, 1);
+      daysPassed = Math.max(1, Math.ceil((now - start) / (1000 * 60 * 60 * 24)));
+    } else if (periodType === 'custom') {
+      const s = new Date(customStart);
+      const e = new Date(customEnd);
+      daysPassed = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1);
+    } else {
+      daysPassed = 30;
+    }
+    const dailyAvg = totalExp / daysPassed;
+
+    return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3, dailyAvg };
+  }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd]);
 
   const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;
 
@@ -339,7 +383,7 @@ export default function StatsPage() {
           </p>
         </div>
       </div>
-
+      
       {/* PIE CHART + LIST */}
       {/* 3. PIE CHART + LIST (Структура) */}
       <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6 min-h-[400px] flex flex-col">
@@ -355,7 +399,7 @@ export default function StatsPage() {
             </div>
             <p className="text-white font-bold text-lg mb-2">Pustki...</p>
             <p className="text-sm text-gray-500 max-w-[240px] leading-relaxed">
-              Brak transakcji w tym okresie. Czysta karta!
+              Brak transakcji w tym okresie.
             </p>
           </div>
         ) : (
@@ -426,7 +470,7 @@ export default function StatsPage() {
                 )}
               </div>
             </div>
-
+                
             <div className="space-y-3 max-h-[230px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-4 pl-1 py-1">
               {stats.pieData.map((item, index) => {
                 const isSelected = activeIndex === index;
@@ -462,10 +506,18 @@ export default function StatsPage() {
                 );
               })}
             </div>
+            
           </>
         )}
       </div>
 
+      {/* 🔥 НОВЫЙ БЛОК: ГРАФИК ПО ДНЯМ НЕДЕЛИ */}
+      <WeekdayBarChart 
+        data={stats.barData} 
+        mainCurrency={mainCurrency} 
+        activeTab={activeTab} 
+      />
+      
       {/* МОДАЛКА */}
       <CategoryDetailsModal 
         isOpen={isDetailsModalOpen}

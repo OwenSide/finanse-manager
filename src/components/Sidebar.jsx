@@ -25,7 +25,7 @@ export default function Sidebar() {
 
       {/* Футер сайдбара (можно добавить версию или выход) */}
       <div className="p-4 border-t border-white/5 text-xs text-gray-500 text-center">
-        v1.0.0
+        Finance Manager
       </div>
     </aside>
   );
