@@ -149,13 +149,14 @@ export default function StatsPage() {
   }, [dbData.txs, selectedWallet, periodType, customStart, customEnd, dbData.wallets]);
 
   // 3. АГРЕГАТОР ДАННЫХ
+  // 3. АГРЕГАТОР ДАННЫХ
   const stats = useMemo(() => {
     let totalExp = 0;
     let totalInc = 0;
     const pieMap = {};
     const topExpList = [];
+    const topIncList = []; // 🔥 НОВОЕ: Массив для доходов
     
-    // Возвращаем массив для 7 дней недели (0=Вс, 1=Пн, ... 6=Сб)
     const weekDaysRaw = [0, 0, 0, 0, 0, 0, 0];
 
     filteredTxs.forEach(tx => {
@@ -171,24 +172,26 @@ export default function StatsPage() {
       const amount = Number(tx.amount || 0);
       const convertedAmount = (amount * rate) / mainRate;
 
+      // Общая логика получения категории для Топ-3
+      const cat = dbData.cats.find(c => String(c.id) === String(tx.categoryId || tx.category));
+      const txWithCat = {
+        ...tx,
+        convertedAmount,
+        catName: cat ? cat.name : 'Inne',
+        catIcon: cat ? cat.icon : 'help-circle'
+      };
+
       if (isExp) {
         totalExp += convertedAmount;
-        
-        // Для Top-3
-        const cat = dbData.cats.find(c => String(c.id) === String(tx.categoryId || tx.category));
-        topExpList.push({
-          ...tx,
-          convertedAmount,
-          catName: cat ? cat.name : 'Inne',
-          catIcon: cat ? cat.icon : 'help-circle'
-        });
+        topExpList.push(txWithCat); // Собираем расходы
       }
       
-      if (isInc) totalInc += convertedAmount;
+      if (isInc) {
+        totalInc += convertedAmount;
+        topIncList.push(txWithCat); // 🔥 Собираем доходы
+      }
 
-      // Считаем структуру и графики ТОЛЬКО для активной вкладки
       if (tx.type === activeTab) {
-        // 1. Для Pie Chart (Круговой)
         const catId = String(tx.categoryId || tx.category || 'unknown');
         if (!pieMap[catId]) {
           const actualCat = dbData.cats.find(cat => String(cat.id) === catId);
@@ -196,36 +199,28 @@ export default function StatsPage() {
         }
         pieMap[catId].value += convertedAmount;
 
-        // 2. Для Bar Chart (Дни недели)
         const txDate = new Date(tx.date);
         const dayIndex = txDate.getDay(); 
         weekDaysRaw[dayIndex] += convertedAmount;
       }
     });
 
-    // Формируем данные
     const activeTotal = activeTab === 'expense' ? totalExp : totalInc;
     let pieData = Object.values(pieMap).filter(item => item.value > 0).sort((a, b) => b.value - a.value);
     pieData = pieData.map(item => ({ ...item, percentage: activeTotal > 0 ? ((item.value / activeTotal) * 100).toFixed(1) : 0 }));
 
-    // 🔥 ВОЗВРАЩАЕМ 7 ДНЕЙ НЕДЕЛИ С ПОЛНЫМИ ИМЕНАМИ
     const labels = [
-      { short: 'Ndz', full: 'Niedziela' },
-      { short: 'Pon', full: 'Poniedziałek' },
-      { short: 'Wto', full: 'Wtorek' },
-      { short: 'Śro', full: 'Środa' },
-      { short: 'Czw', full: 'Czwartek' },
-      { short: 'Pią', full: 'Piątek' },
+      { short: 'Ndz', full: 'Niedziela' }, { short: 'Pon', full: 'Poniedziałek' },
+      { short: 'Wto', full: 'Wtorek' }, { short: 'Śro', full: 'Środa' },
+      { short: 'Czw', full: 'Czwartek' }, { short: 'Pią', full: 'Piątek' },
       { short: 'Sob', full: 'Sobota' }
     ];
-    let barData = labels.map((label, i) => ({ 
-      name: label.short, 
-      fullName: label.full, 
-      value: weekDaysRaw[i] 
-    }));
-    barData = [...barData.slice(1), barData[0]]; // Начинаем с Понедельника
+    let barData = labels.map((label, i) => ({ name: label.short, fullName: label.full, value: weekDaysRaw[i] }));
+    barData = [...barData.slice(1), barData[0]]; 
 
-    const top3 = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
+    // 🔥 Сортируем оба массива для ТОП-3
+    const top3Exp = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
+    const top3Inc = topIncList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
 
     let daysPassed = 1;
     const now = new Date();
@@ -238,12 +233,12 @@ export default function StatsPage() {
       const s = new Date(customStart);
       const e = new Date(customEnd);
       daysPassed = Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1);
-    } else {
-      daysPassed = 30;
-    }
+    } else daysPassed = 30;
+    
     const dailyAvg = totalExp / daysPassed;
 
-    return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3, dailyAvg };
+    // 🔥 Возвращаем оба топа
+    return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg };
   }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd]);
 
   const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;
