@@ -114,6 +114,9 @@ export default function Home() {
     </div>
   );
 
+  {/* Считаем длину строки: переводим в число, фиксируем копейки и убираем лишнее */}
+  const capitalLength = totalCapital.toFixed(2).replace('.', '').replace('-', '').length;
+
   return (
     <div className="min-h-screen w-full relative pb-24 p-2 min-[450px]:p-6 transition-all duration-300 pt-[max(1rem,env(safe-area-inset-top))]">
       
@@ -136,7 +139,7 @@ export default function Home() {
             </Link>
 
             {/* Иконки Статистики и Достижений (Справа, без фона) */}
-            <div className="flex items-center gap-5 pr-2">
+            {/* <div className="flex items-center gap-5 pr-2">
                 <Link 
                     to="/stats" 
                     className="text-gray-400 hover:text-indigo-400 transition-colors active:scale-95"
@@ -150,7 +153,7 @@ export default function Home() {
                 >
                     <Trophy size={17} strokeWidth={1.5} />
                 </Link>
-            </div>
+            </div> */}
             
         </header>
 
@@ -171,23 +174,29 @@ export default function Home() {
                </div>
              </div>
              
-             <div className="flex flex-col items-center justify-center w-full">
+             <div className="flex flex-col items-center justify-center w-full px-4 text-center">
               <span className={`
-                font-black text-neon leading-none break-all transition-all duration-500
-                ${totalCapital >= 1000000 
-                  ? 'text-[32px] min-[450px]:text-5xl' // 🔥 Уменьшенный размер для миллионов
-                  : 'text-[12vw] min-[450px]:text-7xl' // Стандартный размер для обычных сумм
+                font-black leading-none transition-all duration-500
+                {/* 🔥 Если больше 7 значащих цифр — уменьшаем шрифт */}
+                ${capitalLength >= 7 
+                  ? 'text-[32px] min-[450px]:text-5xl' 
+                  : 'text-[12vw] min-[450px]:text-7xl'
                 }
+                {/* Цвет: красный для минуса, неон для плюса */}
+                ${totalCapital < 0 ? 'text-rose-500' : 'text-neon'}
               `}>
                 <CountUp 
                   end={totalCapital} 
                   duration={1.5} 
-                  decimals={totalCapital >= 1000000 ? 0 : 2} // 🔥 Опционально: убираем копейки, если сумма > 1 млн
+                  decimals={capitalLength >= 8 ? 0 : 2} // Если цифр ОЧЕНЬ много (8+), убираем копейки совсем
                   decimal="." 
                   separator=" " 
+                  preserveValue={true}
                 />
               </span>
-              <span className="text-sm font-medium text-gray-500 mt-2">{mainCurrency}</span>
+              <span className="text-sm font-medium text-gray-500 mt-2">
+                {mainCurrency}
+              </span>
             </div>
 
           </div>
