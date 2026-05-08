@@ -172,17 +172,23 @@ export default function Home() {
              </div>
              
              <div className="flex flex-col items-center justify-center w-full">
-               <span className="text-[12vw] min-[450px]:text-7xl font-black text-neon leading-none break-all">
-                 <CountUp 
-                   end={totalCapital} 
-                   duration={1.5} 
-                   decimals={2} 
-                   decimal="." 
-                   separator=" " 
-                 />
-               </span>
-               <span className="text-sm font-medium text-gray-500 mt-2">{mainCurrency}</span>
-             </div>
+              <span className={`
+                font-black text-neon leading-none break-all transition-all duration-500
+                ${totalCapital >= 1000000 
+                  ? 'text-[32px] min-[450px]:text-5xl' // 🔥 Уменьшенный размер для миллионов
+                  : 'text-[12vw] min-[450px]:text-7xl' // Стандартный размер для обычных сумм
+                }
+              `}>
+                <CountUp 
+                  end={totalCapital} 
+                  duration={1.5} 
+                  decimals={totalCapital >= 1000000 ? 0 : 2} // 🔥 Опционально: убираем копейки, если сумма > 1 млн
+                  decimal="." 
+                  separator=" " 
+                />
+              </span>
+              <span className="text-sm font-medium text-gray-500 mt-2">{mainCurrency}</span>
+            </div>
 
           </div>
         </section>
