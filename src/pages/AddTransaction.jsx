@@ -3,10 +3,11 @@ import EditModal from "../components/EditModal";
 import TransactionItem from "../components/TransactionItem";
 import TransactionDetailModal from "../components/TransactionDetailModal";
 import AddTransactionModal from "../components/AddTransactionModal";
+import TransactionFilter from "../components/TransactionFilter"; 
 import { processRecurringTransactions } from "../utils/recurringEngine";
 
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
-import { Plus, Filter, Loader2, Repeat, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react"; 
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
@@ -17,14 +18,15 @@ export default function TransactionsPage() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
+  // Стейт фильтра теперь включает и строку поиска
   const [filter, setFilter] = useState({
+    searchQuery: "",
     dateFrom: "",
     dateTo: "",
     categoryId: "",
-    type: "", // 'income' | 'expense' | ''
+    type: "", 
     walletId: "",
     onlyRecurring: false,
   });
@@ -69,7 +71,6 @@ export default function TransactionsPage() {
 
   const handleSaveTransaction = async (newTransaction) => {
     await addTransaction(newTransaction);
-    // Обновляем список, добавляя новую транзакцию и сортируя по дате
     setTransactions((prev) => [newTransaction, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
   };
 
@@ -77,7 +78,7 @@ export default function TransactionsPage() {
     if(window.confirm("Usunąć?")) {
       await deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
-      setSelectedTransaction(null); // Закрываем детали, если они открыты
+      setSelectedTransaction(null);
     }
   };
 
@@ -119,9 +120,46 @@ export default function TransactionsPage() {
         const walletMatch = !filter.walletId || t.walletId === filter.walletId;
         const recurringMatch = !filter.onlyRecurring || t.isRecurring === true;
 
-        return dateMatch && categoryMatch && typeMatch && walletMatch && recurringMatch;
+        // 🔥 ЛОГИКА ПОИСКА
+        const query = filter.searchQuery?.toLowerCase().trim() || "";
+        let searchMatch = true;
+        if (query) {
+            // Ищем по всем возможным ключам заметки и страхуем через String()
+            const note = String(t.note || t.description || t.comment || "").toLowerCase();
+            
+            const cat = categories.find(c => c.id === t.categoryId);
+            const catName = cat ? cat.name.toLowerCase() : "";
+            
+            const wallet = wallets.find(w => w.id === t.walletId);
+            const walletName = wallet ? wallet.name.toLowerCase() : "";
+            const currency = wallet ? wallet.currency.toLowerCase() : "";
+            
+            const amountStr = String(t.amount); 
+            
+            // Генерируем даты точь-в-точь как на экране
+            const d = new Date(t.date);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            
+            const dateShort = `${dd}.${mm}`; // Даст ровно "07.05"
+            const dateFull = `${dd}.${mm}.${yyyy}`; // Даст "07.05.2026"
+            const dateText = d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase(); 
+            
+            searchMatch = 
+              note.includes(query) || 
+              catName.includes(query) || 
+              walletName.includes(query) ||       
+              currency.includes(query) ||         
+              amountStr.includes(query) ||        
+              dateShort.includes(query) || // Ищет "07.05"
+              dateFull.includes(query) ||  // Ищет "07.05.2026"
+              dateText.includes(query);
+        }
+
+        return dateMatch && categoryMatch && typeMatch && walletMatch && recurringMatch && searchMatch;
       }).sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [transactions, filter]);
+  }, [transactions, filter, categories, wallets]);
 
   const groupedTransactions = useMemo(() => {
       const groups = {};
@@ -151,10 +189,6 @@ export default function TransactionsPage() {
   const selectedWallet = selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null;
   const currentExchangeRate = selectedWallet ? (exchangeRates[selectedWallet.currency] || 1) : 1;
 
-  // Разделяем категории для красивого селекта
-  const incomeCategories = categories.filter(c => c.type === 'income');
-  const expenseCategories = categories.filter(c => c.type === 'expense');
-
   if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40}/></div>;
 
   return (
@@ -171,110 +205,20 @@ export default function TransactionsPage() {
         </button>
       </div>
 
-      {/* FILTERS */}
-      <div className="glass-panel rounded-2xl border border-white/5 mb-6 overflow-hidden">
-        <button 
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="w-full flex items-center justify-between p-4 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-        >
-            <div className="flex items-center gap-2">
-                <Filter size={18} />
-                <span className="text-sm font-bold uppercase tracking-wider">Filtrowanie</span>
-            </div>
-            {isFilterOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </button>
-        
-        {isFilterOpen && (
-            <div className="p-4 pt-0 space-y-3 animate-in fade-in slide-in-from-top-2">
-                
-                {/* 🔥 ТИП ТРАНЗАКЦИИ (КРАСИВЫЕ ТАБЫ ВМЕСТО СЕЛЕКТА) */}
-                <div className="flex p-1 bg-[#0B0E14] rounded-xl border border-white/10">
-                    <button 
-                        onClick={() => setFilter({ ...filter, type: "" })}
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "" ? "bg-gray-700 text-white" : "text-gray-500 hover:text-white"}`}
-                    >
-                        Wszystkie
-                    </button>
-                    <button 
-                        onClick={() => setFilter({ ...filter, type: "expense" })}
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "expense" ? "bg-rose-500 text-white" : "text-gray-500 hover:text-rose-400"}`}
-                    >
-                        Wydatki
-                    </button>
-                    <button 
-                        onClick={() => setFilter({ ...filter, type: "income" })}
-                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "income" ? "bg-emerald-500 text-white" : "text-gray-500 hover:text-emerald-400"}`}
-                    >
-                        Przychody
-                    </button>
-                </div>
+      {/* ФИЛЬТРЫ И ПОИСК */}
+      <TransactionFilter 
+        filter={filter} 
+        setFilter={setFilter} 
+        categories={categories} 
+        wallets={wallets} 
+      />
 
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                    <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateFrom} onChange={(e) => setFilter({ ...filter, dateFrom: e.target.value })} />
-                    <input type="date" className="bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.dateTo} onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })} />
-                </div>
-
-                {/* 🔥 ГРУППИРОВКА КАТЕГОРИЙ ПО ТИПУ */}
-                <select 
-                    className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" 
-                    value={filter.categoryId}
-                    onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}
-                >
-                    <option value="">Wszystkie kategorie</option>
-                    
-                    {expenseCategories.length > 0 && (
-                        <optgroup label="Wydatki">
-                            {expenseCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
-                    )}
-                    
-                    {incomeCategories.length > 0 && (
-                        <optgroup label="Przychody">
-                            {incomeCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
-                    )}
-                </select>
-
-                <select className="w-full bg-[#0B0E14] border border-white/10 rounded-lg p-2 text-xs text-white" value={filter.walletId} onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}>
-                    <option value="">Wszystkie portfele</option>
-                    {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-                </select>
-
-                {/* Переключатель подписок */}
-                <div 
-                    onClick={() => setFilter({ ...filter, onlyRecurring: !filter.onlyRecurring })}
-                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all mb-3 ${
-                        filter.onlyRecurring 
-                        ? "bg-indigo-500/10 border-indigo-500/50" 
-                        : "bg-[#0B0E14] border-white/10 hover:bg-white/5"
-                    }`}
-                >
-                    <div className="flex items-center gap-2">
-                        <Repeat size={16} className={filter.onlyRecurring ? "text-indigo-400" : "text-gray-500"} />
-                        <span className={`text-xs font-bold ${filter.onlyRecurring ? "text-indigo-300" : "text-gray-400"}`}>
-                            Tylko subskrypcje
-                        </span>
-                    </div>
-                    <div className={`w-8 h-5 rounded-full p-0.5 transition-colors ${filter.onlyRecurring ? "bg-indigo-500" : "bg-gray-700"}`}>
-                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${filter.onlyRecurring ? "translate-x-3" : "translate-x-0"}`} />
-                    </div>
-                </div>
-
-                <button 
-                    onClick={() => setFilter({ dateFrom: "", dateTo: "", categoryId: "", type: "", walletId: "", onlyRecurring: false })}
-                    className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg py-2.5 text-xs font-medium text-gray-300 hover:text-white transition-all active:scale-95 mt-2"
-                >
-                    <X size={14} />
-                    Wyczyść filtry
-                </button>
-            </div>
-        )}
-      </div>
-
-      {/* LISTA TRANSAKCJI */}
+      {/* СПИСОК ТРАНЗАКЦИЙ */}
       <div className="space-y-6">
         {Object.keys(groupedTransactions).length === 0 ? (
-           <div className="text-center py-12 text-gray-500">Brak transakcji.</div>
+           <div className="text-center py-12 text-gray-500">
+             {filter.searchQuery ? "Nic nie znaleziono." : "Brak transakcji."}
+           </div>
         ) : (
             Object.entries(groupedTransactions).map(([dateLabel, txs]) => (
                 <div key={dateLabel}>
