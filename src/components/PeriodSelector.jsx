@@ -82,31 +82,49 @@ export default function PeriodSelector({
           ))}
 
           {/* Блок для ввода своих дат (появляется только если выбран Własny zakres) */}
+          {/* Блок для ввода своих дат (появляется только если выбран Własny zakres) */}
           {periodType === 'custom' && (
-            <div className="px-5 pb-4 pt-3 border-t border-white/5 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="px-5 pb-5 pt-4 border-t border-white/5 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="flex gap-3 items-center">
-                <div className="flex-1">
-                  <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1.5 block">Od</label>
+                
+                {/* Карточка "OD" — теперь это label */}
+                <label className="flex-1 block bg-[#0B0E14]/50 border border-white/10 rounded-2xl px-3 py-2 focus-within:border-indigo-500 focus-within:bg-[#151A23] transition-all group cursor-pointer">
+                  <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-1 group-focus-within:text-indigo-400 transition-colors">
+                    Od
+                  </span>
                   <input 
                     type="date" 
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
-                    className="w-full bg-[#151A23] text-white border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]"
+                    // Принудительно вызываем календарь при клике
+                    onClick={(e) => {
+                      try { e.target.showPicker(); } catch (err) {}
+                    }}
+                    className="w-full bg-transparent text-white font-medium text-sm outline-none [color-scheme:dark] cursor-pointer"
                   />
-                </div>
-                <div className="flex-1">
-                  <label className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1.5 block">Do</label>
+                </label>
+
+                {/* Карточка "DO" — теперь это label */}
+                <label className="flex-1 block bg-[#0B0E14]/50 border border-white/10 rounded-2xl px-3 py-2 focus-within:border-indigo-500 focus-within:bg-[#151A23] transition-all group cursor-pointer">
+                  <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-1 group-focus-within:text-indigo-400 transition-colors">
+                    Do
+                  </span>
                   <input 
                     type="date" 
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
-                    className="w-full bg-[#151A23] text-white border border-white/10 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors [color-scheme:dark]"
+                    onClick={(e) => {
+                      try { e.target.showPicker(); } catch (err) {}
+                    }}
+                    className="w-full bg-transparent text-white font-medium text-sm outline-none [color-scheme:dark] cursor-pointer"
                   />
-                </div>
+                </label>
+
               </div>
+              
               <button 
                 onClick={() => setIsOpen(false)}
-                className="w-full mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
+                className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-2xl transition-all text-sm shadow-[0_8px_16px_-6px_rgba(79,70,229,0.5)] active:scale-[0.98]"
               >
                 Pokaż wyniki
               </button>
