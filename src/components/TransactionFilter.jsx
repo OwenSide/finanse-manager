@@ -125,13 +125,18 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
           </select>
 
           {/* ВЫБОР КОШЕЛЬКА */}
-          <select 
+<select 
             className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-xs text-white outline-none focus:border-indigo-500 transition-colors appearance-none" 
             value={filter.walletId} 
             onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}
           >
             <option value="">Wszystkie portfele</option>
-            {wallets.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+            {/* 🔥 Точно так же добавили ({w.currency}) */}
+            {wallets.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.currency} • {w.name}
+              </option>
+            ))}
           </select>
 
           {/* ПЕРЕКЛЮЧАТЕЛЬ ПОДПИСОК */}

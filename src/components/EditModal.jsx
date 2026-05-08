@@ -252,11 +252,17 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                 <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Portfel</label>
                                 <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                                     <select 
-                                            className="w-full bg-transparent p-3 pl-10 text-white text-sm focus:outline-none appearance-none h-[50px] relative z-10 cursor-pointer" 
-                                            value={form.walletId} 
-                                            onChange={(e) => setForm({ ...form, walletId: e.target.value })}
+                                    // 🔥 Добавили pr-10 (чтобы текст не лез под стрелочку) и truncate (чтобы красиво обрезался с ...)
+                                    className="w-full bg-transparent py-3 pl-10 pr-10 text-white text-sm focus:outline-none appearance-none h-[50px] relative z-10 cursor-pointer truncate" 
+                                    value={form.walletId} 
+                                    onChange={(e) => setForm({ ...form, walletId: e.target.value })}
                                     >
-                                            {wallets.map((w) => <option key={w.id} value={w.id} className="bg-[#151A23] text-white">{w.name}</option>)}
+                                    {wallets.map((w) => (
+                                        <option key={w.id} value={w.id} className="bg-[#151A23]">
+                                            {/* 🔥 Перенесли валюту в начало с красивой точкой */}
+                                            {w.currency} • {w.name}
+                                        </option>
+                                    ))}
                                     </select>
                                     <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 z-0" size={18} />
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none z-0" size={16} />
