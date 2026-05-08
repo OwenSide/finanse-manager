@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
-  XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area 
+  Tooltip 
 } from 'recharts';
 import { usePreferences } from '../context/PreferencesContext';
 import { 
@@ -10,13 +10,17 @@ import {
   getAllWallets, 
   getAllExchangeRates 
 } from '../db';
-import { formatNumber } from '../utils/formatNumber';
+
+// 🔥 НАШИ НОВЫЕ ФОРМАТТЕРЫ ДЛЯ БОЛЬШИХ ЧИСЕЛ
+import { formatCompactAmount, formatExactAmount } from '../utils/formatters'; 
+import { formatNumber } from '../utils/formatNumber'; // Оставил на случай, если он используется внутри других компонентов
+
 import { useNavigate } from 'react-router-dom';
 import { TrendingDown, TrendingUp, ArrowLeft, Wallet, PackageOpen } from 'lucide-react';
 import CategoryIcon from '../components/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
 import CategoryDetailsModal from '../components/CategoryDetailsModal';
-import PeriodSelector from '../components/PeriodSelector'; // 🔥 Подключаем наш новый фильтр
+import PeriodSelector from '../components/PeriodSelector'; 
 import WeekdayBarChart from '../components/WeekdayBarChart';
 import ExpenseHighlights from '../components/ExpenseHighlights';
 
@@ -45,7 +49,7 @@ export default function StatsPage() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [selectedWallet, setSelectedWallet] = useState('all'); 
 
-  // 🔥 СТЕЙТЫ ДЛЯ УМНОГО ФИЛЬТРА ПЕРИОДОВ
+  // СТЕЙТЫ ДЛЯ УМНОГО ФИЛЬТРА ПЕРИОДОВ
   const [periodType, setPeriodType] = useState('this_month');
   
   // По умолчанию "Свой период" = с 1 числа текущего месяца по сегодня
@@ -149,13 +153,12 @@ export default function StatsPage() {
   }, [dbData.txs, selectedWallet, periodType, customStart, customEnd, dbData.wallets]);
 
   // 3. АГРЕГАТОР ДАННЫХ
-  // 3. АГРЕГАТОР ДАННЫХ
   const stats = useMemo(() => {
     let totalExp = 0;
     let totalInc = 0;
     const pieMap = {};
     const topExpList = [];
-    const topIncList = []; // 🔥 НОВОЕ: Массив для доходов
+    const topIncList = []; 
     
     const weekDaysRaw = [0, 0, 0, 0, 0, 0, 0];
 
@@ -188,7 +191,7 @@ export default function StatsPage() {
       
       if (isInc) {
         totalInc += convertedAmount;
-        topIncList.push(txWithCat); // 🔥 Собираем доходы
+        topIncList.push(txWithCat); // Собираем доходы
       }
 
       if (tx.type === activeTab) {
@@ -218,7 +221,6 @@ export default function StatsPage() {
     let barData = labels.map((label, i) => ({ name: label.short, fullName: label.full, value: weekDaysRaw[i] }));
     barData = [...barData.slice(1), barData[0]]; 
 
-    // 🔥 Сортируем оба массива для ТОП-3
     const top3Exp = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
     const top3Inc = topIncList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
 
@@ -237,7 +239,6 @@ export default function StatsPage() {
     
     const dailyAvg = totalExp / daysPassed;
 
-    // 🔥 Возвращаем оба топа
     return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg };
   }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd]);
 
@@ -292,7 +293,6 @@ export default function StatsPage() {
         <h2 className="text-xl font-bold text-white">Analityka</h2>
       </div>
 
-
       {/* ФИЛЬТР КОШЕЛЬКОВ */}
       <div 
         className="flex gap-3 overflow-x-auto py-1 px-1 -mx-1 snap-x scroll-smooth relative z-30"
@@ -335,7 +335,7 @@ export default function StatsPage() {
         ))}
       </div>
 
-      {/* 🔥 НОВЫЙ БЛОК: УМНЫЙ ВЫБОР ПЕРИОДА */}
+      {/* УМНЫЙ ВЫБОР ПЕРИОДА */}
       <div className="relative z-40">
         <PeriodSelector 
           periodType={periodType}
@@ -347,7 +347,7 @@ export default function StatsPage() {
         />
       </div>
 
-      {/* TABS */}
+      {/* TABS (ОБНОВЛЕННЫЕ СУММЫ) */}
       <div className="grid grid-cols-2 gap-4">
         <div 
           onClick={() => setActiveTab('expense')}
@@ -359,8 +359,8 @@ export default function StatsPage() {
         >
           <TrendingDown className="text-rose-500 mb-2" size={20} />
           <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Wydatki</p>
-          <p className="text-xl font-bold text-white">
-            {formatNumber(stats.totalExpenses)} <span className="text-xs opacity-50">{mainCurrency}</span>
+          <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalExpenses)}>
+            {formatCompactAmount(stats.totalExpenses)} <span className="text-xs opacity-50">{mainCurrency}</span>
           </p>
         </div>
 
@@ -374,21 +374,19 @@ export default function StatsPage() {
         >
           <TrendingUp className="text-emerald-500 mb-2" size={20} />
           <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Przychody</p>
-          <p className="text-xl font-bold text-white">
-            {formatNumber(stats.totalIncomes)} <span className="text-xs opacity-50">{mainCurrency}</span>
+          <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalIncomes)}>
+            {formatCompactAmount(stats.totalIncomes)} <span className="text-xs opacity-50">{mainCurrency}</span>
           </p>
         </div>
       </div>
       
       {/* PIE CHART + LIST */}
-      {/* 3. PIE CHART + LIST (Структура) */}
       <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6 min-h-[400px] flex flex-col">
         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">
           Struktura {activeTab === 'expense' ? 'wydatków' : 'przychodów'}
         </h3>
         
         {stats.pieData.length === 0 ? (
-          /* 🔥 КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ (ВМЕСТО ГРАФИКА) */
           <div className="flex-1 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500">
             <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6 shadow-inner">
               <PackageOpen size={32} className="text-gray-600" />
@@ -399,7 +397,6 @@ export default function StatsPage() {
             </p>
           </div>
         ) : (
-          /* 🔥 КОНТЕНТ: ГРАФИК И СПИСОК (ПОКАЗЫВАЕМ ТОЛЬКО ЕСЛИ ЕСТЬ ДАННЫЕ) */
           <>
             <div className="h-[250px] relative outline-none focus:outline-none" onClick={() => setActiveIndex(null)}>
               <style>{`
@@ -434,6 +431,7 @@ export default function StatsPage() {
                 </PieChart>
               </ResponsiveContainer>
 
+              {/* ЦЕНТР ГРАФИКА (ОБНОВЛЕННЫЕ СУММЫ) */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 {activeIndex !== null && stats.pieData[activeIndex] ? (
                   <>
@@ -450,16 +448,22 @@ export default function StatsPage() {
                     <span className="text-[10px] text-gray-400 uppercase font-bold mb-1 text-center px-4 line-clamp-1">
                       {stats.pieData[activeIndex].name}
                     </span>
-                    <span className="text-2xl font-black text-white drop-shadow-md leading-none">
-                      {formatNumber(stats.pieData[activeIndex].value)}
+                    <span 
+                      className="text-xl font-black text-white drop-shadow-md leading-none cursor-help pointer-events-auto"
+                      title={formatExactAmount(stats.pieData[activeIndex].value)}
+                    >
+                      {formatCompactAmount(stats.pieData[activeIndex].value)}
                     </span>
                     <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
                   </>
                 ) : (
                   <>
                     <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">Suma</span>
-                    <span className="text-2xl font-black text-white drop-shadow-md">
-                      {formatNumber(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
+                    <span 
+                      className="text-xl font-black text-white drop-shadow-md cursor-help pointer-events-auto"
+                      title={formatExactAmount(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
+                    >
+                      {formatCompactAmount(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
                     </span>
                     <span className="text-[10px] text-gray-600 uppercase font-bold mt-1">{mainCurrency}</span>
                   </>
@@ -494,8 +498,14 @@ export default function StatsPage() {
                         <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">{item.percentage}%</p>
                       </div>
                     </div>
+                    {/* СПИСОК КАТЕГОРИЙ (ОБНОВЛЕННЫЕ СУММЫ) */}
                     <div className="text-right flex-shrink-0 pl-3">
-                      <p className="font-mono font-bold text-white whitespace-nowrap">{formatNumber(item.value)}</p>
+                      <p 
+                        className="font-mono font-bold text-white whitespace-nowrap cursor-help pointer-events-auto"
+                        title={formatExactAmount(item.value)}
+                      >
+                        {formatCompactAmount(item.value)}
+                      </p>
                       <p className="text-[10px] text-gray-500 uppercase">{mainCurrency}</p>
                     </div>
                   </div>
@@ -507,14 +517,12 @@ export default function StatsPage() {
         )}
       </div>
 
-      {/* 🔥 НОВЫЙ БЛОК: ГРАФИК ПО ДНЯМ НЕДЕЛИ */}
       <WeekdayBarChart 
         data={stats.barData} 
         mainCurrency={mainCurrency} 
         activeTab={activeTab} 
       />
 
-      {/* 🔥 НАШИ НОВЫЕ БЛОКИ: СРЕДНЕЕ И ТОП-3 */}
       <ExpenseHighlights 
         activeTab={activeTab} 
         stats={stats} 

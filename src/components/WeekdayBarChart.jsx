@@ -1,5 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+// 🔥 Импортируем форматтеры
+import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
 
 export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
   const hasData = data.some(item => item.value > 0);
@@ -12,7 +14,6 @@ export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
 
   return (
     <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6">
-      {/* УБИВАЕМ БРАУЗЕРНУЮ РАМКУ ФОКУСА */}
       <style>{`
         .recharts-bar-rectangle, 
         .recharts-bar-rectangle:focus, 
@@ -37,12 +38,24 @@ export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
             />
             <Tooltip 
               cursor={{ fill: '#ffffff05', stroke: 'transparent' }}
-              contentStyle={{ backgroundColor: '#1A1F2B', border: 'none', borderRadius: '12px', fontSize: '12px' }}
+              contentStyle={{ 
+                backgroundColor: '#1A1F2B', 
+                border: 'none', 
+                borderRadius: '12px', 
+                fontSize: '12px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)' 
+              }}
               itemStyle={{ color: color, fontWeight: 'bold' }}
               labelStyle={{ color: '#9ca3af', marginBottom: '4px' }}
-              formatter={(value) => [`${value.toFixed(2)} ${mainCurrency}`, tooltipText]}
+              
+              // 🔥 ОБНОВЛЕННЫЙ ФОРМАТТЕР: 
+              // В тултипе показываем ТОЧНУЮ сумму, так как там есть место
+              formatter={(value) => [
+                `${formatExactAmount(value)} ${mainCurrency}`, 
+                tooltipText
+              ]}
+              
               labelFormatter={(label, payload) => {
-                // Показываем полное название дня (np. Poniedziałek)
                 if (payload && payload.length > 0) {
                   return payload[0].payload.fullName;
                 }
@@ -54,7 +67,7 @@ export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
               fill={color} 
               radius={[6, 6, 0, 0]} 
               activeBar={false} 
-              maxBarSize={48} // 🔥 Чтобы один столбик не раздувался на весь экран
+              maxBarSize={48} 
               style={{ outline: 'none' }}
             />
           </BarChart>

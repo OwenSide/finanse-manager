@@ -1,7 +1,9 @@
 import React from 'react';
 import { Trophy, Star } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
-import { formatNumber } from '../utils/formatNumber';
+
+// 🔥 Импортируем наши новые крутые форматтеры
+import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
 
 export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
   const isExpense = activeTab === 'expense';
@@ -27,7 +29,13 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
             </p>
             <div className="flex items-baseline gap-1.5">
               <p className="text-sm text-gray-400">Wydajesz średnio</p>
-              <span className="text-white font-bold text-lg">{formatNumber(stats.dailyAvg)}</span>
+              {/* 1. ОБНОВИЛИ СУММУ: СРЕДНЯЯ В ДЕНЬ */}
+              <span 
+                className="text-white font-bold text-lg cursor-help"
+                title={formatExactAmount(stats.dailyAvg)}
+              >
+                {formatCompactAmount(stats.dailyAvg)}
+              </span>
               <span className="text-xs text-gray-500 font-bold uppercase">{mainCurrency}</span>
               <p className="text-sm text-gray-400">dziennie</p>
             </div>
@@ -51,7 +59,13 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{topCategory.name}</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xs font-mono font-bold text-gray-300">{formatNumber(topCategory.value)}</span>
+                  {/* 2. ОБНОВИЛИ СУММУ: ЛИДЕР-КАТЕГОРИЯ */}
+                  <span 
+                    className="text-xs font-mono font-bold text-gray-300 cursor-help"
+                    title={formatExactAmount(topCategory.value)}
+                  >
+                    {formatCompactAmount(topCategory.value)}
+                  </span>
                   <span className="text-[9px] text-gray-500 uppercase">{mainCurrency}</span>
                   <span className="text-[10px] text-gray-500 ml-1">({topCategory.percentage}%)</span>
                 </div>
@@ -76,26 +90,28 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
           <div className="space-y-3">
             {top3.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between bg-white/5 py-3 px-4 rounded-[20px] hover:bg-white/10 transition-all">
-                <div className="flex items-center gap-3">
-                  {/* 🔥 ТЕПЕРЬ ИКОНКИ В ТОП-3 ТОЖЕ ЦВЕТНЫЕ */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isExpense ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                <div className="flex items-center gap-3 flex-1 min-w-0 pr-3">
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isExpense ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
                     <CategoryIcon iconName={tx.catIcon} size={16} />
                   </div>
-                  <div>
-                    {/* СВЕРХУ: Всегда название категории жирным шрифтом */}
-                    <p className="text-xs font-bold text-white line-clamp-1">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white truncate">
                       {tx.catName}
                     </p>
-                    {/* СНИЗУ: Комментарий (если есть) и дата */}
-                    <p className="text-[10px] text-gray-500 line-clamp-1">
+                    <p className="text-[10px] text-gray-500 truncate">
                       {tx.comment && tx.comment !== tx.catName ? `${tx.comment} • ` : ''}
                       {new Date(tx.date).toLocaleDateString('pl-PL')}
                     </p>
                   </div>
                 </div>
-                <div className="text-right flex flex-col items-end">
-                  <p className={`text-sm font-mono font-bold ${isExpense ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    {isExpense ? '-' : '+'}{formatNumber(tx.convertedAmount)}
+                
+                {/* 3. ОБНОВИЛИ СУММУ: ТОП-3 */}
+                <div className="text-right flex flex-col items-end shrink-0">
+                  <p 
+                    className={`text-sm font-mono font-bold cursor-help ${isExpense ? 'text-rose-500' : 'text-emerald-500'}`}
+                    title={formatExactAmount(tx.convertedAmount)}
+                  >
+                    {isExpense ? '-' : '+'}{formatCompactAmount(tx.convertedAmount)}
                   </p>
                   <p className="text-[9px] text-gray-600 font-bold uppercase">
                     {mainCurrency}
