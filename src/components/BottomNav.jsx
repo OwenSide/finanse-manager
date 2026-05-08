@@ -73,7 +73,7 @@ function BottomNavItem({ to, icon, label }) {
       {isActive && (
         <motion.div
           layoutId="nav-active"
-          className="absolute top-[2] w-11 h-11 bg-white/5 rounded-xl -z-10"
+          className="absolute top-[2] w-12 h-12 bg-white/5 rounded-xl -z-10"
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
       )}
@@ -84,7 +84,7 @@ function BottomNavItem({ to, icon, label }) {
       </div>
 
       {/* Подпись */}
-      <span className={`text-[9px] font-medium tracking-wide transition-all duration-300 ${isActive ? "text-white font-bold" : "text-gray-500"}`}>
+      <span className={`text-[8px] font-medium tracking-wide transition-all duration-300 ${isActive ? "text-white font-bold" : "text-gray-500"}`}>
         {label}
       </span>
       
