@@ -178,7 +178,8 @@ function WalletCardWrapper({ wallet, onDelete, onEdit }) {
             value={wallet} 
             dragListener={false} 
             dragControls={dragControls}
-            className="touch-none" // Предотвращает системный скролл при захвате
+            // 🔥 УБРАЛИ touch-none отсюда, чтобы разрешить скролл всей страницы
+            className="relative" 
         >
             <WalletCard 
                 wallet={wallet} 
@@ -195,9 +196,9 @@ function WalletCard({ wallet, onDelete, onEdit, dragControls }) {
         <div className="group relative flex items-center p-3 rounded-[24px] bg-[#151A23] border border-white/5 hover:border-indigo-500/30 transition-all shadow-sm overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-            {/* 🔥 Хендл захвата: только здесь срабатывает dragControls.start */}
+            {/* 🔥 ВАЖНО: touch-none должен быть ТОЛЬКО ЗДЕСЬ */}
             <div 
-                className="text-gray-600/30 hover:text-gray-400 transition-colors mx-1 shrink-0 cursor-grab active:cursor-grabbing p-2 -ml-2"
+                className="text-gray-600/30 hover:text-gray-400 transition-colors mx-1 shrink-0 cursor-grab active:cursor-grabbing p-2 -ml-2 touch-none"
                 onPointerDown={(e) => dragControls.start(e)}
             >
                 <GripVertical size={16} />
@@ -219,12 +220,14 @@ function WalletCard({ wallet, onDelete, onEdit, dragControls }) {
             
             <div className="flex items-center gap-1 bg-[#0B0E14]/80 backdrop-blur-md rounded-xl p-1 border border-white/5 opacity-60 group-hover:opacity-100 transition-all z-10 shrink-0">
                 <button
+                    onPointerDown={(e) => e.stopPropagation()} // Чтобы не сработало перетаскивание при клике на кнопку
                     onClick={() => onEdit(wallet)}
                     className="p-2 text-gray-400 hover:text-indigo-400 hover:bg-white/5 rounded-lg transition-all"
                 >
                     <Pencil size={16} />
                 </button>
                 <button
+                    onPointerDown={(e) => e.stopPropagation()} // Чтобы не сработало перетаскивание при клике на кнопку
                     onClick={() => onDelete(wallet.id)}
                     className="p-2 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                 >
