@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getAllWallets, addWallet, deleteWallet, updateWallet, getAllExchangeRates, getAllTransactions } from "../db.js";
 import { Wallet, Plus, Trash2, CreditCard, Globe, ChevronDown, Check, Banknote, Pencil, Loader2, ArrowLeft, GripVertical } from "lucide-react";
 import { motion, AnimatePresence, Reorder } from "framer-motion"; // 🔥 Добавили Reorder
+import WalletFlag  from "../utils/flags";
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
@@ -202,8 +203,15 @@ function WalletCard({ wallet, onDelete, onEdit }) {
             </div>
 
             {/* 2. Иконка кошелька */}
-            <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 border border-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner">
-                <CreditCard size={22} />
+            {/* 2. Контейнер для круглого флага */}
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center relative">
+                <WalletFlag 
+                currency={wallet.currency} 
+                className="w-10 h-10 shadow-lg" // Флаг чуть меньше контейнера для «воздуха»
+                />
+                
+                {/* Небольшой глянцевый отблеск поверх круга для эффекта стекла */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/5 to-transparent pointer-events-none" />
             </div>
 
             {/* 3. Текст (Добавили отступ слева ml-3) */}

@@ -10,6 +10,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, 
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      },
       includeAssets: ['favicon.png'],
       manifest: {
         name: 'Finance Manager',
@@ -33,5 +37,17 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+  },
   base: "/finanse-manager/",
 })
