@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Calendar, Wallet, FileText, Plus, ChevronDown, Repeat, Clock } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import CategoryIcon from "./CategoryIcon";
-import WalletFlag from "../utils/flags";
+import WalletSelect from "./WalletSelect";
 
 // 🔥 НОВЫЕ ИМПОРТЫ
 import { usePreferences } from "../context/PreferencesContext"; 
@@ -28,11 +28,7 @@ export default function AddTransactionModal({
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState("monthly");
   const [transactionType, setTransactionType] = useState("expense");
-  const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
  
-
-
   // 🔥 Получаем текущую главную валюту из настроек
   const { mainCurrency } = usePreferences();
 
@@ -112,17 +108,6 @@ export default function AddTransactionModal({
       { id: "monthly", label: "Co miesiąc" },
       { id: "yearly", label: "Co rok" }
   ];
-
-  // Закрытие списка кошельков при клике вне его области
-  useEffect(() => {
-      function handleClickOutside(event) {
-          if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-              setIsWalletDropdownOpen(false);
-          }
-      }
-      if (isWalletDropdownOpen) document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isWalletDropdownOpen]);
 
   const filteredCategories = categories.filter(c => c.type === transactionType);
   const currentWallet = wallets.find(w => w.id === form.walletId);
@@ -278,66 +263,13 @@ export default function AddTransactionModal({
                     
                     {/* PORTFEL */}
                     {/* PORTFEL (КАСТОМНЫЙ) */}
-                    <div className="space-y-2 relative z-50" ref={dropdownRef}>
+                    <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Portfel</label>
-                        
-                        <div 
-                            onClick={() => setIsWalletDropdownOpen(!isWalletDropdownOpen)}
-                            className={`relative bg-[#151A23] border rounded-xl overflow-hidden cursor-pointer transition-colors h-[50px] flex items-center justify-between px-3 ${
-                                isWalletDropdownOpen ? "border-indigo-500/50" : "border-white/5 hover:border-white/10"
-                            }`}
-                        >
-                            {/* Выбранный кошелек */}
-                            <div className="flex items-center gap-3">
-                                <WalletFlag currency={currentWallet?.currency} className="w-6 h-6 shadow-sm" />
-                                <span className="text-white text-sm truncate max-w-[200px]">
-                                    {currentWallet ? `${currentWallet.currency} • ${currentWallet.name}` : "Wybierz portfel"}
-                                </span>
-                            </div>
-                            
-                            <ChevronDown 
-                                className={`text-gray-600 transition-transform duration-300 ${isWalletDropdownOpen ? "rotate-180 text-indigo-400" : ""}`} 
-                                size={16} 
-                            />
-                        </div>
-
-                        {/* Выпадающий список */}
-                        <AnimatePresence>
-                            {isWalletDropdownOpen && (
-                                <motion.div 
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="absolute top-[100%] left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto z-50 scrollbar-hide ring-1 ring-black/50"
-                                >
-                                    {wallets.map((w) => (
-                                        <div
-                                            key={w.id}
-                                            onClick={() => {
-                                                setForm({ ...form, walletId: w.id });
-                                                setIsWalletDropdownOpen(false);
-                                            }}
-                                            className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors border-b border-white/5 last:border-0 ${
-                                                form.walletId === w.id ? "bg-indigo-500/10" : "hover:bg-white/5"
-                                            }`}
-                                        >
-                                            {/* Флаг в списке! */}
-                                            <WalletFlag currency={w.currency} className="w-7 h-7 shadow-sm" />
-                                            
-                                            <div className="flex flex-col">
-                                                <span className={`text-sm font-bold ${form.walletId === w.id ? "text-indigo-400" : "text-white"}`}>
-                                                    {w.name}
-                                                </span>
-                                                <span className="text-[10px] text-gray-500 font-mono">
-                                                    {w.currency}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <WalletSelect 
+                            wallets={wallets} 
+                            value={form.walletId} 
+                            onChange={(newWalletId) => setForm({ ...form, walletId: newWalletId })} 
+                        />
                     </div>
                  </div>
 

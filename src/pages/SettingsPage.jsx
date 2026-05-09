@@ -12,6 +12,8 @@ import {
   getAllExchangeRates 
 } from "../db.js";
 
+import WalletFlag from "../utils/flags";
+
 export default function SettingsPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -211,6 +213,8 @@ export default function SettingsPage() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-2 text-gray-400 pointer-events-none relative z-10">
+                            {/* 🔥 ДОБАВИЛИ ФЛАГ ТЕКУЩЕЙ ВАЛЮТЫ */}
+                            <WalletFlag currency={mainCurrency} className="w-5 h-5 shadow-sm" />
                             <span className="text-sm font-bold uppercase font-mono">{mainCurrency}</span>
                             <ChevronRight size={16}/>
                         </div>
@@ -238,7 +242,12 @@ export default function SettingsPage() {
                                         ${mainCurrency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
                                     `}
                                 >
-                                    <span className="font-sm">{cur}</span>
+                                    {/* 🔥 ДОБАВИЛИ ФЛАГ В СПИСОК */}
+                                    <div className="flex items-center gap-3">
+                                        <WalletFlag currency={cur} className="w-7 h-7 shadow-sm" />
+                                        <span className="font-bold text-sm">{cur}</span>
+                                    </div>
+                                    
                                     {mainCurrency === cur && <Check size={18} />}
                                 </button>
                             ))

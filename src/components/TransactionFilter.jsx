@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Filter, Repeat, X, Search } from "lucide-react"; // Убрали лишние шевроны
-import WalletFlag from "../utils/flags";
+import WalletSelect from "../components/WalletSelect";
 
 export default function TransactionFilter({ filter, setFilter, categories, wallets }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -126,19 +126,14 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
           </select>
 
           {/* ВЫБОР КОШЕЛЬКА */}
-<select 
-            className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-xs text-white outline-none focus:border-indigo-500 transition-colors appearance-none" 
-            value={filter.walletId} 
-            onChange={(e) => setFilter({ ...filter, walletId: e.target.value })}
-          >
-            <option value="">Wszystkie portfele</option>
-            {/* 🔥 Точно так же добавили ({w.currency}) */}
-            {wallets.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.currency} • {w.name}
-              </option>
-            ))}
-          </select>
+          <WalletSelect 
+              wallets={wallets} 
+              value={filter.walletId} 
+              onChange={(newWalletId) => setFilter({ ...filter, walletId: newWalletId })} 
+              showAllOption={true} 
+              bgClass="bg-[#0B0E14]"
+              placeholderClass="text-white"
+          />
 
           {/* ПЕРЕКЛЮЧАТЕЛЬ ПОДПИСОК */}
           <div 
