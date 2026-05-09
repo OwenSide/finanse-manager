@@ -30,13 +30,21 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
 
   // ГЕНЕРАТОР ТЕМЫ
   const getTheme = (curr) => {
-    switch (curr) {
-      case 'USD': return { bg: 'from-emerald-500/20 to-teal-900/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'bg-emerald-500/20' };
-      case 'EUR': return { bg: 'from-blue-500/20 to-indigo-900/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'bg-blue-500/20' };
-      case 'PLN': return { bg: 'from-rose-500/20 to-red-900/10', border: 'border-rose-500/20', text: 'text-rose-400', glow: 'bg-rose-500/20' };
-      case 'UAH': return { bg: 'from-yellow-500/20 to-amber-900/10', border: 'border-yellow-500/20', text: 'text-yellow-400', glow: 'bg-yellow-500/20' };
-      default: return { bg: 'from-indigo-500/20 to-purple-900/10', border: 'border-indigo-500/20', text: 'text-indigo-400', glow: 'bg-indigo-500/20' };
-    }
+    // Исправленный SVG: линии кодированы через %23 вместо #, добавлен stroke
+    const circuitPattern = `url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.3'%3E%3Cpath d='M10 10h30v20h20M60 30v40h-20M100 100h40v-40M100 100v40h-40M150 150h30v-30'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%23ffffff' fill-opacity='0.2'/%3E%3Ccircle cx='100' cy='100' r='4' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/g%3E%3C/svg%3E")`;
+
+    const themes = {
+      'USD': { bg: 'from-emerald-500/20 to-teal-900/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'bg-emerald-500/20' },
+      'EUR': { bg: 'from-blue-500/20 to-indigo-900/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'bg-blue-500/20' },
+      'PLN': { bg: 'from-rose-500/20 to-red-900/10', border: 'border-rose-500/20', text: 'text-rose-400', glow: 'bg-rose-500/20' },
+      'UAH': { bg: 'from-yellow-500/20 to-amber-900/10', border: 'border-yellow-500/20', text: 'text-yellow-400', glow: 'bg-yellow-500/20' },
+      'GBP': { bg: 'from-purple-500/20 to-fuchsia-900/10', border: 'border-purple-500/20', text: 'text-purple-400', glow: 'bg-purple-500/20' },
+      'CHF': { bg: 'from-cyan-500/20 to-sky-900/10', border: 'border-cyan-500/20', text: 'text-cyan-400', glow: 'bg-cyan-500/20' },
+      'CZK': { bg: 'from-orange-500/20 to-amber-900/10', border: 'border-orange-500/20', text: 'text-orange-400', glow: 'bg-orange-500/20' },
+    };
+
+    const selected = themes[curr] || { bg: 'from-indigo-500/20 to-purple-900/10', border: 'border-indigo-500/20', text: 'text-indigo-400', glow: 'bg-indigo-500/20' };
+    return { ...selected, pattern: circuitPattern };
   };
 
   return (
@@ -50,6 +58,11 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
           15% { opacity: 1; }
           85% { opacity: 1; }
           100% { transform: translateX(400%) skewX(-25deg); opacity: 0; }
+        }
+        @keyframes chip-pulse {
+          0% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.02); }
+          100% { opacity: 0.1; transform: scale(1); }
         }
       `}</style>
 
@@ -109,6 +122,17 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                 {/* Стеклянный эффект (фона) */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg} opacity-50 pointer-events-none transition-opacity duration-300`} />
                 
+                {/* 🔥 СЛОЙ МИКРОСХЕМ (Circuit Pattern) */}
+                <div 
+                  className="absolute inset-0 z-0"
+                  style={{ 
+                    backgroundImage: theme.pattern,
+                    backgroundSize: '150px 150px',
+                    animation: isActive ? 'chip-pulse 4s infinite ease-in-out' : 'none',
+                    opacity: isActive ? 0.4 : 0.1
+                  }} 
+                />
+
                 {/* Статичное свечение */}
                 <div className={`absolute -top-10 -right-10 w-32 h-32 ${theme.glow} blur-3xl rounded-full pointer-events-none transition-all duration-500 ${isActive ? 'opacity-100' : 'opacity-30'}`} />
 
