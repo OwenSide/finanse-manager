@@ -48,13 +48,13 @@ export default function WalletSelect({
                         <>
                             <WalletFlag currency={currentWallet.currency} className="w-6 h-6 shadow-sm shrink-0" />
                             {/* 🔥 ИСПОЛЬЗУЕМ textClass */}
-                            <span className={`${textClass} text-sm whitespace-nowrap`}>
+                            <span className={`${textClass} text-sm truncate`}>
                                 {currentWallet.currency} • {truncateMiddle(currentWallet.name, 18)}
                             </span>
                         </>
                     ) : (
                         // 🔥 ИСПОЛЬЗУЕМ placeholderClass
-                        <span className={`${placeholderClass} text-sm whitespace-nowrap`}>
+                        <span className={`${placeholderClass} text-smtruncate`}>
                             {showAllOption ? "Wszystkie portfele" : "Wybierz portfel"}
                         </span>
                     )}
@@ -109,7 +109,7 @@ export default function WalletSelect({
                                 <WalletFlag currency={w.currency} className="w-7 h-7 shadow-sm shrink-0" />
                                 <div className="flex flex-col min-w-0">
                                     {/* 🔥 ИСПОЛЬЗУЕМ ФУНКЦИЮ ЗДЕСЬ */}
-                                    <span className={`text-sm font-bold whitespace-nowrap ${value === w.id ? "text-indigo-400" : "text-white"}`}>
+                                    <span className={`text-sm font-bold truncate ${value === w.id ? "text-indigo-400" : "text-white"}`}>
                                         {truncateMiddle(w.name, 20)}
                                     </span>
                                     <span className="text-[10px] text-gray-500 font-mono">
