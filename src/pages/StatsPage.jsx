@@ -11,9 +11,8 @@ import {
   getAllExchangeRates 
 } from '../db';
 
-// 🔥 НАШИ НОВЫЕ ФОРМАТТЕРЫ ДЛЯ БОЛЬШИХ ЧИСЕЛ
 import { formatCompactAmount, formatExactAmount } from '../utils/formatters'; 
-import { formatNumber } from '../utils/formatNumber'; // Оставил на случай, если он используется внутри других компонентов
+import { formatNumber } from '../utils/formatNumber'; 
 
 import { useNavigate } from 'react-router-dom';
 import { TrendingDown, TrendingUp, ArrowLeft, Wallet, PackageOpen } from 'lucide-react';
@@ -23,6 +22,7 @@ import CategoryDetailsModal from '../components/CategoryDetailsModal';
 import PeriodSelector from '../components/PeriodSelector'; 
 import WeekdayBarChart from '../components/WeekdayBarChart';
 import ExpenseHighlights from '../components/ExpenseHighlights';
+import WalletFlag from "../utils/flags";
 
 // Помощник: получаем локальную дату в формате YYYY-MM-DD
 const getLocalYYYYMMDD = (date) => {
@@ -302,6 +302,7 @@ export default function StatsPage() {
           div::-webkit-scrollbar { display: none; }
         `}</style>
 
+        {/* Кнопка "Wszystkie" */}
         <button
           onClick={() => setSelectedWallet('all')}
           className={`relative flex-shrink-0 flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 snap-start border ${
@@ -314,23 +315,28 @@ export default function StatsPage() {
           Wszystkie
         </button>
         
+        {/* Кнопки кошельков */}
         {dbData.wallets.map(w => (
           <button
             key={w.id}
             onClick={() => setSelectedWallet(w.id)}
-            className={`relative flex-shrink-0 flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 snap-start border ${
+            className={`relative flex-shrink-0 flex items-center gap-2.5 px-3 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 snap-start border ${
               selectedWallet === w.id
                 ? 'bg-white/10 border-white/20 text-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-md'
                 : 'bg-[#151A23] border-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300'
             }`}
           >
-            <span 
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                selectedWallet === w.id ? 'scale-110 shadow-[0_0_12px_rgba(255,255,255,0.3)]' : 'opacity-60'
-              }`} 
-              style={{ backgroundColor: w.color || '#6366f1' }}
-            />
-            {w.name}
+            {/* 🔥 Заменили цветную точку на круглый флаг */}
+            <div className={`transition-all duration-300 shrink-0 ${
+                selectedWallet === w.id 
+                ? 'scale-110 drop-shadow-md' // Яркий и чуть увеличенный, если выбран
+                : 'opacity-50 grayscale-[50%]' // Полупрозрачный и менее цветной, если не выбран
+            }`}>
+                <WalletFlag currency={w.currency} className="w-5 h-5" />
+            </div>
+            
+            {/* 🔥 Добавили ограничение ширины текста (truncate), чтобы дизайн не разъезжался */}
+            <span className="truncate max-w-[120px]">{w.name}</span>
           </button>
         ))}
       </div>
