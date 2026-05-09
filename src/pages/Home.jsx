@@ -71,7 +71,7 @@ export default function Home() {
         const walletsWithBalances = (walletsData || []).map((w) => ({
           ...w,
           balance: balancesByWalletId[w.id] ?? 0,
-        }));
+        })).sort((a, b) => (a.order || 0) - (b.order || 0)); // 🔥 Добавили сортировку!
 
         setWallets(walletsWithBalances);
 

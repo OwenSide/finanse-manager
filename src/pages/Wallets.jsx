@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getAllWallets, addWallet, deleteWallet, updateWallet, getAllExchangeRates, getAllTransactions } from "../db.js";
-import { Wallet, Plus, Trash2, CreditCard, Globe, ChevronDown, Check, Banknote, Pencil, Loader2, ArrowLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Wallet, Plus, Trash2, CreditCard, Globe, ChevronDown, Check, Banknote, Pencil, Loader2, ArrowLeft, GripVertical } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion"; // 🔥 Добавили Reorder
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
@@ -19,7 +19,10 @@ export default function Wallets() {
       try {
         setLoading(true);
         const walletsData = await getAllWallets();
-        setWallets(walletsData || []);
+        
+        // 🔥 Сортируем кошельки по их сохраненному порядку (если нет order, то 0)
+        const sortedWallets = (walletsData || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+        setWallets(sortedWallets);
 
         const rates = await getAllExchangeRates();
         let dbCurrencies = [];
@@ -40,6 +43,17 @@ export default function Wallets() {
     }
     loadData();
   }, []);
+
+  // 🔥 ФУНКЦИЯ ПЕРЕТАСКИВАНИЯ: Сохраняем новый порядок в базу
+  const handleReorder = async (newOrder) => {
+    setWallets(newOrder); // Обновляем UI моментально
+
+    // Сохраняем индексы в БД
+    for (let i = 0; i < newOrder.length; i++) {
+      const updatedWallet = { ...newOrder[i], order: i };
+      await updateWallet(updatedWallet);
+    }
+  };
 
   const openCreateModal = () => {
     setEditingWallet(null);
@@ -73,7 +87,8 @@ export default function Wallets() {
             id: newWalletId, 
             name: walletData.name.trim(), 
             currency: walletData.currency,
-            initialBalance: startBalance 
+            initialBalance: startBalance,
+            order: wallets.length // 🔥 Новый кошелек падает в самый конец
         };
         
         await addWallet(newWallet);
@@ -138,16 +153,24 @@ export default function Wallets() {
             </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        // 🔥 Обертка для Drag and Drop
+        <Reorder.Group 
+          axis="y" 
+          values={wallets} 
+          onReorder={handleReorder} 
+          className="flex flex-col gap-4"
+        >
           {wallets.map((w) => (
-            <WalletCard 
-                key={w.id} 
-                wallet={w} 
-                onDelete={handleDelete}
-                onEdit={openEditModal} 
-            />
+            // 🔥 Делаем карточку элемента перетаскивания
+            <Reorder.Item key={w.id} value={w}>
+              <WalletCard 
+                  wallet={w} 
+                  onDelete={handleDelete}
+                  onEdit={openEditModal} 
+              />
+            </Reorder.Item>
           ))}
-        </div>
+        </Reorder.Group>
       )}
 
       {/* ПОЛНОЭКРАННОЕ МОДАЛЬНОЕ ОКНО */}
@@ -164,38 +187,51 @@ export default function Wallets() {
 }
 
 // --- КОМПОНЕНТ КАРТОЧКИ КОШЕЛЬКА ---
+// --- КОМПОНЕНТ КАРТОЧКИ КОШЕЛЬКА ---
 function WalletCard({ wallet, onDelete, onEdit }) {
     return (
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between group hover:border-indigo-500/30 transition-all relative overflow-hidden shadow-sm">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none transition-colors"></div>
+        // 🔥 Убрали общий gap-4 и сделали padding чуть меньше (p-3)
+        <div className="group relative flex items-center p-3 rounded-[24px] bg-[#151A23] border border-white/5 hover:border-indigo-500/30 transition-all cursor-grab active:cursor-grabbing shadow-sm overflow-hidden">
+            
+            {/* Нежный блик при наведении */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-            <div className="flex items-center gap-4 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-[#0B0E14] border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-indigo-400 group-hover:border-indigo-500/20 transition-all shadow-inner">
-                    <CreditCard size={22} />
-                </div>
-                <div>
-                    <h4 className="font-bold text-white text-lg leading-tight truncate max-w-[140px]">{wallet.name}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 text-gray-400 border border-white/5 uppercase tracking-wide">
-                            {wallet.currency}
-                        </span>
-                    </div>
-                </div>
+            {/* 1. Иконка перетаскивания (сделали меньше и прижали) */}
+            <div className="text-gray-600/30 group-hover:text-gray-400 transition-colors mx-1 shrink-0">
+                <GripVertical size={16} />
+            </div>
+
+            {/* 2. Иконка кошелька */}
+            <div className="w-12 h-12 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 border border-indigo-500/10 flex items-center justify-center text-indigo-400 shadow-inner">
+                <CreditCard size={22} />
+            </div>
+
+            {/* 3. Текст (Добавили отступ слева ml-3) */}
+            <div className="flex-1 min-w-0 py-1 ml-3 pr-2">
+                <h4 className="font-bold text-white text-base leading-tight truncate">
+                    {wallet.name}
+                </h4>
+                <p className="text-[11px] font-bold text-gray-500 mt-1 uppercase tracking-widest">
+                    {wallet.currency}
+                </p>
             </div>
             
-            <div className="flex gap-2 relative z-10 opacity-60 group-hover:opacity-100 transition-opacity">
+            {/* 4. Кнопки управления */}
+            <div className="flex items-center gap-1 bg-[#0B0E14]/80 backdrop-blur-md rounded-xl p-1 border border-white/5 opacity-60 group-hover:opacity-100 transition-all z-10 shrink-0">
                 <button
+                    onPointerDown={(e) => e.stopPropagation()} 
                     onClick={() => onEdit(wallet)}
-                    className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all"
+                    className="p-2 text-gray-400 hover:text-indigo-400 hover:bg-white/5 rounded-lg transition-all"
                 >
-                    <Pencil size={18} />
+                    <Pencil size={16} />
                 </button>
 
                 <button
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={() => onDelete(wallet.id)}
-                    className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                    className="p-2 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                 >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                 </button>
             </div>
         </div>

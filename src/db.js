@@ -70,7 +70,7 @@ export async function deleteWallet(id) {
 }
 
 export const updateWallet = async (updatedWallet) => {
-  const db = await initDB();
+  const db = await getDB(); // 🔥 Исправили initDB на getDB
   return db.put(STORE_WALLETS, updatedWallet);
 };
 
@@ -108,7 +108,7 @@ export async function deleteCategory(id) {
 }
 
 export const updateCategory = async (updatedCategory) => {
-  const db = await initDB();
+  const db = await getDB(); // 🔥 Исправили initDB на getDB
   return db.put(STORE_CATEGORIES, updatedCategory);
 };
 
