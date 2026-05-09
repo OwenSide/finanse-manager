@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, CreditCard, Plus, TrendingUp, TrendingDown, Minus, ArrowRightLeft, Loader2, Settings, Trophy, BarChart3 } from "lucide-react";
+import { ArrowRightLeft, Loader2, Settings } from "lucide-react";
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import TransactionItem from "../components/TransactionItem"; 
-import { formatNumber } from "../utils/formatNumber"
 import TrendBadge from '../components/TrendBadge';
+import WalletCarousel from '../components/WalletCarousel'; // 🔥 НАШ НОВЫЙ КОМПОНЕНТ
 import { usePreferences } from '../context/PreferencesContext';
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
@@ -20,15 +20,12 @@ export default function Home() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
  
-
   const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        console.log("🔄 Загрузка данных...");
-
         try {
             await syncExchangeRates();
         } catch (e) {
@@ -71,24 +68,19 @@ export default function Home() {
         const walletsWithBalances = (walletsData || []).map((w) => ({
           ...w,
           balance: balancesByWalletId[w.id] ?? 0,
-        })).sort((a, b) => (a.order || 0) - (b.order || 0)); // 🔥 Добавили сортировку!
+        })).sort((a, b) => (a.order || 0) - (b.order || 0));
 
         setWallets(walletsWithBalances);
 
-        // 🔥 НОВАЯ ЛОГИКА РАСЧЕТА ГЛАВНОГО КАПИТАЛА 🔥
         let sum = 0;
-        const mainCurrencyRate = ratesMap[mainCurrency] || 1; // Узнаем курс выбранной главной валюты к PLN
+        const mainCurrencyRate = ratesMap[mainCurrency] || 1;
 
         walletsWithBalances.forEach((w) => {
-          // 1. Переводим баланс кошелька в базовые PLN
           const walletRateToPLN = ratesMap[w.currency] || 1;
           const balanceInPLN = w.balance * walletRateToPLN;
-          
-          // 2. Переводим из PLN в выбранную главную валюту
           sum += (balanceInPLN / mainCurrencyRate); 
         });
         
-        // Записываем итоговую сумму в стейт (убедись, что наверху ты переименовал setTotalPLN в setTotalCapital)
         setTotalCapital(sum);
 
       } catch (error) {
@@ -98,9 +90,6 @@ export default function Home() {
       }
     }
     loadData();
-    
-  // 🔥 ОЧЕНЬ ВАЖНО: Добавили mainCurrency в квадратные скобки!
-  // Теперь каждый раз, когда меняется валюта, эта функция запускается заново и пересчитывает сумму.
   }, [mainCurrency]);
 
   const recentTransactions = [...transactions]
@@ -114,61 +103,31 @@ export default function Home() {
     </div>
   );
 
-  {/* Считаем длину строки: переводим в число, фиксируем копейки и убираем лишнее */}
   const capitalLength = totalCapital.toFixed(2).replace('.', '').replace('-', '').length;
 
   return (
     <div className="min-h-screen w-full relative pb-24 p-2 min-[450px]:p-6 transition-all duration-300 pt-[max(1rem,env(safe-area-inset-top))]">
-      
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[40vh] bg-indigo-600/20 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
 
       <div className="max-w-5xl mx-auto space-y-6">
 
-        {/* 🔥 ШАПКА: НАСТРОЙКИ СЛЕВА, ИКОНКИ СПРАВА 🔥 */}
+        {/* ШАПКА */}
         <header className="flex items-center justify-between px-2 pt-1 pb-2">
-            
-            {/* Кнопка настроек (Слева) */}
             <Link 
                 to="/settings" 
                 className="group w-6 h-6 rounded-full bg-[#151A23] border border-white/10 flex items-center justify-center hover:bg-[#1E2330] hover:border-white/20 transition-all active:scale-95 shadow-lg"
             >
-                <Settings 
-                    size={17} 
-                    className="text-gray-400 group-hover:text-white group-hover:rotate-90 transition-all duration-500" 
-                />
+                <Settings size={17} className="text-gray-400 group-hover:text-white group-hover:rotate-90 transition-all duration-500" />
             </Link>
-
-            {/* Иконки Статистики и Достижений (Справа, без фона) */}
-            {/* <div className="flex items-center gap-5 pr-2">
-                <Link 
-                    to="/stats" 
-                    className="text-gray-400 hover:text-indigo-400 transition-colors active:scale-95"
-                >
-                    <BarChart3 size={17} strokeWidth={1.5} />
-                </Link>
-
-                <Link 
-                    to="/achievements" 
-                    className="text-gray-400 hover:text-amber-400 transition-colors active:scale-95"
-                >
-                    <Trophy size={17} strokeWidth={1.5} />
-                </Link>
-            </div> */}
-            
         </header>
 
-
-        {/* --- БЛОК 1: ГЛАВНЫЙ БАЛАНС --- */}
+        {/* БЛОК 1: ГЛАВНЫЙ БАЛАНС */}
         <section className="relative w-full">
           <div className="p-6 min-[450px]:p-10 rounded-[2rem] text-center relative overflow-hidden">
-              
-             {/* Заголовок с "приклеенным" бейджем */}
              <div className="relative inline-flex items-center justify-center mb-2">
                <h2 className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase relative z-10 pr-2">
                  Całkowity Kapitał
                </h2>
-               
-               {/* Бейдж наезжает прямо на край надписи */}
                <div className="absolute left-full -translate-x-3 z-20">
                  <TrendBadge value={stats.percent} className="scale-90 shadow-md shadow-black/50" />
                </div>
@@ -177,18 +136,13 @@ export default function Home() {
              <div className="flex flex-col items-center justify-center w-full px-4 text-center">
               <span className={`
                 font-black leading-none transition-all duration-500
-                {/* 🔥 Если больше 7 значащих цифр — уменьшаем шрифт */}
-                ${capitalLength >= 7 
-                  ? 'text-[32px] min-[450px]:text-5xl' 
-                  : 'text-[12vw] min-[450px]:text-7xl'
-                }
-                {/* Цвет: красный для минуса, неон для плюса */}
+                ${capitalLength >= 7 ? 'text-[32px] min-[450px]:text-5xl' : 'text-[12vw] min-[450px]:text-7xl'}
                 ${totalCapital < 0 ? 'text-rose-500' : 'text-neon'}
               `}>
                 <CountUp 
                   end={totalCapital} 
                   duration={1.5} 
-                  decimals={capitalLength >= 8 ? 0 : 2} // Если цифр ОЧЕНЬ много (8+), убираем копейки совсем
+                  decimals={capitalLength >= 8 ? 0 : 2} 
                   decimal="." 
                   separator=" " 
                   preserveValue={true}
@@ -198,74 +152,17 @@ export default function Home() {
                 {mainCurrency}
               </span>
             </div>
-
           </div>
         </section>
 
-        {/* --- БЛОК 2: КОШЕЛЬКИ --- */}
-        <section>
-          <div className="flex items-center justify-between px-2 mb-3">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Wallet className="text-indigo-400" size={20} />
-              Portfele
-            </h3>
-            {wallets.length > 0 && (
-              <Link to="/wallets" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-                Zobacz wszystkie
-              </Link>
-            )}
-          </div>
+        {/* 🔥 БЛОК 2: НАША НОВАЯ КАРУСЕЛЬ КОШЕЛЬКОВ 🔥 */}
+        <WalletCarousel 
+          wallets={wallets} 
+          exchangeRates={exchangeRates} 
+          mainCurrency={mainCurrency} 
+        />
 
-          {wallets.length === 0 ? (
-            <div className="glass-panel p-8 rounded-[2rem] text-center flex flex-col items-center justify-center border border-white/5 relative overflow-hidden group">
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-500/20 rounded-full blur-[50px] pointer-events-none group-hover:bg-indigo-500/30 transition-all"></div>
-               <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 relative z-10 text-gray-400 group-hover:text-white group-hover:scale-110 transition-all">
-                  <Wallet size={32} />
-               </div>
-               <h4 className="text-xl font-bold text-white mb-2 relative z-10">Brak portfeli</h4>
-               <p className="text-gray-400 text-sm mb-6 max-w-xs relative z-10">
-                 Dodaj swój pierwszy portfel, aby zacząć kontrolować finanse.
-               </p>
-               <Link to="/wallets" className="relative z-10 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2 active:scale-95">
-                 <Plus size={20} />
-                 Dodaj portfel
-               </Link>
-            </div>
-          ) : (
-            <div className="flex gap-3 min-[450px]:gap-5 overflow-x-auto snap-x snap-mandatory px-1 pb-4 no-scrollbar md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:pb-0">
-              {wallets.map((w) => {
-                const balance = typeof w.balance === "number" ? w.balance : 0;
-                const rate = exchangeRates[w.currency] || 1;
-
-                return (
-                  <div key={w.id} className="snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-40 min-[450px]:h-48 glass-card rounded-[1.5rem] p-5 flex flex-col justify-between relative group hover:border-indigo-500/30 transition-all">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">{w.name}</h4>
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/20">{w.currency}</span>
-                      </div>
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white"><CreditCard size={20} /></div>
-                    </div>
-                    <div>
-                      <p className={`text-3xl font-bold tracking-tight truncate ${balance < 0 ? "text-rose-400" : "text-white"}`}>
-                        {formatNumber(balance)}
-                      </p>
-                      {w.currency !== mainCurrency && (
-                        <p className="text-[10px] font-medium text-gray-500 mt-1">≈ {formatNumber((balance * (exchangeRates[w.currency] || 1)) / (exchangeRates[mainCurrency] || 1))} {mainCurrency}</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <Link to="/wallets" className="snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-40 min-[450px]:h-48 glass-card rounded-[1.5rem] p-5 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all border border-dashed border-white/10">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"><Plus size={20} /></div>
-                <span className="text-[10px] font-bold uppercase md:block hidden">Dodaj</span>
-              </Link>
-            </div>
-          )}
-        </section>
-
-        {/* --- БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ --- */}
+        {/* БЛОК 3: ПОСЛЕДНИЕ ТРАНЗАКЦИИ */}
         <section className="mt-8 px-4">
           <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
