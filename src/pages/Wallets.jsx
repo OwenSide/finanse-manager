@@ -353,6 +353,11 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                                     className="relative cursor-pointer group"
                                     onClick={() => setIsDropdownOpen(true)}
                                 >
+                                    {/* 🔥 Флаг текущей выбранной валюты (поверх инпута) */}
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                                        <WalletFlag currency={currency} className="w-8 h-8 shadow-md" />
+                                    </div>
+
                                     <input
                                         type="text"
                                         readOnly={!isDropdownOpen}
@@ -362,7 +367,8 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                                             setIsDropdownOpen(true);
                                         }}
                                         placeholder={currency}
-                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-12 text-white text-xl focus:outline-none font-mono transition-all uppercase cursor-pointer shadow-lg"
+                                        // 🔥 Изменили padding: добавили pl-16 (отступ слева), чтобы текст не перекрывал флаг
+                                        className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl py-5 pr-12 pl-16 text-white text-xl focus:outline-none font-mono transition-all uppercase cursor-pointer shadow-lg"
                                     />
                                     <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                                         {isDropdownOpen ? <Globe size={20} className="animate-pulse text-indigo-400"/> : <ChevronDown size={20} />}
@@ -389,7 +395,12 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                                                         ${currency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
                                                     `}
                                                 >
-                                                    <span className="font-bold">{cur}</span>
+                                                    {/* 🔥 Добавили флаг в выпадающий список */}
+                                                    <div className="flex items-center gap-3">
+                                                        <WalletFlag currency={cur} className="w-7 h-7" />
+                                                        <span className="font-bold">{cur}</span>
+                                                    </div>
+                                                    
                                                     {currency === cur && <Check size={18} />}
                                                 </button>
                                             ))

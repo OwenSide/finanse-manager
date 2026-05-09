@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Filter, Repeat, X, Search } from "lucide-react"; // Убрали лишние шевроны
+import WalletFlag from "../utils/flags";
 
 export default function TransactionFilter({ filter, setFilter, categories, wallets }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Wallet, Plus, Wifi } from "lucide-react";
 import { formatNumber } from "../utils/formatNumber";
+import WalletFlag from "../utils/flags";
 
 export default function WalletCarousel({ wallets, exchangeRates, mainCurrency }) {
   const [activeId, setActiveId] = useState(wallets[0]?.id);
@@ -58,9 +59,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
 
   return (
     <section>
-      {/* --- 🔥 2. ДОБАВЛЕНИЕ CSS KEYFRAMES ДЛЯ АНИМАЦИИ БЛИКА --- */}
-      {/* Мы добавляем это инлайново, чтобы не править глобальный CSS. 
-          Это стандартная практика для Vite/JIT приложений. */}
       <style>{`
         @keyframes lightray {
           0% { transform: translateX(-300%) skewX(-25deg); opacity: 0; }
@@ -181,16 +179,24 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                   </div>
                 </div>
                 
-                {/* Нижняя часть карты (Суммы) */}
-                <div className="relative z-10">
-                  <p className={`font-black tracking-tight truncate drop-shadow-lg ${balance < 0 ? "text-rose-400" : "text-white"} ${balance.toString().length > 10 ? 'text-2xl' : 'text-3xl min-[450px]:text-4xl'}`}>
-                    {formatNumber(balance)}
-                  </p>
-                  
-                  <p className={`text-[11px] font-medium text-gray-400/80 mt-1 flex items-center gap-1 transition-all ${w.currency === mainCurrency ? 'invisible select-none pointer-events-none' : ''}`}>
-                    <span className="opacity-50 font-serif">≈</span> 
-                    {formatNumber((balance * (exchangeRates[w.currency] || 1)) / (exchangeRates[mainCurrency] || 1))} {mainCurrency}
-                  </p>
+                {/* Нижняя часть карты (Суммы и Флаг) */}
+                <div className="relative z-10 flex justify-between items-end gap-4 mt-4">
+                  {/* Левая сторона: Баланс */}
+                  <div className="min-w-0"> 
+                    <p className={`font-black tracking-tight truncate drop-shadow-lg ${balance < 0 ? "text-rose-400" : "text-white"} ${balance.toString().length > 10 ? 'text-2xl' : 'text-2xl'}`}>
+                      {formatNumber(balance)}
+                    </p>
+                    
+                    <p className={`text-[11px] font-medium text-gray-400/80 mt-1 flex items-center gap-1 transition-all ${w.currency === mainCurrency ? 'invisible select-none pointer-events-none' : ''}`}>
+                      <span className="opacity-50 font-serif">≈</span> 
+                      {formatNumber((balance * (exchangeRates[w.currency] || 1)) / (exchangeRates[mainCurrency] || 1))} {mainCurrency}
+                    </p>
+                  </div>
+
+                  {/* 🔥 Правая сторона: Круглый Флаг */}
+                  <div className="shrink-0 mb-1 drop-shadow-2xl opacity-90 group-hover:opacity-100 transition-opacity">
+                    <WalletFlag currency={w.currency} className="w-10 h-10 min-[450px]:w-11 min-[450px]:h-11 border-white/10" />
+                  </div>
                 </div>
               </div>
             );
