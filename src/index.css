@@ -17,6 +17,15 @@
     /* Глубокий фон: смесь черного и темно-синего */
     @apply bg-[#0B0E14] text-black min-h-screen overflow-x-hidden;
   }
+  /* Скрываем скроллбар во всем приложении */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  html {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @layer components {
