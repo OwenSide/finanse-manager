@@ -20,7 +20,6 @@ export default function TransactionsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Стейт фильтра теперь включает и строку поиска
   const [filter, setFilter] = useState({
     searchQuery: "",
     dateFrom: "",
@@ -120,11 +119,9 @@ export default function TransactionsPage() {
         const walletMatch = !filter.walletId || t.walletId === filter.walletId;
         const recurringMatch = !filter.onlyRecurring || t.isRecurring === true;
 
-        // 🔥 ЛОГИКА ПОИСКА
         const query = filter.searchQuery?.toLowerCase().trim() || "";
         let searchMatch = true;
         if (query) {
-            // Ищем по всем возможным ключам заметки и страхуем через String()
             const note = String(t.note || t.description || t.comment || "").toLowerCase();
             
             const cat = categories.find(c => c.id === t.categoryId);
@@ -136,14 +133,13 @@ export default function TransactionsPage() {
             
             const amountStr = String(t.amount); 
             
-            // Генерируем даты точь-в-точь как на экране
             const d = new Date(t.date);
             const dd = String(d.getDate()).padStart(2, '0');
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const yyyy = d.getFullYear();
             
-            const dateShort = `${dd}.${mm}`; // Даст ровно "07.05"
-            const dateFull = `${dd}.${mm}.${yyyy}`; // Даст "07.05.2026"
+            const dateShort = `${dd}.${mm}`; 
+            const dateFull = `${dd}.${mm}.${yyyy}`; 
             const dateText = d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase(); 
             
             searchMatch = 
@@ -152,8 +148,8 @@ export default function TransactionsPage() {
               walletName.includes(query) ||       
               currency.includes(query) ||         
               amountStr.includes(query) ||        
-              dateShort.includes(query) || // Ищет "07.05"
-              dateFull.includes(query) ||  // Ищет "07.05.2026"
+              dateShort.includes(query) || 
+              dateFull.includes(query) ||  
               dateText.includes(query);
         }
 
@@ -205,7 +201,6 @@ export default function TransactionsPage() {
         </button>
       </div>
 
-      {/* ФИЛЬТРЫ И ПОИСК */}
       <TransactionFilter 
         filter={filter} 
         setFilter={setFilter} 
@@ -213,7 +208,6 @@ export default function TransactionsPage() {
         wallets={wallets} 
       />
 
-      {/* СПИСОК ТРАНЗАКЦИЙ */}
       <div className="space-y-6">
         {Object.keys(groupedTransactions).length === 0 ? (
            <div className="text-center py-12 text-gray-500">
@@ -246,7 +240,6 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {/* МОДАЛКИ */}
       <AddTransactionModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)}

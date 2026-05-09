@@ -8,7 +8,6 @@ import Wallets from "./pages/Wallets.jsx";
 import { PreferencesProvider } from './context/PreferencesContext.jsx'
 import StatsPage from "./pages/StatsPage.jsx";
 
-// 🔥 ИСПРАВЛЕНИЕ: Импортируем SettingsPage (так мы назвали файл в прошлом шаге)
 import SettingsPage from "./pages/SettingsPage.jsx"; 
 
 export default function App() {
@@ -17,32 +16,26 @@ export default function App() {
       <Router>
         <div className="flex min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-indigo-500/30">
           
-          {/* Сайдбар (ПК) */}
           <Sidebar />
 
-          {/* Основной контент */}
           <main className="flex-1 w-full min-h-screen relative transition-all duration-300">
             <div className="md:pl-64 pb-24 md:pb-0 h-full">
               <Routes>
                 <Route path="/" element={<Home />} />
                 
-                {/* Заглушка для статистики, пока нет отдельной страницы, ведем на главную */}
                 <Route path="/stats" element={<StatsPage/>} />
                 
                 <Route path="/add-transaction" element={<AddTransaction />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/wallets" element={<Wallets />} />
                 
-                {/* 🔥 ИСПРАВЛЕНИЕ: Используем SettingsPage */}
                 <Route path="/settings" element={<SettingsPage />} />
                 
-                {/* Заглушки для новых кнопок меню */}
-                <Route path="/more" element={<div className="p-10">Strona w budowie (more)</div>} />
+                {/* <Route path="/more" element={<div className="p-10"></div>} /> */}
               </Routes>
             </div>
           </main>
 
-          {/* Нижнее меню (Телефон) */}
           <BottomNav />
 
         </div>

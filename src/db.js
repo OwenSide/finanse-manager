@@ -8,7 +8,6 @@ const STORE_TRANSACTIONS = "transactions";
 const STORE_WALLETS = "wallets";
 const STORE_EXCHANGE_RATES = "exchangeRates"; 
 
-// Твои стандартные категории
 const DEFAULT_CATEGORIES = [
   { name: "Jedzenie", type: "expense", icon: "shopping-cart", color: "orange" },
   { name: "Dom", type: "expense", icon: "home", color: "blue" },
@@ -23,26 +22,21 @@ export async function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion, newVersion, transaction) {
       
-      // 1. Создаем таблицу Кошельков
       if (!db.objectStoreNames.contains(STORE_WALLETS)) {
         db.createObjectStore(STORE_WALLETS, { keyPath: "id" }); 
       }
 
-      // 2. Создаем таблицу Транзакций
       if (!db.objectStoreNames.contains(STORE_TRANSACTIONS)) {
         db.createObjectStore(STORE_TRANSACTIONS, { keyPath: "id" });
       }
 
-      // 3. Создаем таблицу Курсов
       if (!db.objectStoreNames.contains(STORE_EXCHANGE_RATES)) {
         db.createObjectStore(STORE_EXCHANGE_RATES, { keyPath: "currency" });
       }
 
-      // 4. Создаем таблицу Категорий и НАПОЛНЯЕМ ЕЁ
       if (!db.objectStoreNames.contains(STORE_CATEGORIES)) {
         const store = db.createObjectStore(STORE_CATEGORIES, { keyPath: "id" });
         
-        // 🔥 Цикл добавления дефолтных категорий
         DEFAULT_CATEGORIES.forEach(cat => {
             store.add({ id: uuidv4(), ...cat });
         });
@@ -134,7 +128,6 @@ export async function deleteTransaction(id) {
   return db.delete(STORE_TRANSACTIONS, id);
 }
 
-// --- 🔥 ФУНКЦИЯ ДЛЯ СБРОСА ДАННЫХ ---
 export async function clearAllData() {
   const db = await getDB();
   

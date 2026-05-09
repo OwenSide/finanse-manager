@@ -33,6 +33,11 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
     // Исправленный SVG: линии кодированы через %23 вместо #, добавлен stroke
     const circuitPattern = `url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.3'%3E%3Cpath d='M10 10h30v20h20M60 30v40h-20M100 100h40v-40M100 100v40h-40M150 150h30v-30'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%23ffffff' fill-opacity='0.2'/%3E%3Ccircle cx='100' cy='100' r='4' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/g%3E%3C/svg%3E")`;
 
+    const asiaTheme = { bg: 'from-red-600/20 to-red-900/10', border: 'border-red-500/30', text: 'text-red-400', glow: 'bg-red-500/20' };
+    const nordicTheme = { bg: 'from-sky-400/20 to-blue-900/10', border: 'border-sky-400/20', text: 'text-sky-300', glow: 'bg-sky-400/20' };
+    const resourceTheme = { bg: 'from-lime-500/20 to-green-900/10', border: 'border-lime-500/20', text: 'text-lime-400', glow: 'bg-lime-500/20' };
+    const balkanTheme = { bg: 'from-amber-600/20 to-orange-900/10', border: 'border-amber-600/20', text: 'text-amber-500', glow: 'bg-amber-600/20' };
+
     const themes = {
       'USD': { bg: 'from-emerald-500/20 to-teal-900/10', border: 'border-emerald-500/20', text: 'text-emerald-400', glow: 'bg-emerald-500/20' },
       'EUR': { bg: 'from-blue-500/20 to-indigo-900/10', border: 'border-blue-500/20', text: 'text-blue-400', glow: 'bg-blue-500/20' },
@@ -41,8 +46,12 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
       'GBP': { bg: 'from-purple-500/20 to-fuchsia-900/10', border: 'border-purple-500/20', text: 'text-purple-400', glow: 'bg-purple-500/20' },
       'CHF': { bg: 'from-cyan-500/20 to-sky-900/10', border: 'border-cyan-500/20', text: 'text-cyan-400', glow: 'bg-cyan-500/20' },
       'CZK': { bg: 'from-orange-500/20 to-amber-900/10', border: 'border-orange-500/20', text: 'text-orange-400', glow: 'bg-orange-500/20' },
+      'JPY': asiaTheme, 'CNY': asiaTheme, 'KRW': asiaTheme,
+      'SEK': nordicTheme, 'NOK': nordicTheme, 'DKK': nordicTheme, 'ISK': nordicTheme,
+      'AUD': resourceTheme, 'CAD': resourceTheme,
+      'HUF': balkanTheme, 'RON': balkanTheme, 'BGN': balkanTheme, 'MDL': balkanTheme, 'RSD': balkanTheme,
+      'TRY': { bg: 'from-pink-500/20 to-rose-900/10', border: 'border-pink-500/20', text: 'text-pink-400', glow: 'bg-pink-500/20' }
     };
-
     const selected = themes[curr] || { bg: 'from-indigo-500/20 to-purple-900/10', border: 'border-indigo-500/20', text: 'text-indigo-400', glow: 'bg-indigo-500/20' };
     return { ...selected, pattern: circuitPattern };
   };
