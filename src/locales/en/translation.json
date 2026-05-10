@@ -1,0 +1,10 @@
+{
+  "home": {
+    "totalAssets": "Total Assets",
+    "statusActive": "STATUS: ACTIVE",
+    "recent": "Recent",
+    "seeAll": "See all",
+    "addWallet": "Add wallet",
+    "noWallets": "No wallets"
+  }
+}

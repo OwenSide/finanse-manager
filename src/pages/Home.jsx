@@ -8,6 +8,7 @@ import TrendBadge from '../components/TrendBadge';
 import WalletCarousel from '../components/WalletCarousel';
 import MoneyMatrix from '../components/MoneyMatrix'; // 🔥 Убедись, что путь правильный
 import { usePreferences } from '../context/PreferencesContext';
+import { useTranslation } from 'react-i18next';
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
@@ -20,7 +21,7 @@ export default function Home() {
   const [totalCapital, setTotalCapital] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
- 
+  const { t } = useTranslation(); 
   const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function Home() {
             
             {/* Заголовок */}
             <h2 className="text-[11px] min-[450px]:text-xs font-semibold tracking-[0.2em] text-gray-300 mb-3 uppercase">
-              Całkowity Kapitał
+              {t('home.totalAssets')}
             </h2>
 
             {/* Сумма (С мощным неоновым свечением как на скрине) */}

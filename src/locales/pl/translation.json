@@ -1,0 +1,10 @@
+{
+  "home": {
+    "totalAssets": "Całkowity Kapitał",
+    "statusActive": "STATUS: AKTYWNY",
+    "recent": "Ostatnie",
+    "seeAll": "Wszystkie",
+    "addWallet": "Dodaj portfel",
+    "noWallets": "Brak portfeli"
+  }
+}

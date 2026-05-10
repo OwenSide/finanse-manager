@@ -5,6 +5,7 @@ import {
   ChevronRight, FileJson, Trash2, Check, ChevronDown 
 } from "lucide-react";
 import { usePreferences } from '../context/PreferencesContext';
+import { useTranslation } from 'react-i18next'; // 🔥 Подключаем переводы
 
 import { 
   getAllWallets, getAllTransactions, getAllCategories, 
@@ -17,29 +18,53 @@ import WalletFlag from "../utils/flags";
 export default function SettingsPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const dropdownRef = useRef(null);
+  
+  // 🔥 Refs для двух дропдаунов
+  const dropdownRef = useRef(null); // Для валют
+  const langDropdownRef = useRef(null); // Для языков
   
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState("pl"); 
   const { mainCurrency, setMainCurrency } = usePreferences();
+  
+  // 🔥 Инициализация переводов
+  const { t, i18n } = useTranslation();
   
   const [availableCurrencies, setAvailableCurrencies] = useState(["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"]);
   
-  // Стейты для кастомного дропдауна
+  // Стейты для дропдауна валют
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Закрытие дропдауна по клику вне его области
+  // 🔥 Стейт для дропдауна языков
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+
+  // Список поддерживаемых языков
+  const languages = [
+    { code: 'pl', label: 'Polski' },
+    { code: 'en', label: 'English' },
+    { code: 'uk', label: 'Українська' }
+  ];
+
+  // Текущий активный язык (определяем из i18n)
+  const currentLangCode = i18n.resolvedLanguage || 'pl';
+  const currentLangLabel = languages.find(l => l.code === currentLangCode)?.label || 'Polski';
+
+  // Закрытие дропдаунов по клику вне области
   useEffect(() => {
     function handleClickOutside(event) {
+        // Закрываем валюты
         if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
             setIsDropdownOpen(false);
             setSearch(""); 
         }
+        // Закрываем языки
+        if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+            setIsLangDropdownOpen(false);
+        }
     }
-    if (isDropdownOpen) document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isDropdownOpen]);
+  }, []);
 
   // Загружаем валюты при открытии
   useEffect(() => {
@@ -118,7 +143,7 @@ export default function SettingsPage() {
         setIsLoading(true);
         const importedData = JSON.parse(e.target.result);
 
-        if (!importedData.wallets || !importedData.transactions) throw new Error("Bły format");
+        if (!importedData.wallets || !importedData.transactions) throw new Error("Zły format");
 
         await clearAllData(); 
 
@@ -179,20 +204,52 @@ export default function SettingsPage() {
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">Preferencje</h2>
           <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-visible shadow-xl relative z-20">
              
-            {/* Lang */}
-            <div className="relative p-4 flex justify-between border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400"><Globe size={20}/></div>
-                    <div><p className="text-sm font-bold">Język</p></div>
+            {/* 🔥 КАСТОМНЫЙ ВЫБОР ЯЗЫКА */}
+            <div className="relative" ref={langDropdownRef}>
+                <div 
+                    className={`p-4 flex items-center justify-between cursor-pointer transition-colors border-b border-white/5 ${isLangDropdownOpen ? 'bg-blue-500/10' : 'hover:bg-white/5'}`}
+                    onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                >
+                    <div className="flex items-center gap-4 relative z-10 pointer-events-none">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400"><Globe size={20}/></div>
+                        <div><p className="text-sm font-bold">Język</p></div>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-400 pointer-events-none relative z-10">
+                        <span className="text-sm font-bold">{currentLangLabel}</span>
+                        <ChevronRight size={16} className={`transition-transform duration-300 ${isLangDropdownOpen ? 'rotate-90' : ''}`} />
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400"><span className="text-sm font-sm">Polski</span><ChevronRight size={16}/></div>
+
+                {/* Выпадающий список языков */}
+                {isLangDropdownOpen && (
+                    <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 ring-1 ring-black/50">
+                        {languages.map((lng) => (
+                            <button
+                                key={lng.code}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    i18n.changeLanguage(lng.code); // Меняем язык в i18next
+                                    setIsLangDropdownOpen(false);  // Закрываем меню
+                                }}
+                                className={`
+                                    w-full text-left px-5 py-4 text-sm font-bold flex items-center justify-between
+                                    hover:bg-blue-500/20 hover:text-white transition-colors border-b border-white/5 last:border-0
+                                    ${currentLangCode === lng.code ? "text-blue-400 bg-blue-500/10" : "text-gray-300"}
+                                `}
+                            >
+                                <span>{lng.label}</span>
+                                {currentLangCode === lng.code && <Check size={18} />}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
             
-            {/* 🔥 КАСТОМНЫЙ ВЫБОР ВАЛЮТЫ */}
+            {/* КАСТОМНЫЙ ВЫБОР ВАЛЮТЫ */}
             <div className="relative" ref={dropdownRef}>
                 <div 
                     className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${isDropdownOpen ? 'bg-indigo-500/10' : 'hover:bg-white/5'}`}
-                    onClick={() => setIsDropdownOpen(true)}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
                     <div className="flex items-center gap-4 relative z-10 pointer-events-none">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400"><Coins size={20}/></div>
@@ -213,7 +270,6 @@ export default function SettingsPage() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-2 text-gray-400 pointer-events-none relative z-10">
-                            {/* 🔥 ДОБАВИЛИ ФЛАГ ТЕКУЩЕЙ ВАЛЮТЫ */}
                             <WalletFlag currency={mainCurrency} className="w-5 h-5 shadow-sm" />
                             <span className="text-sm font-bold uppercase font-mono">{mainCurrency}</span>
                             <ChevronRight size={16}/>
@@ -242,7 +298,6 @@ export default function SettingsPage() {
                                         ${mainCurrency === cur ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}
                                     `}
                                 >
-                                    {/* 🔥 ДОБАВИЛИ ФЛАГ В СПИСОК */}
                                     <div className="flex items-center gap-3">
                                         <WalletFlag currency={cur} className="w-7 h-7 shadow-sm" />
                                         <span className="font-bold text-sm">{cur}</span>
