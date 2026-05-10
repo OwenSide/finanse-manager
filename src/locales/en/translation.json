@@ -182,7 +182,9 @@
         "topExpenseCategory": "Top expense category",
         "topIncomeCategory": "Main income source",
         "topExpenses": "Biggest expenses",
-        "topIncomes": "Biggest incomes"
+        "topIncomes": "Biggest incomes",
+        "topCurrencyExpense": "Most used currency",
+        "topCurrencyIncome": "Main income currency"
     },
     "categoryDetails": {
         "emptyText": "No transactions in this period",

@@ -155,8 +155,11 @@ export default function StatsPage() {
     const pieMap = {};
     const topExpList = [];
     const topIncList = []; 
-    
     const weekDaysRaw = [0, 0, 0, 0, 0, 0, 0];
+    
+    // 🔥 НОВОЕ: Словари для подсчета объема по валютам
+    const expCurrencies = {};
+    const incCurrencies = {};
 
     filteredTxs.forEach(tx => {
       const isExp = tx.type === 'expense';
@@ -175,7 +178,6 @@ export default function StatsPage() {
       const txWithCat = {
         ...tx,
         convertedAmount,
-        // 🔥 Перевод категории по умолчанию
         catName: cat ? cat.name : t('stats.otherCategory'),
         catIcon: cat ? cat.icon : 'help-circle'
       };
@@ -183,11 +185,13 @@ export default function StatsPage() {
       if (isExp) {
         totalExp += convertedAmount;
         topExpList.push(txWithCat); 
+        expCurrencies[c] = (expCurrencies[c] || 0) + convertedAmount; // Считаем расходы по валютам
       }
       
       if (isInc) {
         totalInc += convertedAmount;
         topIncList.push(txWithCat); 
+        incCurrencies[c] = (incCurrencies[c] || 0) + convertedAmount; // Считаем доходы по валютам
       }
 
       if (tx.type === activeTab) {
@@ -208,7 +212,6 @@ export default function StatsPage() {
     let pieData = Object.values(pieMap).filter(item => item.value > 0).sort((a, b) => b.value - a.value);
     pieData = pieData.map(item => ({ ...item, percentage: activeTotal > 0 ? ((item.value / activeTotal) * 100).toFixed(1) : 0 }));
 
-    // 🔥 Динамический перевод дней недели (массив из JSON)
     const shortDays = t('stats.daysShort', { returnObjects: true });
     const fullDays = t('stats.daysFull', { returnObjects: true });
     const labels = shortDays.map((short, i) => ({ short, full: fullDays[i] }));
@@ -218,6 +221,11 @@ export default function StatsPage() {
 
     const top3Exp = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
     const top3Inc = topIncList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
+
+    // 🔥 НОВОЕ: Находим топовую валюту
+    const topExpCurrency = Object.entries(expCurrencies).sort((a, b) => b[1] - a[1])[0]?.[0] || mainCurrency;
+    const topIncCurrency = Object.entries(incCurrencies).sort((a, b) => b[1] - a[1])[0]?.[0] || mainCurrency;
+    const topCurrency = activeTab === 'expense' ? topExpCurrency : topIncCurrency;
 
     let daysPassed = 1;
     const now = new Date();
@@ -234,8 +242,8 @@ export default function StatsPage() {
     
     const dailyAvg = totalExp / daysPassed;
 
-    return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg };
-  // 🔥 Добавили t в зависимости
+    // 🔥 Возвращаем topCurrency
+    return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg, topCurrency };
   }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd, t]);
 
   const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;

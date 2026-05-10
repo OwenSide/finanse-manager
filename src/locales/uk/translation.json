@@ -182,7 +182,9 @@
         "topExpenseCategory": "Найдорожча категорія",
         "topIncomeCategory": "Головне джерело",
         "topExpenses": "Найбільші витрати",
-        "topIncomes": "Найбільші доходи"
+        "topIncomes": "Найбільші доходи",
+        "topCurrencyExpense": "Найчастіша валюта",
+        "topCurrencyIncome": "Основна валюта доходу"
     },
     "categoryDetails": {
         "emptyText": "Немає транзакцій у цьому періоді",

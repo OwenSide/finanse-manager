@@ -182,7 +182,9 @@
         "topExpenseCategory": "Najdroższa kategoria",
         "topIncomeCategory": "Główne źródło",
         "topExpenses": "Największe wydatki",
-        "topIncomes": "Największe przychody"
+        "topIncomes": "Największe przychody",
+        "topCurrencyExpense": "Najczęściej używana waluta",
+        "topCurrencyIncome": "Główna waluta wpływu"
     },
     "categoryDetails": {
         "emptyText": "Brak transakcji w tym okresie",
