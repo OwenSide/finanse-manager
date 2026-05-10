@@ -126,10 +126,10 @@ export default function Home() {
           </div>
 
           {/* 1. НАСТРОЙКИ (ВЕРХНИЙ ЛЕВЫЙ УГОЛ) */}
-          <div className="absolute top-6 left-6 min-[450px]:top-8 min-[450px]:left-8 z-20 pt-[env(safe-area-inset-top)]">
+          <div className="absolute top-4 left-4 min-[450px]:top-6 min-[450px]:left-6 z-20 pt-[env(safe-area-inset-top)]">
             <Link 
               to="/settings" 
-              className="flex items-center justify-center w-11 h-11 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
+              className="flex items-center justify-center w-10 h-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
             >
               <Settings size={22} className="hover:rotate-90 transition-transform duration-500" />
             </Link>
