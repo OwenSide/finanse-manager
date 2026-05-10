@@ -1,16 +1,23 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-// 🔥 Импортируем форматтеры
 import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
 
+// 🔥 Подключаем хук перевода
+import { useTranslation } from 'react-i18next';
+
 export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
+  // 🔥 Вытягиваем функцию t
+  const { t } = useTranslation();
+
   const hasData = data.some(item => item.value > 0);
   if (!hasData) return null;
 
   const isExpense = activeTab === 'expense';
   const color = isExpense ? '#f43f5e' : '#10b981';
-  const title = isExpense ? 'Rozkład według dni tygodnia (Wydatki)' : 'Rozkład według dni tygodnia (Przychody)';
-  const tooltipText = isExpense ? 'Wydano' : 'Otrzymano';
+  
+  // 🔥 Перевод заголовка и тултипа
+  const title = isExpense ? t('weekdayChart.titleExpense') : t('weekdayChart.titleIncome');
+  const tooltipText = isExpense ? t('weekdayChart.spent') : t('weekdayChart.received');
 
   return (
     <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6">
@@ -48,8 +55,6 @@ export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
               itemStyle={{ color: color, fontWeight: 'bold' }}
               labelStyle={{ color: '#9ca3af', marginBottom: '4px' }}
               
-              // 🔥 ОБНОВЛЕННЫЙ ФОРМАТТЕР: 
-              // В тултипе показываем ТОЧНУЮ сумму, так как там есть место
               formatter={(value) => [
                 `${formatExactAmount(value)} ${mainCurrency}`, 
                 tooltipText

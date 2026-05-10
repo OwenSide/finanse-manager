@@ -24,7 +24,9 @@ import WeekdayBarChart from '../components/WeekdayBarChart';
 import ExpenseHighlights from '../components/ExpenseHighlights';
 import WalletFlag from "../utils/flags";
 
-// Помощник: получаем локальную дату в формате YYYY-MM-DD
+// 🔥 Подключаем хук перевода
+import { useTranslation } from 'react-i18next';
+
 const getLocalYYYYMMDD = (date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -36,6 +38,9 @@ export default function StatsPage() {
   const { mainCurrency } = usePreferences();
   const navigate = useNavigate();
   
+  // 🔥 Вытягиваем функцию t
+  const { t } = useTranslation();
+
   const [dbData, setDbData] = useState({ txs: [], cats: [], wallets: [] });
   const [rates, setRates] = useState({ PLN: 1 });
   const [loading, setLoading] = useState(true);
@@ -49,14 +54,11 @@ export default function StatsPage() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [selectedWallet, setSelectedWallet] = useState('all'); 
 
-  // СТЕЙТЫ ДЛЯ УМНОГО ФИЛЬТРА ПЕРИОДОВ
   const [periodType, setPeriodType] = useState('this_month');
   
-  // По умолчанию "Свой период" = с 1 числа текущего месяца по сегодня
   const [customStart, setCustomStart] = useState(getLocalYYYYMMDD(new Date(new Date().getFullYear(), new Date().getMonth(), 1)));
   const [customEnd, setCustomEnd] = useState(getLocalYYYYMMDD(new Date()));
 
-  // 1. Загрузка данных
   useEffect(() => {
     async function loadData() {
       try {
@@ -98,17 +100,14 @@ export default function StatsPage() {
     }
   }, [activeIndex]);
 
-  // Сброс фокуса
   useEffect(() => {
     setActiveIndex(null);
   }, [activeTab, selectedWallet, periodType, customStart, customEnd]);
 
-  // 2. УМНАЯ ФИЛЬТРАЦИЯ (Период + Кошелек + Валюты)
   const filteredTxs = useMemo(() => {
     const now = new Date();
     let start, end;
 
-    // Вычисляем математические границы периода
     if (periodType === 'this_month') {
       start = new Date(now.getFullYear(), now.getMonth(), 1);
       end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -126,7 +125,6 @@ export default function StatsPage() {
       end = new Date(`${customEnd}T23:59:59`);
     }
 
-    // Фильтруем транзакции по дате и кошельку
     let txs = dbData.txs.filter(tx => {
       const txDate = new Date(tx.date);
       const isWithinPeriod = txDate >= start && txDate <= end;
@@ -134,7 +132,6 @@ export default function StatsPage() {
       return isWithinPeriod && isSameWallet;
     });
 
-    // Причесываем валюты и суммы
     return txs.map(tx => {
       const wallet = dbData.wallets.find(w => String(w.id) === String(tx.walletId));
       const realCurrency = String(tx.currency || (wallet ? wallet.currency : 'PLN')).toUpperCase().trim();
@@ -152,7 +149,6 @@ export default function StatsPage() {
     });
   }, [dbData.txs, selectedWallet, periodType, customStart, customEnd, dbData.wallets]);
 
-  // 3. АГРЕГАТОР ДАННЫХ
   const stats = useMemo(() => {
     let totalExp = 0;
     let totalInc = 0;
@@ -175,23 +171,23 @@ export default function StatsPage() {
       const amount = Number(tx.amount || 0);
       const convertedAmount = (amount * rate) / mainRate;
 
-      // Общая логика получения категории для Топ-3
       const cat = dbData.cats.find(c => String(c.id) === String(tx.categoryId || tx.category));
       const txWithCat = {
         ...tx,
         convertedAmount,
-        catName: cat ? cat.name : 'Inne',
+        // 🔥 Перевод категории по умолчанию
+        catName: cat ? cat.name : t('stats.otherCategory'),
         catIcon: cat ? cat.icon : 'help-circle'
       };
 
       if (isExp) {
         totalExp += convertedAmount;
-        topExpList.push(txWithCat); // Собираем расходы
+        topExpList.push(txWithCat); 
       }
       
       if (isInc) {
         totalInc += convertedAmount;
-        topIncList.push(txWithCat); // Собираем доходы
+        topIncList.push(txWithCat); 
       }
 
       if (tx.type === activeTab) {
@@ -212,12 +208,11 @@ export default function StatsPage() {
     let pieData = Object.values(pieMap).filter(item => item.value > 0).sort((a, b) => b.value - a.value);
     pieData = pieData.map(item => ({ ...item, percentage: activeTotal > 0 ? ((item.value / activeTotal) * 100).toFixed(1) : 0 }));
 
-    const labels = [
-      { short: 'Ndz', full: 'Niedziela' }, { short: 'Pon', full: 'Poniedziałek' },
-      { short: 'Wto', full: 'Wtorek' }, { short: 'Śro', full: 'Środa' },
-      { short: 'Czw', full: 'Czwartek' }, { short: 'Pią', full: 'Piątek' },
-      { short: 'Sob', full: 'Sobota' }
-    ];
+    // 🔥 Динамический перевод дней недели (массив из JSON)
+    const shortDays = t('stats.daysShort', { returnObjects: true });
+    const fullDays = t('stats.daysFull', { returnObjects: true });
+    const labels = shortDays.map((short, i) => ({ short, full: fullDays[i] }));
+    
     let barData = labels.map((label, i) => ({ name: label.short, fullName: label.full, value: weekDaysRaw[i] }));
     barData = [...barData.slice(1), barData[0]]; 
 
@@ -240,7 +235,8 @@ export default function StatsPage() {
     const dailyAvg = totalExp / daysPassed;
 
     return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg };
-  }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd]);
+  // 🔥 Добавили t в зависимости
+  }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd, t]);
 
   const COLORS = activeTab === 'expense' ? EXPENSE_COLORS : INCOME_COLORS;
 
@@ -290,7 +286,8 @@ export default function StatsPage() {
         >
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-bold text-white">Analityka</h2>
+        {/* 🔥 Перевод: Аналитика */}
+        <h2 className="text-xl font-bold text-white">{t('stats.title')}</h2>
       </div>
 
       {/* ФИЛЬТР КОШЕЛЬКОВ */}
@@ -312,7 +309,8 @@ export default function StatsPage() {
           }`}
         >
           <Wallet size={18} className={selectedWallet === 'all' ? 'text-indigo-400 drop-shadow-md' : 'opacity-60'} />
-          Wszystkie
+          {/* 🔥 Перевод: Все */}
+          {t('stats.allWallets')}
         </button>
         
         {/* Кнопки кошельков */}
@@ -326,16 +324,14 @@ export default function StatsPage() {
                 : 'bg-[#151A23] border-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300'
             }`}
           >
-            {/* 🔥 Заменили цветную точку на круглый флаг */}
             <div className={`transition-all duration-300 shrink-0 ${
                 selectedWallet === w.id 
-                ? 'scale-110 drop-shadow-md' // Яркий и чуть увеличенный, если выбран
-                : 'opacity-50 grayscale-[50%]' // Полупрозрачный и менее цветной, если не выбран
+                ? 'scale-110 drop-shadow-md'
+                : 'opacity-50 grayscale-[50%]'
             }`}>
                 <WalletFlag currency={w.currency} className="w-5 h-5" />
             </div>
             
-            {/* 🔥 Добавили ограничение ширины текста (truncate), чтобы дизайн не разъезжался */}
             <span className="truncate max-w-[120px]">{w.name}</span>
           </button>
         ))}
@@ -353,7 +349,7 @@ export default function StatsPage() {
         />
       </div>
 
-      {/* TABS (ОБНОВЛЕННЫЕ СУММЫ) */}
+      {/* TABS */}
       <div className="grid grid-cols-2 gap-4">
         <div 
           onClick={() => setActiveTab('expense')}
@@ -364,7 +360,8 @@ export default function StatsPage() {
           }`}
         >
           <TrendingDown className="text-rose-500 mb-2" size={20} />
-          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Wydatki</p>
+          {/* 🔥 Перевод: Расходы */}
+          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{t('stats.expenses')}</p>
           <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalExpenses)}>
             {formatCompactAmount(stats.totalExpenses)} <span className="text-xs opacity-50">{mainCurrency}</span>
           </p>
@@ -379,7 +376,8 @@ export default function StatsPage() {
           }`}
         >
           <TrendingUp className="text-emerald-500 mb-2" size={20} />
-          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Przychody</p>
+          {/* 🔥 Перевод: Доходы */}
+          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{t('stats.incomes')}</p>
           <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalIncomes)}>
             {formatCompactAmount(stats.totalIncomes)} <span className="text-xs opacity-50">{mainCurrency}</span>
           </p>
@@ -389,7 +387,8 @@ export default function StatsPage() {
       {/* PIE CHART + LIST */}
       <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6 min-h-[400px] flex flex-col">
         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">
-          Struktura {activeTab === 'expense' ? 'wydatków' : 'przychodów'}
+          {/* 🔥 Перевод: Структура расходов/доходов */}
+          {activeTab === 'expense' ? t('stats.structureExpense') : t('stats.structureIncome')}
         </h3>
         
         {stats.pieData.length === 0 ? (
@@ -397,9 +396,10 @@ export default function StatsPage() {
             <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6 shadow-inner">
               <PackageOpen size={32} className="text-gray-600" />
             </div>
-            <p className="text-white font-bold text-lg mb-2">Pustki...</p>
+            {/* 🔥 Перевод: Пустое состояние */}
+            <p className="text-white font-bold text-lg mb-2">{t('stats.emptyTitle')}</p>
             <p className="text-sm text-gray-500 max-w-[240px] leading-relaxed">
-              Brak transakcji w tym okresie.
+              {t('stats.emptyDesc')}
             </p>
           </div>
         ) : (
@@ -437,7 +437,7 @@ export default function StatsPage() {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* ЦЕНТР ГРАФИКА (ОБНОВЛЕННЫЕ СУММЫ) */}
+              {/* ЦЕНТР ГРАФИКА */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 {activeIndex !== null && stats.pieData[activeIndex] ? (
                   <>
@@ -464,7 +464,8 @@ export default function StatsPage() {
                   </>
                 ) : (
                   <>
-                    <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">Suma</span>
+                    {/* 🔥 Перевод: Сумма */}
+                    <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">{t('stats.sum')}</span>
                     <span 
                       className="text-xl font-black text-white drop-shadow-md cursor-help pointer-events-auto"
                       title={formatExactAmount(activeTab === 'expense' ? stats.totalExpenses : stats.totalIncomes)}
@@ -504,7 +505,6 @@ export default function StatsPage() {
                         <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">{item.percentage}%</p>
                       </div>
                     </div>
-                    {/* СПИСОК КАТЕГОРИЙ (ОБНОВЛЕННЫЕ СУММЫ) */}
                     <div className="text-right flex-shrink-0 pl-3">
                       <p 
                         className="font-mono font-bold text-white whitespace-nowrap cursor-help pointer-events-auto"
@@ -535,7 +535,6 @@ export default function StatsPage() {
         mainCurrency={mainCurrency} 
       />
       
-      {/* МОДАЛКА */}
       <CategoryDetailsModal 
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}

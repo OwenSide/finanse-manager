@@ -45,7 +45,6 @@ export default function MoneyMatrix() {
         ctx.font = `${p.fontSize}px monospace`;
         ctx.fillText(p.text, p.x, p.y);
 
-        // Двигаем символ вниз
         p.y += p.speed;
 
         // Если символ улетел за нижний край — возвращаем его наверх в случайное место

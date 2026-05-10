@@ -1,10 +1,205 @@
 {
   "home": {
+    "loading": "Loading finances...",
     "totalAssets": "Total Assets",
-    "statusActive": "STATUS: ACTIVE",
     "recent": "Recent",
     "seeAll": "See all",
+    "wallets": "Wallets",
+    "seeAllWallets": "See all",
+    "noTransactions": "No transactions",
+    "noTransactionsDesc": "You don't have any entries yet. Add your first transaction to see statistics.",
+    "addTransaction": "Add transaction",
     "addWallet": "Add wallet",
     "noWallets": "No wallets"
-  }
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "language": "Language",
+    "currency": "Currency",
+    "search": "Search...",
+    "notFound": "Not found",
+    "data": "Data",
+    "export": "Export",
+    "exportDesc": "Download JSON",
+    "import": "Import",
+    "importDesc": "Restore from file",
+    "dangerZone": "Danger Zone",
+    "resetData": "Reset data",
+    "footerText": "Data stored locally on device",
+    "alerts": {
+        "exportConfirm": "Do you want to download the data backup file?",
+        "exportSuccess": "✅ Exported successfully!",
+        "exportError": "❌ Export error.",
+        "importWarning": "⚠️ Import will overwrite current data. Continue?",
+        "importError": "❌ Import error.",
+        "importFormatError": "Wrong file format",
+        "importSuccess": "✅ Imported successfully!",
+        "resetWarning": "⚠️ DELETE EVERYTHING? This cannot be undone.",
+        "resetConfirm": "🧨 Confirm data deletion.",
+        "resetSuccess": "🗑️ Deleted.",
+        "genericError": "Error."
+    }
+  },
+  "history": {
+    "title": "History",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "noResults": "Nothing found.",
+    "empty": "No transactions.",
+    "loading": "Loading history...",
+    "confirmDelete": "Delete?",
+    "confirmStopRecurring": "Stop recurring payment?"
+  },
+  "addTransaction": {
+  "title": "New transaction",
+  "expenses": "Expenses",
+  "incomes": "Income",
+  "enterAmount": "Enter amount",
+  "category": "Category",
+  "noCategories": "No categories of this type",
+  "when": "Date",
+  "wallet": "Wallet",
+  "commentPlaceholder": "Comment (optional)",
+  "recurring": "Recurring payment",
+  "recurringDesc": "Netflix, Internet, Rent etc.",
+  "frequency": "Frequency",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "addBtn": "Add transaction"
+  },
+  "transactionDetail": {
+    "defaultTitle": "Transaction",
+    "recurringActive": "Active subscription",
+    "recurringCanceled": "Canceled subscription",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "customRecurring": "Recurring",
+    "stopRecurring": "Stop payments",
+    "wallet": "Wallet",
+    "balanceAfter": "Balance after operation",
+    "exchangeRate": "Exchange rate",
+    "comment": "Comment",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete transaction?"
+   },
+   "editTransaction": {
+        "title": "Edit transaction",
+        "date": "Date",
+        "saveBtn": "Save changes",
+        "currencyChanged": "⚠️ Currency changed"
+    },
+    "filters": {
+        "searchPlaceholder": "Search transactions...",
+        "all": "All",
+        "expenses": "Expenses",
+        "incomes": "Income",
+        "dateFrom": "From",
+        "dateTo": "To",
+        "allCategories": "All categories",
+        "onlyRecurring": "Only recurring",
+        "resetFilters": "Reset filters"
+    },
+    "walletSelect": {
+        "allWallets": "All wallets",
+        "selectWallet": "Select wallet"
+    },
+    "transactionItem": {
+        "noCategory": "No category",
+        "subscription": "Subscription",
+        "paid": "Paid"
+    },
+    "categories": {
+        "title": "Categories",
+        "expenses": "Expenses",
+        "incomes": "Income",
+        "expenseSingle": "Expense",
+        "incomeSingle": "Income",
+        "emptyExpense": "No expenses",
+        "emptyIncome": "No income",
+        "emptyDesc": "Create your first category to start tracking your finances.",
+        "addFirst": "Add first",
+        "deleteWarning": "⚠️ Cannot delete this category!\n\nThere are transactions linked to it.",
+        "deleteConfirm": "Delete category permanently?",
+        "modalEditTitle": "Edit",
+        "modalNewTitle": "New category",
+        "categoryName": "Category name",
+        "namePlaceholder": "e.g. Shopping",
+        "icon": "Icon",
+        "saveBtn": "Save changes",
+        "createBtn": "Create category"
+    },
+    "walletsPage": {
+        "title": "Wallets",
+        "deleteWarning": "⚠️ Cannot delete this wallet!\nThere are linked transactions.",
+        "deleteConfirm": "Delete this wallet permanently?",
+        "emptyTitle": "No wallets",
+        "emptyDesc": "Add your first account to start tracking your funds.",
+        "addWalletBtn": "Add wallet",
+        "modalEditTitle": "Edit wallet",
+        "modalNewTitle": "New wallet",
+        "walletName": "Wallet name",
+        "namePlaceholder": "e.g. Main account",
+        "currency": "Currency",
+        "notFound": "Not found",
+        "initialBalance": "Initial balance (optional)",
+        "saveBtn": "Save changes",
+        "createBtn": "Create wallet"
+    },
+    "stats": {
+        "title": "Analytics",
+        "allWallets": "All",
+        "expenses": "Expenses",
+        "incomes": "Income",
+        "structureExpense": "Expenses structure",
+        "structureIncome": "Income structure",
+        "emptyTitle": "It's empty here...",
+        "emptyDesc": "No transactions in this period.",
+        "otherCategory": "Other",
+        "sum": "Total",
+        "daysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        "daysFull": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    },
+    "periodSelector": {
+        "period": "Period",
+        "selectPeriod": "Select period",
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "thisYear": "This year",
+        "allTime": "All time",
+        "custom": "Custom range",
+        "from": "From",
+        "to": "To",
+        "showResults": "Show results"
+    },
+    "highlights": {
+        "dailyAvg": "Daily average",
+        "spendAvgText1": "You spend around",
+        "spendAvgText2": "a day",
+        "topExpenseCategory": "Top expense category",
+        "topIncomeCategory": "Main income source",
+        "topExpenses": "Biggest expenses",
+        "topIncomes": "Biggest incomes"
+    },
+    "categoryDetails": {
+        "emptyText": "No transactions in this period",
+        "noDescription": "No description"
+    },
+    "weekdayChart": {
+        "titleExpense": "Distribution by day of week (Expenses)",
+        "titleIncome": "Distribution by day of week (Income)",
+        "spent": "Spent",
+        "received": "Received"
+    },
+    "nav": {
+        "home": "Home",
+        "homeDesktop": "Dashboard",
+        "wallets": "Wallets",
+        "addTransaction": "Add transaction",
+        "categories": "Categories",
+        "analytics": "Analytics"
+    }
 }

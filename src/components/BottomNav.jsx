@@ -1,9 +1,14 @@
 import { NavLink, useLocation } from "react-router-dom";
-// 🔥 Добавил MoreHorizontal
 import { LayoutDashboard, Plus, Tags, Wallet, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 
+// 🔥 Подключаем хук перевода
+import { useTranslation } from 'react-i18next';
+
 export default function BottomNav() {
+  // 🔥 Вытягиваем функцию t
+  const { t } = useTranslation();
+
   return (
     <div className="fixed bottom-6 left-0 w-full px-6 z-50 md:hidden flex justify-center">
       <nav className="
@@ -21,8 +26,8 @@ export default function BottomNav() {
         
         {/* Левая группа */}
         <div className="flex items-center justify-around flex-1">
-            <BottomNavItem to="/" icon={<LayoutDashboard size={20} />} label="Główna" />
-            <BottomNavItem to="/wallets" icon={<Wallet size={20} />} label="Portfele" />
+            <BottomNavItem to="/" icon={<LayoutDashboard size={20} />} label={t('nav.home')} />
+            <BottomNavItem to="/wallets" icon={<Wallet size={20} />} label={t('nav.wallets')} />
         </div>
 
         {/* Центральная кнопка (Акцентная) */}
@@ -47,10 +52,8 @@ export default function BottomNav() {
 
         {/* Правая группа */}
         <div className="flex items-center justify-around flex-1">
-            <BottomNavItem to="/categories" icon={<Tags size={20} />} label="Kategorie" />
-            
-            {/* 🔥 КНОПКА "ЕЩЁ" */}
-            <BottomNavItem to="/stats" icon={<BarChart3 size={20} />} label="Analityka" />
+            <BottomNavItem to="/categories" icon={<Tags size={20} />} label={t('nav.categories')} />
+            <BottomNavItem to="/stats" icon={<BarChart3 size={20} />} label={t('nav.analytics')} />
         </div>
 
       </nav>
@@ -69,7 +72,6 @@ function BottomNavItem({ to, icon, label }) {
           isActive ? "text-white" : "text-gray-500 hover:text-gray-300"
       }`}
     >
-      {/* Анимированный фон (оставляем, но делаем его менее заметным или убираем, если мешает подписям. Тут оставил легкий эффект) */}
       {isActive && (
         <motion.div
           layoutId="nav-active"
@@ -78,24 +80,13 @@ function BottomNavItem({ to, icon, label }) {
         />
       )}
 
-      {/* Иконка */}
       <div className={`transition-all duration-300 mb-0.5 ${isActive ? "scale-110 -translate-y-0.5" : ""}`}>
         {icon}
       </div>
 
-      {/* Подпись */}
       <span className={`text-[8px] font-medium tracking-wide transition-all duration-300 ${isActive ? "text-white font-bold" : "text-gray-500"}`}>
         {label}
       </span>
-      
-      {/* Лампа/Точка (теперь она очень маленькая под текстом, если нужно, или можно убрать, так как текст стал жирным) */}
-      {/* {isActive && (
-        <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute bottom-1.5 w-0.5 h-0.5 rounded-full bg-indigo-500 shadow-[0_0_8px_2px_rgba(99,102,241,0.8)]" 
-        />
-      )} */}
     </NavLink>
   );
 }

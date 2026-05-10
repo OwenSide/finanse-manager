@@ -97,7 +97,7 @@ export default function SettingsPage() {
 
   // --- ЭКСПОРТ ---
   const handleExport = async () => {
-    if (!window.confirm("Czy chcesz pobrać plik z kopią zapasową danych?")) return;
+    if (!window.confirm(t('settings.alerts.exportConfirm'))) return;
 
     try {
       setIsLoading(true);
@@ -117,10 +117,10 @@ export default function SettingsPage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      alert("✅ Wyeksportowano!");
+      alert(t('settings.alerts.exportSuccess'));
     } catch (error) {
       console.error(error);
-      alert("❌ Błąd eksportu.");
+      alert(t('settings.alerts.exportError'));
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +128,7 @@ export default function SettingsPage() {
 
   // --- ИМПОРТ ---
   const handleImportClick = () => {
-    if(window.confirm("⚠️ Import nadpisze dane. Kontynuować?")) {
+    if(window.confirm(t('settings.alerts.importWarning'))) {
         fileInputRef.current.click();
     }
   };
@@ -143,7 +143,7 @@ export default function SettingsPage() {
         setIsLoading(true);
         const importedData = JSON.parse(e.target.result);
 
-        if (!importedData.wallets || !importedData.transactions) throw new Error("Zły format");
+        if (!importedData.wallets || !importedData.transactions) throw new Error(t('settings.alerts.importFormatError'));
 
         await clearAllData(); 
 
@@ -153,11 +153,11 @@ export default function SettingsPage() {
         }
         for (const t of importedData.transactions) await addTransaction(t);
 
-        alert("✅ Zaimportowano!");
+        alert(t('settings.alerts.importSuccess'));
         window.location.reload();
       } catch (error) {
         console.error(error);
-        alert("❌ Błąd importu.");
+        alert(t('settings.alerts.importError'));
       } finally {
         setIsLoading(false);
         event.target.value = null; 
@@ -168,16 +168,16 @@ export default function SettingsPage() {
 
   // --- СБРОС ---
   const handleResetData = async () => {
-    if (window.confirm("⚠️ USUNĄĆ WSZYSTKO? Nie można tego cofnąć.")) {
-        if (window.confirm("🧨 Potwierdź usunięcie danych.")) {
+    if (window.confirm(t('settings.alerts.resetWarning'))) {
+        if (window.confirm(t('settings.alerts.resetConfirm'))) {
             try {
                 setIsLoading(true);
                 await clearAllData();
-                alert("🗑️ Usunięto.");
+                alert(t('settings.alerts.resetSuccess'));
                 window.location.reload(); 
             } catch (error) {
                 console.error(error);
-                alert("Błąd.");
+                alert(t('settings.alerts.resetSuccess'));
             } finally {
                 setIsLoading(false);
             }
@@ -194,14 +194,14 @@ export default function SettingsPage() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold">Ustawienia</h1>
+        <h1 className="text-xl font-bold">{t('settings.title')}</h1>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 mt-8 space-y-8 relative">
         
         {/* PREFERENCES */}
         <section>
-          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">Preferencje</h2>
+          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">{t('settings.preferences')}</h2>
           <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-visible shadow-xl relative z-20">
              
             {/* 🔥 КАСТОМНЫЙ ВЫБОР ЯЗЫКА */}
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                 >
                     <div className="flex items-center gap-4 relative z-10 pointer-events-none">
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400"><Globe size={20}/></div>
-                        <div><p className="text-sm font-bold">Język</p></div>
+                        <div><p className="text-sm font-bold">{t('settings.language')}</p></div>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400 pointer-events-none relative z-10">
                         <span className="text-sm font-bold">{currentLangLabel}</span>
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                 >
                     <div className="flex items-center gap-4 relative z-10 pointer-events-none">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400"><Coins size={20}/></div>
-                        <div><p className="text-sm font-bold">Waluta</p></div>
+                        <div><p className="text-sm font-bold">{t('settings.currency')}</p></div>
                     </div>
                     
                     {/* Строка поиска появляется только когда меню открыто */}
@@ -316,19 +316,19 @@ export default function SettingsPage() {
 
         {/* DATA */}
         <section className="relative z-10">
-          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">Dane</h2>
+          <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">{t('settings.data')}</h2>
           <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
             <button onClick={handleExport} disabled={isLoading} className="w-full p-4 flex justify-between border-b border-white/5 hover:bg-white/5 text-left transition-colors">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400"><Download size={20}/></div>
-                    <div><p className="text-sm font-bold">Eksportuj</p><p className="text-xs text-gray-500">Pobierz JSON</p></div>
+                    <div><p className="text-sm font-bold">{t('settings.export')}</p><p className="text-xs text-gray-500">{t('settings.exportDesc')}</p></div>
                 </div>
                 <FileJson size={16} className="text-gray-500"/>
             </button>
             <button onClick={handleImportClick} disabled={isLoading} className="w-full p-4 flex justify-between hover:bg-white/5 text-left transition-colors">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400"><Upload size={20}/></div>
-                    <div><p className="text-sm font-bold">Importuj</p><p className="text-xs text-gray-500">Przywróć z pliku</p></div>
+                    <div><p className="text-sm font-bold">{t('settings.import')}</p><p className="text-xs text-gray-500">{t('settings.importDesc')}</p></div>
                 </div>
                 <ChevronRight size={16} className="text-gray-500"/>
             </button>
@@ -338,12 +338,12 @@ export default function SettingsPage() {
 
         {/* DANGER */}
         <section className="relative z-10">
-          <h2 className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-3 ml-4">Strefa Niebezpieczna</h2>
+          <h2 className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-3 ml-4">{t('settings.dangerZone')}</h2>
           <div className="bg-[#151A23] border border-rose-500/20 rounded-3xl overflow-hidden">
             <button onClick={handleResetData} disabled={isLoading} className="w-full p-4 flex justify-between hover:bg-rose-500/10 text-left transition-colors">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500"><Trash2 size={20}/></div>
-                    <div><p className="text-sm font-bold text-white">Zresetuj dane</p></div>
+                    <div><p className="text-sm font-bold text-white">{t('settings.resetData')}</p></div>
                 </div>
             </button>
           </div>
@@ -351,7 +351,7 @@ export default function SettingsPage() {
 
         <div className="text-center pt-8 opacity-40">
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1">Finance Manager</p>
-            <p className="text-[10px] mt-2">Dane przechowywane lokalnie na urządzeniu</p>
+            <p className="text-[10px] mt-2">{t('settings.footerText')}</p>
         </div>
       </div>
       

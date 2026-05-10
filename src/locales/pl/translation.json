@@ -1,10 +1,205 @@
 {
   "home": {
+    "loading": "Ładowanie finansów...",
     "totalAssets": "Całkowity Kapitał",
-    "statusActive": "STATUS: AKTYWNY",
     "recent": "Ostatnie",
     "seeAll": "Wszystkie",
+    "wallets": "Portfele",
+    "seeAllWallets": "Zobacz wszystkie",
+    "noTransactions": "Brak transakcji",
+    "noTransactionsDesc": "Nie masz jeszcze żadnych wpisów. Dodaj pierwszą transakcję, aby zobaczyć statystyki.",
+    "addTransaction": "Dodaj transakcję",
     "addWallet": "Dodaj portfel",
     "noWallets": "Brak portfeli"
-  }
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "preferences": "Preferencje",
+    "language": "Język",
+    "currency": "Waluta",
+    "search": "Szukaj...",
+    "notFound": "Nie znaleziono",
+    "data": "Dane",
+    "export": "Eksportuj",
+    "exportDesc": "Pobierz JSON",
+    "import": "Importuj",
+    "importDesc": "Przywróć z pliku",
+    "dangerZone": "Strefa Niebezpieczna",
+    "resetData": "Zresetuj dane",
+    "footerText": "Dane przechowywane lokalnie na urządzeniu",
+    "alerts": {
+        "exportConfirm": "Czy chcesz pobrać plik z kopią zapasową danych?",
+        "exportSuccess": "✅ Wyeksportowano!",
+        "exportError": "❌ Błąd eksportu.",
+        "importWarning": "⚠️ Import nadpisze dane. Kontynuować?",
+        "importError": "❌ Błąd importu.",
+        "importFormatError": "Zły format pliku",
+        "importSuccess": "✅ Zaimportowano!",
+        "resetWarning": "⚠️ USUNĄĆ WSZYSTKO? Nie można tego cofnąć.",
+        "resetConfirm": "🧨 Potwierdź usunięcie danych.",
+        "resetSuccess": "🗑️ Usunięto.",
+        "genericError": "Błąd."
+    }
+  },
+  "history": {
+    "title": "Historia",
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "noResults": "Nic nie znaleziono.",
+    "empty": "Brak transakcji.",
+    "loading": "Ładowanie historii...",
+    "confirmDelete": "Usunąć?",
+    "confirmStopRecurring": "Zatrzymać płatność cykliczną?"
+  },
+  "addTransaction": {
+  "title": "Nowa transakcja",
+  "expenses": "Wydatki",
+  "incomes": "Przychody",
+  "enterAmount": "Wprowadź kwotę",
+  "category": "Kategoria",
+  "noCategories": "Brak kategorii tego typu",
+  "when": "Kiedy",
+  "wallet": "Portfel",
+  "commentPlaceholder": "Komentarz (opcjonalnie)",
+  "recurring": "Płatność cykliczna",
+  "recurringDesc": "Netflix, Internet, Czynsz etc.",
+  "frequency": "Częstotliwość",
+  "weekly": "Co tydzień",
+  "monthly": "Co miesiąc",
+  "yearly": "Co rok",
+  "addBtn": "Dodaj transakcję"
+   },
+  "transactionDetail": {
+    "defaultTitle": "Transakcja",
+    "recurringActive": "Subskrypcja aktywna",
+    "recurringCanceled": "Subskrypcja anulowana",
+    "weekly": "Co tydzień",
+    "monthly": "Co miesiąc",
+    "yearly": "Co rok",
+    "customRecurring": "Cykliczne",
+    "stopRecurring": "Zatrzymaj płatności",
+    "wallet": "Portfel",
+    "balanceAfter": "Saldo po operacji",
+    "exchangeRate": "Kurs waluty",
+    "comment": "Komentarz",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "confirmDelete": "Usunąć transakcję?"
+    },
+    "editTransaction": {
+        "title": "Edytuj transakcję",
+        "date": "Data",
+        "saveBtn": "Zapisz zmiany",
+        "currencyChanged": "⚠️ Zmieniono walutę"
+    },
+    "filters": {
+        "searchPlaceholder": "Szukaj transakcji...",
+        "all": "Wszystkie",
+        "expenses": "Wydatki",
+        "incomes": "Przychody",
+        "dateFrom": "Od",
+        "dateTo": "Do",
+        "allCategories": "Wszystkie kategorie",
+        "onlyRecurring": "Tylko subskrypcje",
+        "resetFilters": "Resetuj filtry"
+    },
+    "walletSelect": {
+        "allWallets": "Wszystkie portfele",
+        "selectWallet": "Wybierz portfel"
+    },
+    "transactionItem": {
+        "noCategory": "Brak kategorii",
+        "subscription": "Subskrypcja",
+        "paid": "Opłacono"
+    },
+    "categories": {
+        "title": "Kategorie",
+        "expenses": "Wydatki",
+        "incomes": "Przychody",
+        "expenseSingle": "Wydatek",
+        "incomeSingle": "Przychód",
+        "emptyExpense": "Brak wydatków",
+        "emptyIncome": "Brak przychodów",
+        "emptyDesc": "Stwórz pierwszą kategorię, aby zacząć śledzić swoje finanse.",
+        "addFirst": "Dodaj pierwszą",
+        "deleteWarning": "⚠️ Nie można usunąć tej kategorii!\n\nIstnieją transakcje powiązane z tą kategorią.",
+        "deleteConfirm": "Usunąć kategorię bezpowrotnie?",
+        "modalEditTitle": "Edycja",
+        "modalNewTitle": "Nowa kategoria",
+        "categoryName": "Nazwa kategorii",
+        "namePlaceholder": "np. Zakupy",
+        "icon": "Ikona",
+        "saveBtn": "Zapisz zmiany",
+        "createBtn": "Utwórz kategorię"
+    },
+    "walletsPage": {
+        "title": "Portfele",
+        "deleteWarning": "⚠️ Nie można usunąć tego portfela!\nIstnieją powiązane transakcje.",
+        "deleteConfirm": "Usunąć ten portfel bezpowrotnie?",
+        "emptyTitle": "Brak portfeli",
+        "emptyDesc": "Dodaj swoje pierwsze konto, aby zacząć kontrolować swoje środki.",
+        "addWalletBtn": "Dodaj portfel",
+        "modalEditTitle": "Edycja portfela",
+        "modalNewTitle": "Nowy portfel",
+        "walletName": "Nazwa portfela",
+        "namePlaceholder": "np. Główne konto",
+        "currency": "Waluta",
+        "notFound": "Nie znaleziono",
+        "initialBalance": "Saldo początkowe (opcjonalne)",
+        "saveBtn": "Zapisz zmiany",
+        "createBtn": "Utwórz portfel"
+    },
+    "stats": {
+        "title": "Analityka",
+        "allWallets": "Wszystkie",
+        "expenses": "Wydatki",
+        "incomes": "Przychody",
+        "structureExpense": "Struktura wydatków",
+        "structureIncome": "Struktura przychodów",
+        "emptyTitle": "Pustki...",
+        "emptyDesc": "Brak transakcji w tym okresie.",
+        "otherCategory": "Inne",
+        "sum": "Suma",
+        "daysShort": ["Ndz", "Pon", "Wto", "Śro", "Czw", "Pią", "Sob"],
+        "daysFull": ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"]
+    },
+    "periodSelector": {
+        "period": "Okres",
+        "selectPeriod": "Wybierz okres",
+        "thisMonth": "Ten miesiąc",
+        "lastMonth": "Poprzedni miesiąc",
+        "thisYear": "Ten rok",
+        "allTime": "Cały czas",
+        "custom": "Własny zakres",
+        "from": "Od",
+        "to": "Do",
+        "showResults": "Pokaż wyniki"
+    },
+    "highlights": {
+        "dailyAvg": "Średnia dzienna",
+        "spendAvgText1": "Wydajesz średnio",
+        "spendAvgText2": "dziennie",
+        "topExpenseCategory": "Najdroższa kategoria",
+        "topIncomeCategory": "Główne źródło",
+        "topExpenses": "Największe wydatki",
+        "topIncomes": "Największe przychody"
+    },
+    "categoryDetails": {
+        "emptyText": "Brak transakcji w tym okresie",
+        "noDescription": "Bez opisu"
+    },
+    "weekdayChart": {
+        "titleExpense": "Rozkład według dni tygodnia (Wydatki)",
+        "titleIncome": "Rozkład według dni tygodnia (Przychody)",
+        "spent": "Wydano",
+        "received": "Otrzymano"
+    },
+    "nav": {
+        "home": "Główna",
+        "homeDesktop": "Strona główna",
+        "wallets": "Portfele",
+        "addTransaction": "Dodaj transakcję",
+        "categories": "Kategorie",
+        "analytics": "Analityka"
+    }
 }

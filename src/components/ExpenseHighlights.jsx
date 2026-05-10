@@ -2,12 +2,17 @@ import React from 'react';
 import { Trophy, Star } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
 
-// 🔥 Импортируем наши новые крутые форматтеры
 import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
+
+// 🔥 Подключаем хук перевода
+import { useTranslation } from 'react-i18next';
 
 export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
   const isExpense = activeTab === 'expense';
   
+  // 🔥 Вытягиваем функцию t и i18n для дат
+  const { t, i18n } = useTranslation();
+
   const top3 = isExpense ? stats.top3Exp : stats.top3Inc;
   const total = isExpense ? stats.totalExpenses : stats.totalIncomes;
   
@@ -18,37 +23,33 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
   return (
     <div className="space-y-4">
       
-      {/* 🔥 ОБЪЕДИНЕННЫЙ БЛОК (Сводка: Лидер + Среднее) */}
       <div className="bg-[#151A23] rounded-[32px] border border-white/5 flex flex-col divide-y divide-white/5 transition-all">
         
-        {/* СРЕДНИЙ РАСХОД (только для расходов) */}
         {isExpense && stats.dailyAvg > 0 && (
           <div className="p-5 flex flex-col items-center justify-center">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">
-              Średnia dzienna
+              {t('highlights.dailyAvg')}
             </p>
             <div className="flex items-baseline gap-1.5">
-              <p className="text-sm text-gray-400">Wydajesz średnio</p>
-              {/* 1. ОБНОВИЛИ СУММУ: СРЕДНЯЯ В ДЕНЬ */}
+              <p className="text-[12px] text-gray-400">{t('highlights.spendAvgText1')}</p>
               <span 
-                className="text-white font-bold text-lg cursor-help"
+                className="text-white font-bold text-[13px] cursor-help"
                 title={formatExactAmount(stats.dailyAvg)}
               >
                 {formatCompactAmount(stats.dailyAvg)}
               </span>
-              <span className="text-xs text-gray-500 font-bold uppercase">{mainCurrency}</span>
-              <p className="text-sm text-gray-400">dziennie</p>
+              <span className="text-[12px] text-gray-500 font-bold uppercase">{mainCurrency}</span>
+              <p className="text-[12px] text-gray-400">{t('highlights.spendAvgText2')}</p>
             </div>
           </div>
         )}
 
-        {/* КАТЕГОРИЯ-ЛИДЕР */}
         {topCategory && (
           <div className="p-5 flex flex-col items-center justify-center">
             <div className="flex items-center gap-1.5 mb-3 text-indigo-400">
               <Star size={14} className="fill-indigo-400" />
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                {isExpense ? 'Najdroższa kategoria' : 'Główne źródło'}
+                {isExpense ? t('highlights.topExpenseCategory') : t('highlights.topIncomeCategory')}
               </p>
             </div>
             
@@ -59,7 +60,6 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
               <div>
                 <p className="text-sm font-bold text-white leading-tight">{topCategory.name}</p>
                 <div className="flex items-baseline gap-1">
-                  {/* 2. ОБНОВИЛИ СУММУ: ЛИДЕР-КАТЕГОРИЯ */}
                   <span 
                     className="text-xs font-mono font-bold text-gray-300 cursor-help"
                     title={formatExactAmount(topCategory.value)}
@@ -74,16 +74,14 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
           </div>
         )}
 
-        
       </div>
 
-      {/* ТОП-3 ТРАНЗАКЦИЙ */}
       {top3 && top3.length > 0 && (
         <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Trophy size={16} className="text-yellow-500" />
             <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">
-              {isExpense ? 'Największe wydatki' : 'Największe przychody'}
+              {isExpense ? t('highlights.topExpenses') : t('highlights.topIncomes')}
             </h3>
           </div>
           
@@ -98,14 +96,13 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
                     <p className="text-xs font-bold text-white truncate">
                       {tx.catName}
                     </p>
-                    <p className="text-[10px] text-gray-500 truncate">
+                    <p className="text-[10px] text-gray-500 truncate capitalize-first">
                       {tx.comment && tx.comment !== tx.catName ? `${tx.comment} • ` : ''}
-                      {new Date(tx.date).toLocaleDateString('pl-PL')}
+                      {new Date(tx.date).toLocaleDateString(i18n.language, { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 
-                {/* 3. ОБНОВИЛИ СУММУ: ТОП-3 */}
                 <div className="text-right flex flex-col items-end shrink-0">
                   <p 
                     className={`text-sm font-mono font-bold cursor-help ${isExpense ? 'text-rose-500' : 'text-emerald-500'}`}

@@ -4,6 +4,7 @@ import { getAllWallets, addWallet, deleteWallet, updateWallet, getAllExchangeRat
 import { Wallet, Plus, Trash2, CreditCard, Globe, ChevronDown, Check, Banknote, Pencil, Loader2, ArrowLeft, GripVertical } from "lucide-react";
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion"; 
 import WalletFlag from "../utils/flags";
+import { useTranslation } from 'react-i18next';
 
 const defaultCurrencies = ["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"];
 
@@ -11,6 +12,7 @@ export default function Wallets() {
   const [wallets, setWallets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allCurrencies, setAllCurrencies] = useState(defaultCurrencies);
+  const { t } = useTranslation();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState(null);
@@ -94,11 +96,11 @@ export default function Wallets() {
     const hasLinkedTxs = allTxs.some(t => t.walletId === id);
 
     if (hasLinkedTxs) {
-        alert("⚠️ Nie można usunąć tego portfela!\nIstnieją powiązane transakcje.");
+        alert(t('walletsPage.deleteWarning'));
         return;
     }
 
-    if (window.confirm("Usunąć ten portfel bezpowrotnie?")) {
+    if (window.confirm(t('walletsPage.deleteConfirm'))) {
       await deleteWallet(id);
       setWallets((prev) => prev.filter((w) => w.id !== id));
     }
@@ -119,7 +121,7 @@ export default function Wallets() {
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/10">
                     <Wallet size={20} />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Portfele</h2>
+                <h2 className="text-2xl font-bold text-white">{t('walletsPage.title')}</h2>
               </div>
               <button 
                   onClick={openCreateModal}
@@ -144,10 +146,10 @@ export default function Wallets() {
 
                   {/* Текст */}
                   <h3 className="text-lg font-bold text-white mb-2 relative z-10">
-                      Brak portfeli
+                     {t('walletsPage.emptyTitle')}
                   </h3>
                   <p className="text-sm font-medium text-gray-500 mb-6 relative z-10">
-                      Dodaj swoje pierwsze konto, aby zacząć kontrolować swoje środki.
+                      {t('walletsPage.emptyTitle')}
                   </p>
 
                   {/* Полноценная кнопка вместо текста */}
@@ -156,7 +158,7 @@ export default function Wallets() {
                       className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20"
                   >
                       <Plus size={18} strokeWidth={3} />
-                      Dodaj portfel
+                      {t('walletsPage.addWalletBtn')}
                   </button>
               </div>
           </div>
@@ -265,6 +267,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [search, setSearch] = useState("");
     const dropdownRef = useRef(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (isOpen) {
@@ -319,20 +322,20 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                             <ArrowLeft size={24} />
                         </button>
                         <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
-                            {initialData ? "Edycja portfela" : "Nowy portfel"}
+                            {initialData ? t('walletsPage.modalEditTitle') : t('walletsPage.modalNewTitle')}
                         </h3>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6 relative z-10">
                         <div className="max-w-md mx-auto space-y-8 mt-2">
                             <div>
-                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa portfela</label>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">{t('walletsPage.walletName')}</label>
                                 <div className="relative group">
                                     <input
                                         autoFocus
                                         type="text"
                                         maxLength={20}
-                                        placeholder="np. Główne konto"
+                                        placeholder={t('walletsPage.namePlaceholder')}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-16 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-bold shadow-lg"
@@ -344,7 +347,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                             </div>
 
                             <div className="relative z-50" ref={dropdownRef}>
-                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Waluta</label>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">{t('walletsPage.currency')}</label>
                                 <div className="relative cursor-pointer group" onClick={() => setIsDropdownOpen(true)}>
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
                                         <WalletFlag currency={currency} className="w-8 h-8 shadow-md" />
@@ -364,7 +367,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                                 {isDropdownOpen && (
                                     <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl max-h-56 overflow-y-auto z-50 scrollbar-hide ring-1 ring-black/50 animate-in fade-in zoom-in-95 duration-100">
                                         {filteredCurrencies.length === 0 ? (
-                                            <div className="p-5 text-sm text-gray-500 text-center">Nie znaleziono</div>
+                                            <div className="p-5 text-sm text-gray-500 text-center">{t('walletsPage.notFound')}</div>
                                         ) : (
                                             filteredCurrencies.map((cur) => (
                                                 <button
@@ -390,7 +393,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                             </div>
 
                             <div>
-                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Saldo początkowe (opcjonalne)</label>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">{t('walletsPage.initialBalance')}</label>
                                 <div className="relative group">
                                     <input
                                         type="number"
@@ -412,7 +415,7 @@ function AddWalletModal({ isOpen, onClose, onSave, currencies, initialData }) {
                                     className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg ${!name.trim() ? "bg-gray-800 text-gray-500" : "bg-indigo-600 text-white shadow-indigo-500/20"}`}
                                 >
                                     <Check size={22} strokeWidth={3} />
-                                    <span>{initialData ? "Zapisz zmiany" : "Utwórz portfel"}</span>
+                                    <span>{initialData ? t('walletsPage.saveBtn') : t('walletsPage.createBtn')}</span>
                                 </button>
                             </div>
                         </div>

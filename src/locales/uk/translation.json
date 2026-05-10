@@ -1,10 +1,205 @@
 {
   "home": {
+    "loading": "Завантаження фінансів...",
     "totalAssets": "Загальний капітал",
-    "statusActive": "СТАТУС: АКТИВНИЙ",
     "recent": "Останні",
     "seeAll": "Всі",
+    "wallets": "Гаманці",
+    "seeAllWallets": "Показати всі",
+    "noTransactions": "Немає транзакцій",
+    "noTransactionsDesc": "У вас ще немає записів. Додайте першу транзакцію, щоб побачити статистику.",
+    "addTransaction": "Додати транзакцію",
     "addWallet": "Додати гаманець",
     "noWallets": "Немає гаманців"
-  }
+  },
+  "settings": {
+    "title": "Налаштування",
+    "preferences": "Преференції",
+    "language": "Мова",
+    "currency": "Валюта",
+    "search": "Пошук...",
+    "notFound": "Не знайдено",
+    "data": "Дані",
+    "export": "Експорт",
+    "exportDesc": "Завантажити JSON",
+    "import": "Імпорт",
+    "importDesc": "Відновити з файлу",
+    "dangerZone": "Небезпечна зона",
+    "resetData": "Скинути дані",
+    "footerText": "Дані зберігаються локально на пристрої",
+    "alerts": {
+        "exportConfirm": "Бажаєте завантажити файл резервної копії даних?",
+        "exportSuccess": "✅ Експортовано успішно!",
+        "exportError": "❌ Помилка експорту.",
+        "importWarning": "⚠️ Імпорт перезапише поточні дані. Продовжити?",
+        "importError": "❌ Помилка імпорту.",
+        "importFormatError": "Невірний формат файлу",
+        "importSuccess": "✅ Імпортовано успішно!",
+        "resetWarning": "⚠️ ВИДАЛИТИ ВСЕ? Цю дію неможливо скасувати.",
+        "resetConfirm": "🧨 Підтвердіть видалення даних.",
+        "resetSuccess": "🗑️ Видалено.",
+        "genericError": "Помилка."
+    }
+  },
+  "history": {
+    "title": "Історія",
+    "today": "Сьогодні",
+    "yesterday": "Вчора",
+    "noResults": "Нічого не знайдено.",
+    "empty": "Немає транзакцій.",
+    "loading": "Завантаження історії...",
+    "confirmDelete": "Видалити?",
+    "confirmStopRecurring": "Зупинити регулярний платіж?"
+  },
+  "addTransaction": {
+  "title": "Нова транзакція",
+  "expenses": "Витрати",
+  "incomes": "Доходи",
+  "enterAmount": "Введіть суму",
+  "category": "Категорія",
+  "noCategories": "Немає категорій цього типу",
+  "when": "Коли",
+  "wallet": "Гаманець",
+  "commentPlaceholder": "Коментар (необов'язково)",
+  "recurring": "Регулярний платіж",
+  "recurringDesc": "Netflix, Інтернет, Оренда тощо",
+  "frequency": "Частота",
+  "weekly": "Щотижня",
+  "monthly": "Щомісяця",
+  "yearly": "Щорічно",
+  "addBtn": "Додати транзакцію"
+  },
+  "transactionDetail": {
+    "defaultTitle": "Транзакція",
+    "recurringActive": "Активна підписка",
+    "recurringCanceled": "Скасована підписка",
+    "weekly": "Щотижня",
+    "monthly": "Щомісяця",
+    "yearly": "Щорічно",
+    "customRecurring": "Регулярно",
+    "stopRecurring": "Зупинити платежі",
+    "wallet": "Гаманець",
+    "balanceAfter": "Баланс після операції",
+    "exchangeRate": "Курс валют",
+    "comment": "Коментар",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "confirmDelete": "Видалити транзакцію?"
+    },
+    "editTransaction": {
+        "title": "Редагувати транзакцію",
+        "date": "Дата",
+        "saveBtn": "Зберегти зміни",
+        "currencyChanged": "⚠️ Валюту змінено"
+    },
+    "filters": {
+        "searchPlaceholder": "Пошук транзакцій...",
+        "all": "Всі",
+        "expenses": "Витрати",
+        "incomes": "Доходи",
+        "dateFrom": "Від",
+        "dateTo": "До",
+        "allCategories": "Всі категорії",
+        "onlyRecurring": "Тільки підписки",
+        "resetFilters": "Скинути фільтри"
+    },
+    "walletSelect": {
+        "allWallets": "Всі гаманці",
+        "selectWallet": "Вибрати гаманець"
+    },
+    "transactionItem": {
+        "noCategory": "Без категорії",
+        "subscription": "Підписка",
+        "paid": "Оплачено"
+    },
+    "categories": {
+        "title": "Категорії",
+        "expenses": "Витрати",
+        "incomes": "Доходи",
+        "expenseSingle": "Витрата",
+        "incomeSingle": "Дохід",
+        "emptyExpense": "Немає витрат",
+        "emptyIncome": "Немає доходів",
+        "emptyDesc": "Створіть першу категорію, щоб почати відстежувати фінанси.",
+        "addFirst": "Додати першу",
+        "deleteWarning": "⚠️ Неможливо видалити цю категорію!\n\nІснують транзакції, пов'язані з нею.",
+        "deleteConfirm": "Видалити категорію назавжди?",
+        "modalEditTitle": "Редагування",
+        "modalNewTitle": "Нова категорія",
+        "categoryName": "Назва категорії",
+        "namePlaceholder": "напр. Покупки",
+        "icon": "Іконка",
+        "saveBtn": "Зберегти зміни",
+        "createBtn": "Створити категорію"
+    },
+    "walletsPage": {
+        "title": "Гаманці",
+        "deleteWarning": "⚠️ Неможливо видалити цей гаманець!\nІснують пов'язані транзакції.",
+        "deleteConfirm": "Видалити цей гаманець назавжди?",
+        "emptyTitle": "Немає гаманців",
+        "emptyDesc": "Додайте свій перший рахунок, щоб почати контролювати свої кошти.",
+        "addWalletBtn": "Додати гаманець",
+        "modalEditTitle": "Редагування гаманця",
+        "modalNewTitle": "Новий гаманець",
+        "walletName": "Назва гаманця",
+        "namePlaceholder": "напр. Головний рахунок",
+        "currency": "Валюта",
+        "notFound": "Не знайдено",
+        "initialBalance": "Початковий баланс (необов'язково)",
+        "saveBtn": "Зберегти зміни",
+        "createBtn": "Створити гаманець"
+    },
+    "stats": {
+        "title": "Аналітика",
+        "allWallets": "Всі",
+        "expenses": "Витрати",
+        "incomes": "Доходи",
+        "structureExpense": "Структура витрат",
+        "structureIncome": "Структура доходів",
+        "emptyTitle": "Тут порожньо...",
+        "emptyDesc": "Немає транзакцій у цьому періоді.",
+        "otherCategory": "Інше",
+        "sum": "Сума",
+        "daysShort": ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+        "daysFull": ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"]
+    },
+    "periodSelector": {
+        "period": "Період",
+        "selectPeriod": "Оберіть період",
+        "thisMonth": "Цей місяць",
+        "lastMonth": "Минулий місяць",
+        "thisYear": "Цей рік",
+        "allTime": "За весь час",
+        "custom": "Власний діапазон",
+        "from": "Від",
+        "to": "До",
+        "showResults": "Показати результати"
+    },
+    "highlights": {
+        "dailyAvg": "Середнє за день",
+        "spendAvgText1": "В середньому ви витрачаєте",
+        "spendAvgText2": "на день",
+        "topExpenseCategory": "Найдорожча категорія",
+        "topIncomeCategory": "Головне джерело",
+        "topExpenses": "Найбільші витрати",
+        "topIncomes": "Найбільші доходи"
+    },
+    "categoryDetails": {
+        "emptyText": "Немає транзакцій у цьому періоді",
+        "noDescription": "Без опису"
+    },
+    "weekdayChart": {
+        "titleExpense": "Розподіл за днями тижня (Витрати)",
+        "titleIncome": "Розподіл за днями тижня (Доходи)",
+        "spent": "Витрачено",
+        "received": "Отримано"
+    },
+    "nav": {
+        "home": "Головна",
+        "homeDesktop": "Головна",
+        "wallets": "Гаманці",
+        "addTransaction": "Додати транзакцію",
+        "categories": "Категорії",
+        "analytics": "Аналітика"
+    }
 }

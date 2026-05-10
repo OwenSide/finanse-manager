@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Filter, Repeat, X, Search } from "lucide-react"; // Убрали лишние шевроны
 import WalletSelect from "../components/WalletSelect";
+import { useTranslation } from 'react-i18next';
 
 export default function TransactionFilter({ filter, setFilter, categories, wallets }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -8,6 +9,8 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
   // Разделяем категории для селектов
   const incomeCategories = categories.filter(c => c.type === 'income');
   const expenseCategories = categories.filter(c => c.type === 'expense');
+
+  const { t } = useTranslation();
 
   // Проверяем, включен ли какой-то фильтр (кроме поиска), чтобы зажечь индикатор
   const isFilterActive = filter.type !== "" || filter.dateFrom !== "" || filter.dateTo !== "" || filter.categoryId !== "" || filter.walletId !== "" || filter.onlyRecurring;
@@ -23,7 +26,7 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
           <Search className="absolute z-10 left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-400 transition-colors" size={16} />
           <input 
             type="text" 
-            placeholder="Szukaj transakcji..." 
+            placeholder={t('filters.searchPlaceholder')} 
             className="w-full h-full bg-[#0B0E14]/80 backdrop-blur-md border border-white/10 rounded-xl pl-10 pr-9 text-sm text-white outline-none focus:border-indigo-500 focus:bg-[#151A23] transition-all shadow-lg"
             value={filter.searchQuery || ""}
             onChange={(e) => setFilter({ ...filter, searchQuery: e.target.value })}
@@ -65,26 +68,26 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
               onClick={() => setFilter({ ...filter, type: "" })}
               className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "" ? "bg-gray-700 text-white shadow-md" : "text-gray-500 hover:text-white"}`}
             >
-              Wszystkie
+              {t('filters.all')}
             </button>
             <button 
               onClick={() => setFilter({ ...filter, type: "expense" })}
               className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "expense" ? "bg-rose-500 text-white shadow-md shadow-rose-500/20" : "text-gray-500 hover:text-rose-400"}`}
             >
-              Wydatki
+              {t('filters.expenses')}
             </button>
             <button 
               onClick={() => setFilter({ ...filter, type: "income" })}
               className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter.type === "income" ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "text-gray-500 hover:text-emerald-400"}`}
             >
-              Przychody
+              {t('filters.incomes')}
             </button>
           </div>
 
           {/* КАЛЕНДАРИ (OD / DO) */}
           <div className="flex gap-2 mt-2">
             <label className="flex-1 block bg-[#0B0E14] border border-white/10 rounded-xl px-3 py-2 focus-within:border-indigo-500 focus-within:bg-[#151A23] transition-all group cursor-pointer">
-              <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-0.5 group-focus-within:text-indigo-400 transition-colors">Od</span>
+              <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-0.5 group-focus-within:text-indigo-400 transition-colors">{t('filters.dateFrom')}</span>
               <input 
                 type="date" 
                 value={filter.dateFrom}
@@ -95,7 +98,7 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             </label>
 
             <label className="flex-1 block bg-[#0B0E14] border border-white/10 rounded-xl px-3 py-2 focus-within:border-indigo-500 focus-within:bg-[#151A23] transition-all group cursor-pointer">
-              <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-0.5 group-focus-within:text-indigo-400 transition-colors">Do</span>
+              <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-0.5 group-focus-within:text-indigo-400 transition-colors">{t('filters.dateTo')}</span>
               <input 
                 type="date" 
                 value={filter.dateTo}
@@ -112,14 +115,14 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             value={filter.categoryId}
             onChange={(e) => setFilter({ ...filter, categoryId: e.target.value })}
           >
-            <option value="">Wszystkie kategorie</option>
+            <option value="">{t('filters.allCategories')}</option>
             {expenseCategories.length > 0 && (
-              <optgroup label="Wydatki">
+              <optgroup label={t('filters.expenses')}>
                 {expenseCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </optgroup>
             )}
             {incomeCategories.length > 0 && (
-              <optgroup label="Przychody">
+              <optgroup label={t('filters.incomes')}>
                 {incomeCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </optgroup>
             )}
@@ -147,7 +150,7 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             <div className="flex items-center gap-2">
               <Repeat size={16} className={filter.onlyRecurring ? "text-indigo-400" : "text-gray-500"} />
               <span className={`text-xs font-bold ${filter.onlyRecurring ? "text-indigo-300" : "text-gray-400"}`}>
-                Tylko subskrypcje
+                {t('filters.onlyRecurring')}
               </span>
             </div>
             <div className={`w-8 h-5 rounded-full p-0.5 transition-colors ${filter.onlyRecurring ? "bg-indigo-500" : "bg-gray-700"}`}>
@@ -163,7 +166,7 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             className="w-full flex items-center justify-center gap-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl py-3 text-xs font-bold transition-all active:scale-95 mt-2"
           >
             <X size={16} />
-            Resetuj filtry
+            {t('filters.resetFilters')}
           </button>
         </div>
       )}

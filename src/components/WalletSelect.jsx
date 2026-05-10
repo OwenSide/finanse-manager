@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown, Wallet } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WalletFlag from "../utils/flags";
+import { useTranslation } from 'react-i18next';
 
 // 🔥 НОВОЕ: Функция для сокращения текста в середине
 const truncateMiddle = (text, maxLength = 16) => {
@@ -21,6 +22,7 @@ export default function WalletSelect({
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -54,8 +56,8 @@ export default function WalletSelect({
                         </>
                     ) : (
                         // 🔥 ИСПОЛЬЗУЕМ placeholderClass
-                        <span className={`${placeholderClass} text-smtruncate`}>
-                            {showAllOption ? "Wszystkie portfele" : "Wybierz portfel"}
+                        <span className={`${placeholderClass} text-xs truncate`}>
+                            {showAllOption ? t('walletSelect.allWallets') : t('walletSelect.selectWallet')}
                         </span>
                     )}
                 </div>
@@ -90,7 +92,7 @@ export default function WalletSelect({
                                 <div className="w-7 h-7 flex items-center justify-center bg-white/5 rounded-full border border-white/10 shrink-0">
                                     <Wallet size={14} />
                                 </div>
-                                <span className="text-sm font-bold truncate">Wszystkie portfele</span>
+                                <span className="text-sm font-bold truncate">{t('walletSelect.allWallets')}</span>
                             </div>
                         )}
 

@@ -69,8 +69,7 @@ export default function IconPicker({ selectedIcon, onSelect, type = 'expense' })
             </button>
           );
         })}
-        
-        {/* Пустой отступ справа */}
+    
       </div>
       
       {/* Визуальная подсказка о скролле (градиент справа) */}

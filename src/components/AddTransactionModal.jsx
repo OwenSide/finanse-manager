@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, Wallet, FileText, Plus, ChevronDown, Repeat, Clock
 import { v4 as uuidv4 } from "uuid";
 import CategoryIcon from "./CategoryIcon";
 import WalletSelect from "./WalletSelect";
+import { useTranslation } from 'react-i18next';
 
 // 🔥 НОВЫЕ ИМПОРТЫ
 import { usePreferences } from "../context/PreferencesContext"; 
@@ -31,6 +32,8 @@ export default function AddTransactionModal({
  
   // 🔥 Получаем текущую главную валюту из настроек
   const { mainCurrency } = usePreferences();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isOpen) {
@@ -104,9 +107,9 @@ export default function AddTransactionModal({
   const isFormValid = form.amount && form.categoryId && form.walletId;
 
   const frequencies = [
-      { id: "weekly", label: "Co tydzień" },
-      { id: "monthly", label: "Co miesiąc" },
-      { id: "yearly", label: "Co rok" }
+      { id: "weekly", label: t('addTransaction.weekly') },
+      { id: "monthly", label: t('addTransaction.monthly') },
+      { id: "yearly", label: t('addTransaction.yearly') }
   ];
 
   const filteredCategories = categories.filter(c => c.type === transactionType);
@@ -141,7 +144,7 @@ export default function AddTransactionModal({
                 >
                   <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-lg font-bold text-white">Nowa transakcja</h2>
+                <h2 className="text-lg font-bold text-white">{t('addTransaction.title')}</h2>
                 <div className="w-10" /> 
             </div>
 
@@ -157,7 +160,7 @@ export default function AddTransactionModal({
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
-                  Wydatki
+                  {t('addTransaction.expenses')}
                 </button>
                 <button 
                   onClick={() => { setTransactionType("income"); setForm(f => ({...f, categoryId: ""})); }}
@@ -167,7 +170,7 @@ export default function AddTransactionModal({
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
-                  Przychody
+                  {t('addTransaction.incomes')}
                 </button>
               </div>
 
@@ -194,18 +197,18 @@ export default function AddTransactionModal({
                         />
                     </div>
                 </div>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">Wprowadź kwotę</p>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">{t('addTransaction.enterAmount')}</p>
               </div>
 
               {/* 3. CATEGORY SELECTOR */}
                 <div>
                     <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
-                        Kategoria
+                        {t('addTransaction.category')}
                     </label>
                     
                     {filteredCategories.length === 0 ? (
                         <div className="text-center py-8 border border-white/5 rounded-2xl bg-[#151A23]">
-                            <p className="text-sm text-gray-500 font-medium">Brak kategorii tego typu</p>
+                            <p className="text-sm text-gray-500 font-medium">{t('addTransaction.noCategories')}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
@@ -248,7 +251,7 @@ export default function AddTransactionModal({
               <div className="space-y-4">
                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Kiedy</label>
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('addTransaction.when')}</label>
                         <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                             <input 
                                 type="date" 
@@ -264,7 +267,7 @@ export default function AddTransactionModal({
                     {/* PORTFEL */}
                     {/* PORTFEL (КАСТОМНЫЙ) */}
                     <div className="space-y-2">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Portfel</label>
+                        <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('addTransaction.wallet')}</label>
                         <WalletSelect 
                             wallets={wallets} 
                             value={form.walletId} 
@@ -277,7 +280,7 @@ export default function AddTransactionModal({
                     <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                         <input 
                         type="text" 
-                        placeholder="Komentarz (opcjonalnie)" 
+                        placeholder={t('addTransaction.commentPlaceholder')} 
                         maxLength={20} 
                         className="w-full bg-transparent p-3 pl-10 pr-14 text-white text-sm focus:outline-none placeholder-gray-600 h-[50px]" 
                         value={form.comment} 
@@ -306,10 +309,10 @@ export default function AddTransactionModal({
                             </div>
                             <div>
                                 <p className={`text-sm font-bold transition-colors ${isRecurring ? "text-white" : "text-gray-300"}`}>
-                                    Płatność cykliczna
+                                    {t('addTransaction.recurring')}
                                 </p>
                                 <p className="text-[10px] font-medium text-gray-500">
-                                    Netflix, Internet, Czynsz etc.
+                                    {t('addTransaction.recurringDesc')}
                                 </p>
                             </div>
                         </div>
@@ -333,7 +336,7 @@ export default function AddTransactionModal({
                                 <div className="p-4 bg-[#151A23]/50 border border-white/5 rounded-xl space-y-3">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Clock size={14} className="text-indigo-400" />
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Częstotliwość</span>
+                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('addTransaction.frequency')}</span>
                                     </div>
                                     <div className="flex gap-2">
                                         {frequencies.map((freq) => (
@@ -372,7 +375,7 @@ export default function AddTransactionModal({
                     }`}
                 >
                     <Plus size={22} strokeWidth={3} />
-                    <span>Dodaj transakcję</span>
+                    <span>{t('addTransaction.addBtn')}</span>
                 </button>
               </div>
 

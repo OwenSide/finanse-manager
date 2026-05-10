@@ -1,9 +1,14 @@
 import { LayoutDashboard, PlusCircle, Tags, Wallet, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
+// 🔥 Подключаем хук перевода
+import { useTranslation } from 'react-i18next';
+
 export default function Sidebar() {
+  // 🔥 Вытягиваем функцию t
+  const { t } = useTranslation();
+
   return (
-    // hidden md:flex -> Скрыт на мобильных, Виден как Flex на экранах > 768px
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0B0E14] border-r border-white/5 z-20">
       
       {/* Заголовок */}
@@ -16,14 +21,13 @@ export default function Sidebar() {
 
       {/* Навигация */}
       <nav className="flex-1 px-4 space-y-2 mt-4">
-        <NavItem to="/" icon={<LayoutDashboard size={20} />} label="Strona główna" />
-        <NavItem to="/add-transaction" icon={<PlusCircle size={20} />} label="Dodaj transakcję" />
-        <NavItem to="/wallets" icon={<Wallet size={20} />} label="Portfele" />
-        <NavItem to="/categories" icon={<Tags size={20} />} label="Kategorie" />
-        <NavItem to="/stats" icon={<BarChart3 size={20} />} label="Analityka" />
+        <NavItem to="/" icon={<LayoutDashboard size={20} />} label={t('nav.homeDesktop')} />
+        <NavItem to="/add-transaction" icon={<PlusCircle size={20} />} label={t('nav.addTransaction')} />
+        <NavItem to="/wallets" icon={<Wallet size={20} />} label={t('nav.wallets')} />
+        <NavItem to="/categories" icon={<Tags size={20} />} label={t('nav.categories')} />
+        <NavItem to="/stats" icon={<BarChart3 size={20} />} label={t('nav.analytics')} />
       </nav>
 
-      {/* Футер сайдбара (можно добавить версию или выход) */}
       <div className="p-4 border-t border-white/5 text-xs text-gray-500 text-center">
         Finance Manager
       </div>
@@ -31,7 +35,6 @@ export default function Sidebar() {
   );
 }
 
-// Вспомогательный компонент для ссылки (чтобы не дублировать классы)
 function NavItem({ to, icon, label }) {
   return (
     <NavLink

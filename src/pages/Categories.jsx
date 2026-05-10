@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-// 🔥 Добавил updateCategory в импорт
 import { getAllCategories, addCategory, deleteCategory, updateCategory, getAllTransactions } from '../db.js';
-// 🔥 Добавил Pencil (карандаш)
 import { ArrowLeft, FolderOpen, Plus, Trash2, Loader2, X, Check, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import CategoryIcon from '../components/CategoryIcon';
 import IconPicker from '../components/IconPicker';
 
+// 🔥 Подключаем переводы
+import { useTranslation } from 'react-i18next';
+
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Вкладка на главной странице (фильтр списка)
   const [activeTab, setActiveTab] = useState('expense'); 
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // 🔥 Новое состояние: какую категорию мы сейчас редактируем (null = создаем новую)
   const [editingCategory, setEditingCategory] = useState(null);
+
+  // 🔥 Вытягиваем функцию t
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function loadCategories() {
@@ -30,33 +29,26 @@ export default function Categories() {
     loadCategories();
   }, []);
 
-  // Открытие модалки для СОЗДАНИЯ
   const openCreateModal = () => {
-    setEditingCategory(null); // Сбрасываем, это новая запись
+    setEditingCategory(null);
     setIsModalOpen(true);
   };
 
-  // Открытие модалки для РЕДАКТИРОВАНИЯ
   const openEditModal = (category) => {
-    setEditingCategory(category); // Запоминаем, кого правим
+    setEditingCategory(category); 
     setIsModalOpen(true);
   };
 
   const handleSaveCategory = async (categoryData) => {
     if (editingCategory) {
-        // --- ЛОГИКА ОБНОВЛЕНИЯ (UPDATE) ---
         const updatedCategory = { 
-            ...editingCategory, // сохраняем старый ID
-            ...categoryData,    // новые name, icon, type
-            // color оставляем старый или меняем, если добавишь выбор цвета
+            ...editingCategory,
+            ...categoryData,  
         };
         
         await updateCategory(updatedCategory);
-        
-        // Обновляем список локально
         setCategories(prev => prev.map(c => c.id === updatedCategory.id ? updatedCategory : c).sort((a, b) => a.name.localeCompare(b.name)));
     } else {
-        // --- ЛОГИКА СОЗДАНИЯ (CREATE) ---
         const newCategory = { 
             id: uuidv4(), 
             ...categoryData, 
@@ -66,7 +58,6 @@ export default function Categories() {
         await addCategory(newCategory);
         setCategories((prev) => [...prev, newCategory].sort((a, b) => a.name.localeCompare(b.name)));
         
-        // Переключаем вкладку, если создали категорию другого типа
         if (newCategory.type !== activeTab) {
             setActiveTab(newCategory.type);
         }
@@ -79,11 +70,13 @@ export default function Categories() {
     const hasLinkedTxs = allTxs.some(t => t.categoryId === id);
 
     if (hasLinkedTxs) {
-        alert("⚠️ Nie można usunąć tej kategorii!\n\nIstnieją transakcje powiązane z tą kategorią.");
+        // 🔥 Перевод предупреждения
+        alert(t('categories.deleteWarning'));
         return;
     }
 
-    if (window.confirm('Usunąć kategorię bezpowrotnie?')) {
+    // 🔥 Перевод подтверждения
+    if (window.confirm(t('categories.deleteConfirm'))) {
       await deleteCategory(id);
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
     }
@@ -100,7 +93,6 @@ export default function Categories() {
   return (
     <div className="max-w-4xl mx-auto p-4 pb-24 min-[450px]:p-6">
         
-      {/* --- ОБЩИЙ ПРИЛИПАЮЩИЙ БЛОК (ШАПКА + ТАБЫ) --- */}
     <div className="sticky top-0 z-20 bg-[#0B0E14]/80 backdrop-blur-md -mx-4 px-4 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 min-[450px]:pt-6 mb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         
         {/* HEADER */}
@@ -109,7 +101,8 @@ export default function Categories() {
                 <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 border border-pink-500/10">
                     <FolderOpen size={20} />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Kategorie</h2>
+                {/* 🔥 Заголовок */}
+                <h2 className="text-2xl font-bold text-white">{t('categories.title')}</h2>
             </div>
 
             <button 
@@ -120,8 +113,7 @@ export default function Categories() {
             </button>
         </div>
 
-        {/* TABS (Фильтр списка) */}
-        {/* Обрати внимание: отсюда я убрал sticky и backdrop-blur, так как они теперь у родителя */}
+        {/* TABS */}
         <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
             <button 
                 onClick={() => setActiveTab('expense')}
@@ -131,7 +123,7 @@ export default function Categories() {
                     : "text-gray-400 hover:text-white"
                 }`}
             >
-                Wydatki
+                {t('categories.expenses')}
             </button>
             <button 
                 onClick={() => setActiveTab('income')}
@@ -141,13 +133,12 @@ export default function Categories() {
                     : "text-gray-400 hover:text-white"
                 }`}
             >
-                Przychody
+                {t('categories.incomes')}
             </button>
         </div>
 
     </div>
 
-      {/* СПИСОК */}
       {/* СПИСОК */}
       {filteredCategories.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-6">
@@ -157,10 +148,8 @@ export default function Categories() {
                   ${activeTab === 'expense' ? 'bg-rose-500/5 border-rose-500/20' : 'bg-emerald-500/5 border-emerald-500/20'}
               `}>
                   
-                  {/* Фоновое свечение под иконкой */}
                   <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 blur-3xl rounded-full pointer-events-none opacity-50 ${activeTab === 'expense' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
 
-                  {/* Иконка */}
                   <div className={`
                       w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-lg border
                       ${activeTab === 'expense' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-rose-500/10' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10'}
@@ -168,15 +157,14 @@ export default function Categories() {
                       <FolderOpen size={32} />
                   </div>
 
-                  {/* Текст */}
                   <h3 className="text-lg font-bold text-white mb-2 relative z-10">
-                      Brak {activeTab === 'expense' ? 'wydatków' : 'przychodów'}
+                      {/* 🔥 Перевод пустых состояний */}
+                      {activeTab === 'expense' ? t('categories.emptyExpense') : t('categories.emptyIncome')}
                   </h3>
                   <p className="text-sm font-medium text-gray-500 mb-6 relative z-10">
-                      Stwórz pierwszą kategorię, aby zacząć śledzić swoje finanse.
+                      {t('categories.emptyDesc')}
                   </p>
 
-                  {/* Кнопка в цвет таба */}
                   <button 
                       onClick={openCreateModal} 
                       className={`
@@ -185,7 +173,7 @@ export default function Categories() {
                       `}
                   >
                       <Plus size={18} strokeWidth={3} />
-                      Dodaj pierwszą
+                      {t('categories.addFirst')}
                   </button>
               </div>
           </div>
@@ -208,7 +196,7 @@ export default function Categories() {
         onClose={() => setIsModalOpen(false)} 
         onSave={handleSaveCategory}
         initialType={activeTab}
-        initialData={editingCategory} // 🔥 Передаем данные для редактирования
+        initialData={editingCategory}
       />
       
     </div>
@@ -217,6 +205,9 @@ export default function Categories() {
 
 // --- КАРТОЧКА КАТЕГОРИИ ---
 function CategoryCard({ cat, onDelete, onEdit }) {
+    // 🔥 Тоже подключаем t() для карточки
+    const { t } = useTranslation();
+
     return (
         <div className="glass-card p-4 rounded-2xl flex justify-between items-center group hover:bg-white/5 transition-colors border border-white/5 shadow-sm">
             <div className="flex items-center gap-4">
@@ -231,22 +222,19 @@ function CategoryCard({ cat, onDelete, onEdit }) {
                 <div>
                     <p className="font-bold text-white text-base">{cat.name}</p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider opacity-60">
-                        {cat.type === 'income' ? 'Przychód' : 'Wydatek'}
+                        {/* 🔥 Перевод: Выдаток/Приход */}
+                        {cat.type === 'income' ? t('categories.incomeSingle') : t('categories.expenseSingle')}
                     </p>
                 </div>
             </div>
 
-            {/* Блок кнопок */}
             <div className="flex gap-2 opacity-100 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
-                {/* 🔥 Кнопка РЕДАКТИРОВАТЬ */}
                 <button
                     onClick={() => onEdit(cat)}
                     className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all"
                 >
                     <Pencil size={18} />
                 </button>
-
-                {/* Кнопка УДАЛИТЬ */}
                 <button
                     onClick={() => onDelete(cat.id)}
                     className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
@@ -259,12 +247,14 @@ function CategoryCard({ cat, onDelete, onEdit }) {
 }
 
 // --- МОДАЛЬНОЕ ОКНО ---
-// --- 🔥 ПОЛНОЭКРАННОЕ ОКНО (SLIDE-IN) ---
 function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData }) {
     const [name, setName] = useState('');
     const [icon, setIcon] = useState('Tag');
     const [type, setType] = useState(initialType);
     
+    // 🔥 Подключаем t() для модалки
+    const { t } = useTranslation();
+
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
@@ -288,46 +278,37 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
         <AnimatePresence>
             {isOpen && (
                 <motion.div 
-                    // 🔥 АНИМАЦИЯ: Выезжает СПРАВА (x: 100% -> x: 0)
                     initial={{ x: "100%" }} 
                     animate={{ x: 0 }} 
                     exit={{ x: "100%" }}
-                    // Настройка плавности (Spring physics)
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    
-                    // Позиционирование: фиксировано, на весь экран, поверх всего
                     className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col pt-[max(1rem,env(safe-area-inset-top))]"
                 >
-                    {/* 🔥 Оптимизированное свечение через градиент БЕЗ blur */}
                     <div className={`absolute top-0 left-0 w-full h-[400px] opacity-30 pointer-events-none transition-colors duration-500 ${
                         type === 'expense' 
                         ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-600/40 via-rose-600/0 to-transparent' 
                         : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
                     }`} />
-                    {/* --- 1. ШАПКА (HEADER) --- */}
+                    
+                    {/* --- 1. ШАПКА --- */}
                     <div className="flex items-center justify-between px-4 pb-0 py-4 sticky top-0 z-20 bg-transparent">
                         <button 
                             onClick={onClose}
                             className="p-2 -ml-2 text-gray-400 hover:text-white active:scale-95 transition-transform flex items-center justify-center"
                         >
-                            {/* Только стрелка */}
                             <ArrowLeft size={24} />
                         </button>
 
                         <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
-                            {initialData ? "Edycja" : "Nowa kategoria"}
+                            {/* 🔥 Перевод: Редактировать / Создать новую */}
+                            {initialData ? t('categories.modalEditTitle') : t('categories.modalNewTitle')}
                         </h3>
 
-                        {/* Пустой блок справа, чтобы флекс-контейнер работал корректно */}
                         <div className="w-10" /> 
                     </div>
 
-                    {/* --- 2. КОНТЕНТ (SCROLLABLE) --- */}
+                    {/* --- 2. КОНТЕНТ --- */}
                     <div className="flex-1 overflow-y-auto p-6 relative">
-                        
-                        {/* Фоновый свет (Glow) */}
-                        
-
                         <div className="relative z-10 max-w-md mx-auto space-y-8 mt-4">
                             
                             {/* Переключатель типа */}
@@ -336,25 +317,25 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                                     onClick={() => setType('expense')}
                                     className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'expense' ? "bg-rose-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
                                 >
-                                    Wydatki
+                                    {t('categories.expenses')}
                                 </button>
                                 <button 
                                     onClick={() => setType('income')}
                                     className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${type === 'income' ? "bg-emerald-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}
                                 >
-                                    Przychody
+                                    {t('categories.incomes')}
                                 </button>
                             </div>
 
                             {/* Поле ввода */}
                             <div>
-                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">Nazwa kategorii</label>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">{t('categories.categoryName')}</label>
                                 <div className="relative group">
                                     <input
                                         autoFocus
                                         maxLength={13} 
                                         type="text"
-                                        placeholder="np. Zakupy"
+                                        placeholder={t('categories.namePlaceholder')} // 🔥 Плейсхолдер
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-16 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-bold shadow-lg"
@@ -369,7 +350,7 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
 
                             {/* Выбор иконки */}
                             <div>
-                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-3 block">Ikona</label>
+                                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-3 block">{t('categories.icon')}</label>
                                 <div className="bg-[#151A23] border border-white/10 rounded-2xl p-4 shadow-lg">
                                     <IconPicker 
                                         selectedIcon={icon} 
@@ -396,12 +377,12 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                             >
                                 <Check size={22} strokeWidth={3} />
                                 <span>
-                                    {initialData ? "Zapisz zmiany" : "Utwórz kategorię"}
+                                    {/* 🔥 Кнопка: Сохранить или Создать */}
+                                    {initialData ? t('categories.saveBtn') : t('categories.createBtn')}
                                 </span>
                             </button>
                         </div>
                     </div>
-
 
                 </motion.div>
             )}

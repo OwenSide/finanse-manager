@@ -85,7 +85,6 @@ const iconMap = {
   "graduation-cap": GraduationCap,
   "other": MoreHorizontal, // Другое
   
-  // --- Fallback ---
   "help-circle": HelpCircle
 };
 

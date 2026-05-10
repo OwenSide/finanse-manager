@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { Wallet, Plus, Wifi } from "lucide-react";
 import { formatNumber } from "../utils/formatNumber";
 import WalletFlag from "../utils/flags";
+import { useTranslation } from 'react-i18next';
 
 export default function WalletCarousel({ wallets, exchangeRates, mainCurrency }) {
   const [activeId, setActiveId] = useState(wallets[0]?.id);
   const carouselRef = useRef(null);
+  const { t } = useTranslation();
 
   // 1. ЛОГИКА ОТСЛЕЖИВАНИЯ ЦЕНТРАЛЬНОЙ КАРТОЧКИ (Intersection Observer)
   useEffect(() => {
@@ -77,11 +79,11 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
       <div className="flex items-center justify-between px-2 mb-3">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <Wallet className="text-indigo-400" size={20} />
-          Portfele
+          {t('home.wallets')}
         </h3>
         {wallets.length > 0 && (
           <Link to="/wallets" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
-            Zobacz wszystkie
+            {t('home.seeAllWallets')}
           </Link>
         )}
       </div>

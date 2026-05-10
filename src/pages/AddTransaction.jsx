@@ -5,6 +5,7 @@ import TransactionDetailModal from "../components/TransactionDetailModal";
 import AddTransactionModal from "../components/AddTransactionModal";
 import TransactionFilter from "../components/TransactionFilter"; 
 import { processRecurringTransactions } from "../utils/recurringEngine";
+import { useTranslation } from 'react-i18next';
 
 import { getAllCategories, getAllTransactions, addTransaction, updateTransaction, deleteTransaction, getAllWallets, getAllExchangeRates } from "../db.js";
 import { Plus, Loader2 } from "lucide-react"; 
@@ -16,6 +17,7 @@ export default function TransactionsPage() {
   const [exchangeRates, setExchangeRates] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const { t, i18n } = useTranslation();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
@@ -74,7 +76,7 @@ export default function TransactionsPage() {
   };
 
   const handleDeleteTransaction = async (id) => {
-    if(window.confirm("Usunąć?")) {
+    if(window.confirm(t('history.confirmDelete'))) {
       await deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
       setSelectedTransaction(null);
@@ -82,7 +84,7 @@ export default function TransactionsPage() {
   };
 
   const handleStopRecurring = async (id) => {
-    if (window.confirm("Zatrzymać płatność cykliczną?")) {
+    if (window.confirm(t('history.confirmStopRecurring'))) {
       const tx = transactions.find((t) => t.id === id);
       if (!tx) return;
 
@@ -140,7 +142,7 @@ export default function TransactionsPage() {
             
             const dateShort = `${dd}.${mm}`; 
             const dateFull = `${dd}.${mm}.${yyyy}`; 
-            const dateText = d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }).toLowerCase(); 
+            const dateText = d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '').toLowerCase(); 
             
             searchMatch = 
               note.includes(query) || 
@@ -155,7 +157,7 @@ export default function TransactionsPage() {
 
         return dateMatch && categoryMatch && typeMatch && walletMatch && recurringMatch && searchMatch;
       }).sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [transactions, filter, categories, wallets]);
+  }, [transactions, filter, categories, wallets, i18n.language]);
 
   const groupedTransactions = useMemo(() => {
       const groups = {};
@@ -164,35 +166,42 @@ export default function TransactionsPage() {
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 1);
 
-      filteredTransactions.forEach(t => {
-          const tDate = new Date(t.date);
+      // 🔥 МЕНЯЕМ t на tx (чтобы не конфликтовало с функцией перевода t)
+      filteredTransactions.forEach(tx => {
+          const tDate = new Date(tx.date);
           const tDateOnly = new Date(tDate);
           tDateOnly.setHours(0, 0, 0, 0);
 
           let dateKey;
-          if (tDateOnly.getTime() === today.getTime()) dateKey = "Dzisiaj";
-          else if (tDateOnly.getTime() === yesterday.getTime()) dateKey = "Wczoraj";
+          // 🔥 Теперь t() — это перевод, а tx — это сама транзакция
+          if (tDateOnly.getTime() === today.getTime()) dateKey = t('history.today');
+          else if (tDateOnly.getTime() === yesterday.getTime()) dateKey = t('history.yesterday');
           else {
-              dateKey = tDate.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+              dateKey = tDate.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }).replace(' р.', '');
           }
 
           if (!groups[dateKey]) groups[dateKey] = [];
-          groups[dateKey].push(t);
+          groups[dateKey].push(tx); // 🔥 И здесь кладем tx
       });
       return groups;
-  }, [filteredTransactions]);
+  }, [filteredTransactions, t, i18n.language]);
 
   const selectedWallet = selectedTransaction ? wallets.find(w => w.id === selectedTransaction.walletId) : null;
   const currentExchangeRate = selectedWallet ? (exchangeRates[selectedWallet.currency] || 1) : 1;
 
-  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40}/></div>;
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center flex-col gap-4">
+      <Loader2 className="animate-spin text-indigo-500" size={40}/>
+      <span className="text-gray-500 text-sm font-bold">{t('history.loading')}</span>
+    </div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto p-4 pb-24 min-[450px]:p-6 relative">
       
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6 sticky top-0 z-30 bg-[#0B0E14]/80 backdrop-blur-md py-2 pt-[max(1rem,env(safe-area-inset-top))]">
-        <h2 className="text-2xl font-bold text-white">Historia</h2>
+        <h2 className="text-2xl font-bold text-white">{t('history.title')}</h2>
         <button 
             onClick={() => setIsAddModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
@@ -211,7 +220,7 @@ export default function TransactionsPage() {
       <div className="space-y-6">
         {Object.keys(groupedTransactions).length === 0 ? (
            <div className="text-center py-12 text-gray-500">
-             {filter.searchQuery ? "Nic nie znaleziono." : "Brak transakcji."}
+             {filter.searchQuery ? t('history.noResults') : t('history.empty')}
            </div>
         ) : (
             Object.entries(groupedTransactions).map(([dateLabel, txs]) => (

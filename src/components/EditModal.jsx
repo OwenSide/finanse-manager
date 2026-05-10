@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Calendar, Wallet, FileText, Repeat, Clock, ChevronDown
 import { motion, AnimatePresence } from "framer-motion";
 import CategoryIcon from "./CategoryIcon"; 
 import WalletSelect from "./WalletSelect";
+import { useTranslation } from 'react-i18next';
 
 export default function EditModal({ isOpen, transaction, onSave, onClose, categories, wallets }) {
   const [form, setForm] = useState({
@@ -14,6 +15,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
   });
 
   const [isAmountFocused, setIsAmountFocused] = useState(false);
+  const { t } = useTranslation();
   
   // Стейты для подписки
   const [isRecurring, setIsRecurring] = useState(false);
@@ -66,9 +68,9 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
   };
 
   const frequencies = [
-      { id: "weekly", label: "Co tydzień" },
-      { id: "monthly", label: "Co miesiąc" },
-      { id: "yearly", label: "Co rok" }
+      { id: "weekly", label: t('addTransaction.weekly') },
+      { id: "monthly", label: t('addTransaction.monthly') },
+      { id: "yearly", label: t('addTransaction.yearly') }
   ];
 
   const isFormValid = form.amount && form.categoryId && form.walletId && form.date;
@@ -104,7 +106,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                 >
                   <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-lg font-bold text-white">Edytuj transakcję</h2>
+                <h2 className="text-lg font-bold text-white">{t('editTransaction.title')}</h2>
                 <div className="w-10" /> 
               </div>
               
@@ -120,7 +122,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                               : "text-gray-400 hover:text-white"
                           }`}
                         >
-                          Wydatki
+                          {t('addTransaction.expenses')}
                         </button>
                         <button 
                           onClick={() => { setTransactionType("income"); setForm(f => ({...f, categoryId: ""})); }}
@@ -130,7 +132,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                               : "text-gray-400 hover:text-white"
                           }`}
                         >
-                          Przychody
+                          {t('addTransaction.incomes')}
                         </button>
                     </div>
 
@@ -169,7 +171,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                     animate={{ opacity: 1, y: 0 }}
                                     className="text-[10px] text-orange-400 font-bold bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full"
                                 >
-                                    ⚠️ Zmieniono walutę
+                                    {t('editTransaction.currencyChanged')}
                                 </motion.span>
                             )}
                         </div>
@@ -178,12 +180,12 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                     {/* 3. CATEGORY SELECTOR (HORIZONTAL GRID) */}
                     <div>
                         <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
-                            Kategoria
+                            {t('addTransaction.category')}
                         </label>
                         
                         {filteredCategories.length === 0 ? (
                             <div className="text-center py-8 border border-white/5 rounded-2xl bg-[#151A23]">
-                                <p className="text-sm text-gray-500 font-medium">Brak kategorii tego typu</p>
+                                <p className="text-sm text-gray-500 font-medium">{t('addTransaction.noCategories')}</p>
                             </div>
                         ) : (
                             /* Контейнер скролла */
@@ -235,7 +237,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                         <div className="grid grid-cols-2 gap-3">
                             {/* DATE */}
                             <div className="space-y-2">
-                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Data</label>
+                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('editTransaction.date')}</label>
                                 <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                                     <input 
                                             type="date" 
@@ -250,7 +252,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             
                             {/* PORTFEL */}
                             <div className="space-y-2">
-                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">Portfel</label>
+                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('addTransaction.wallet')}</label>
                                 <WalletSelect 
                                     wallets={wallets} 
                                     value={form.walletId} 
@@ -264,7 +266,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                                 <input 
                                     type="text" 
-                                    placeholder="Komentarz (opcjonalnie)" 
+                                    placeholder={t('addTransaction.commentPlaceholder')} 
                                     maxLength={20} 
                                     className="w-full bg-transparent p-3 pl-10 pr-14 text-white text-sm focus:outline-none placeholder-gray-600 h-[50px]" 
                                     value={form.comment} 
@@ -293,7 +295,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                     </div>
                                     <div>
                                             <p className={`text-sm font-bold transition-colors ${isRecurring ? "text-white" : "text-gray-300"}`}>
-                                                Płatność cykliczna
+                                                {t('addTransaction.recurring')}
                                             </p>
                                     </div>
                                 </div>
@@ -318,7 +320,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                             <div className="p-4 bg-[#151A23]/50 border border-white/5 rounded-xl space-y-3">
                                                 <div className="flex items-center gap-2 mb-2">
                                                         <Clock size={14} className="text-indigo-400" />
-                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Częstotliwość</span>
+                                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('addTransaction.frequency')}</span>
                                                 </div>
                                                 <div className="flex gap-2">
                                                         {frequencies.map((freq) => (
@@ -354,7 +356,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             }`}
                         >
                             <Save size={22} strokeWidth={2.5} />
-                            <span>Zapisz zmiany</span>
+                            <span>{t('editTransaction.saveBtn')}</span>
                         </button>
                     </div>
 

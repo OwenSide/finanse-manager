@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat, XCircle } from "lucide-react";
 import CategoryIcon from "./CategoryIcon";
 import { formatNumber } from "../utils/formatNumber";
+import { useTranslation } from 'react-i18next';
 
 export default function TransactionDetailModal({ 
   transaction, 
@@ -17,10 +18,8 @@ export default function TransactionDetailModal({
 }) {
   const isExpense = transaction?.type === "expense";
 
-  // 🔥 УМНАЯ ЛОГИКА ИСТОРИИ 🔥
-  // Какая была главная валюта в момент транзакции? 
-  // Если это старая транзакция из базы, по умолчанию считаем, что это был "PLN".
   const targetCurrency = transaction?.savedMainCurrency || "PLN";
+  const { t, i18n } = useTranslation();
 
   // Показываем блок конвертации ТОЛЬКО если валюта кошелька не совпадает с исторической главной валютой
   const showConversion = wallet?.currency !== targetCurrency;
@@ -31,10 +30,10 @@ export default function TransactionDetailModal({
   // Функция для красивого текста частоты
   const getFrequencyText = (freq) => {
       switch (freq) {
-          case 'weekly': return 'Co tydzień';
-          case 'monthly': return 'Co miesiąc';
-          case 'yearly': return 'Co rok';
-          default: return 'Cykliczne';
+          case 'weekly': return t('transactionDetail.weekly');
+          case 'monthly': return t('transactionDetail.monthly');
+          case 'yearly': return t('transactionDetail.yearly');
+          default: return t('transactionDetail.customRecurring');
       }
   };
 
@@ -88,10 +87,11 @@ export default function TransactionDetailModal({
                     </h2>
                     
                     <p className="text-xs text-gray-500 mb-5 font-medium">
-                         {new Date(transaction.date).toLocaleDateString('pl-PL', { 
-                             day: 'numeric', month: 'long', year: 'numeric', 
+                         {`${new Date(transaction.date).toLocaleDateString(i18n.language, { 
+                             day: 'numeric', month: 'long', year: 'numeric' 
+                         }).replace(' р.', '')} ${new Date(transaction.date).toLocaleTimeString(i18n.language, { 
                              hour: '2-digit', minute: '2-digit' 
-                         })}
+                         })}`}
                     </p>
 
                     <div className="flex flex-col items-center">
@@ -120,7 +120,7 @@ export default function TransactionDetailModal({
                             
                             <div className="flex flex-col items-start leading-none gap-1">
                                 <span className={`text-[11px] font-bold uppercase tracking-wider ${transaction.isRecurring ? "text-indigo-300" : "text-gray-400"}`}>
-                                    {transaction.isRecurring ? "Subskrypcja aktywna" : "Subskrypcja anulowana"}
+                                    {transaction.isRecurring ? t('transactionDetail.recurringActive') : t('transactionDetail.recurringCanceled')}
                                 </span>
                                 <span className={`text-[10px] font-medium ${transaction.isRecurring ? "text-indigo-400/60" : "text-gray-600"}`}>
                                     {getFrequencyText(transaction.frequency)}
@@ -134,7 +134,7 @@ export default function TransactionDetailModal({
                                 className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-widest flex items-center gap-1.5 py-2 px-3 hover:bg-rose-500/10 rounded-lg transition-all"
                             >
                                 <XCircle size={12} />
-                                Zatrzymaj płatności
+                                {t('transactionDetail.stopRecurring')}
                             </button>
                         )}
                     </div>
@@ -147,7 +147,7 @@ export default function TransactionDetailModal({
                             <Wallet size={80} />
                         </div>
                         <div className="relative z-10">
-                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block mb-1">Portfel</span>
+                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block mb-1">{t('transactionDetail.wallet')}</span>
                             <p className="text-white text-base font-bold truncate pr-2 leading-tight">
                                 {wallet?.name}
                             </p>
@@ -169,11 +169,11 @@ export default function TransactionDetailModal({
                                 <Wallet size={16} />
                             </div>
                             <div>
-                                <p className="text-[10px] text-gray-400 uppercase font-bold">Saldo po operacji</p>
+                                <p className="text-[9px] text-gray-400 uppercase font-bold">{t('transactionDetail.balanceAfter')}</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-white font-mono font-bold text-sm">
+                            <p className="text-white font-mono font-bold text-[12px]">
                                 {historicalBalance !== null 
                                     ? formatNumber(historicalBalance) 
                                     : (wallet?.balance ? formatNumber(wallet.balance) : "---")
@@ -190,14 +190,14 @@ export default function TransactionDetailModal({
                                     <TrendingUp size={16} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-400 uppercase font-bold">Kurs waluty</p>
+                                    <p className="text-xs text-gray-400 uppercase font-bold">{t('transactionDetail.exchangeRate')}</p>
                                     <p className="text-xs text-gray-500">
                                         1 {wallet.currency} ≈ {Number(actualRate).toFixed(4)} {targetCurrency}
                                     </p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-white font-mono font-bold text-sm">
+                                <p className="text-white font-mono font-bold text-[12px]">
                                     ≈ {formatNumber(transaction.amount * actualRate)} <span className="text-[10px] text-gray-500">{targetCurrency}</span>
                                 </p>
                             </div>
@@ -212,7 +212,7 @@ export default function TransactionDetailModal({
                             <Info size={14} className="text-gray-600" />
                         </div>
                         <div className="pl-6">
-                             <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Komentarz</p>
+                             <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">{t('transactionDetail.comment')}</p>
                              <p className="text-gray-300 text-xs leading-relaxed italic">
                                 "{transaction.comment}"
                              </p>
@@ -227,7 +227,7 @@ export default function TransactionDetailModal({
                         className="flex items-center justify-center gap-2 bg-[#1A202C] hover:bg-[#232936] text-blue-400 py-3 rounded-xl font-bold transition-all active:scale-95 border border-white/5 text-sm"
                     >
                         <Edit2 size={16} />
-                        Edytuj
+                        {t('transactionDetail.edit')}
                     </button>
 
                     <button 
@@ -240,7 +240,7 @@ export default function TransactionDetailModal({
                         className="flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 py-3 rounded-xl font-bold transition-all active:scale-95 border border-rose-500/10 text-sm"
                     >
                         <Trash2 size={16} />
-                        Usuń
+                        {t('transactionDetail.delete')}
                     </button>
                 </div>
 

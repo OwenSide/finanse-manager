@@ -9,7 +9,6 @@ const TrendBadge = ({ value, className = "" }) => {
   const isNeutral = numValue === 0 || Math.abs(numValue) < 0.01;
   const isPositive = numValue > 0 && !isNeutral;
 
-  // Базовые стили
   const baseStyles = "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border";
   
   // Цвета в зависимости от состояния
