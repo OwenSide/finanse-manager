@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Globe, Coins, Download, Upload, 
-  ChevronRight, FileJson, Trash2, Check, ChevronDown 
+  ChevronRight, FileJson, Trash2, Check, ChevronDown, Fingerprint
 } from "lucide-react";
 import { usePreferences } from '../context/PreferencesContext';
 import { useTranslation } from 'react-i18next'; // 🔥 Подключаем переводы
@@ -25,6 +25,12 @@ export default function SettingsPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const { mainCurrency, setMainCurrency } = usePreferences();
+
+  // 🔥 НОВОЕ: Состояние биометрии
+  const [isBiometricsActive, setIsBiometricsActive] = useState(
+    localStorage.getItem("useBiometrics") === "true"
+  );
+  const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   
   // 🔥 Инициализация переводов
   const { t, i18n } = useTranslation();
@@ -48,6 +54,52 @@ export default function SettingsPage() {
   // Текущий активный язык (определяем из i18n)
   const currentLangCode = i18n.resolvedLanguage || 'pl';
   const currentLangLabel = languages.find(l => l.code === currentLangCode)?.label || 'Polski';
+
+  // Проверяем, поддерживает ли устройство биометрию
+  useEffect(() => {
+    if (window.PublicKeyCredential) {
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+        .then(available => setIsBiometricsAvailable(available));
+    }
+  }, []);
+
+  // 🔥 Функция вызова Face ID / Touch ID
+  const toggleBiometrics = async () => {
+    if (isBiometricsActive) {
+      localStorage.setItem("useBiometrics", "false");
+      setIsBiometricsActive(false);
+      return;
+    }
+
+    try {
+      // Это стандартный запрос на проверку личности
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      const auth = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "FinManager" },
+          user: {
+            id: new Uint8Array(16),
+            name: "user",
+            displayName: "User"
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          authenticatorSelection: { userVerification: "required" },
+          timeout: 60000
+        }
+      });
+
+      if (auth) {
+        localStorage.setItem("useBiometrics", "true");
+        setIsBiometricsActive(true);
+      }
+    } catch (err) {
+      console.error("Biometric error:", err);
+      alert(t('settings.authFailed'));
+    }
+  };
 
   // Закрытие дропдаунов по клику вне области
   useEffect(() => {
@@ -313,6 +365,35 @@ export default function SettingsPage() {
 
           </div>
         </section>
+
+        {/* 🔥 НОВАЯ СЕКЦИЯ: БЕЗОПАСНОСТЬ (Биометрия) */}
+        {isBiometricsAvailable && (
+          <section>
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">
+              {t('settings.security')}
+            </h2>
+            <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+              <div 
+                onClick={toggleBiometrics}
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                    <Fingerprint size={20}/>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{t('settings.biometrics')}</p>
+                    <p className="text-xs text-gray-500">{t('settings.biometricsDesc')}</p>
+                  </div>
+                </div>
+                {/* Switcher */}
+                <div className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${isBiometricsActive ? 'bg-indigo-500' : 'bg-gray-700'}`}>
+                   <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ${isBiometricsActive ? 'translate-x-6' : 'translate-x-0'}`} />
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* DATA */}
         <section className="relative z-10">
