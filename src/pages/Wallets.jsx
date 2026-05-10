@@ -131,15 +131,35 @@ export default function Wallets() {
       </div>
 
       {wallets.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-3xl border border-dashed border-white/10">
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 text-gray-600">
-                <CreditCard size={32} />
-            </div>
-            <p className="text-sm font-medium">Brak portfeli</p>
-            <button onClick={openCreateModal} className="text-indigo-400 text-xs font-bold mt-2 uppercase tracking-wider hover:text-indigo-300">
-                Dodaj pierwsze konto
-            </button>
-        </div>
+          <div className="flex flex-col items-center justify-center mt-6">
+              <div className="relative w-full max-w-sm p-8 rounded-[2rem] flex flex-col items-center text-center overflow-hidden border-2 border-dashed bg-indigo-500/5 border-indigo-500/20">
+                  
+                  {/* Фоновое свечение под иконкой */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 blur-3xl rounded-full pointer-events-none opacity-40 bg-indigo-500" />
+
+                  {/* Иконка */}
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-lg border bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-indigo-500/10">
+                      <CreditCard size={32} />
+                  </div>
+
+                  {/* Текст */}
+                  <h3 className="text-lg font-bold text-white mb-2 relative z-10">
+                      Brak portfeli
+                  </h3>
+                  <p className="text-sm font-medium text-gray-500 mb-6 relative z-10">
+                      Dodaj swoje pierwsze konto, aby zacząć kontrolować swoje środki.
+                  </p>
+
+                  {/* Полноценная кнопка вместо текста */}
+                  <button 
+                      onClick={openCreateModal} 
+                      className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20"
+                  >
+                      <Plus size={18} strokeWidth={3} />
+                      Dodaj portfel
+                  </button>
+              </div>
+          </div>
       ) : (
         <Reorder.Group 
           axis="y" 

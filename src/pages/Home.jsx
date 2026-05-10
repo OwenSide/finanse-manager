@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRightLeft, Loader2, Settings } from "lucide-react";
+import { ArrowRightLeft, Loader2, Settings, Plus } from "lucide-react";
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import TransactionItem from "../components/TransactionItem"; 
@@ -200,11 +200,34 @@ export default function Home() {
               
               <div className="space-y-2"> 
                   {recentTransactions.length === 0 ? (
-                      <div className="bg-[#151A23] p-6 rounded-[2rem] text-center border border-dashed border-white/10">
-                          <p className="text-gray-500 text-sm mb-3">Brak transakcji</p>
-                          <Link to="/add-transaction" className="inline-block px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
-                            Dodaj pierwszą
-                          </Link>
+                      <div className="flex flex-col items-center justify-center mt-2">
+                          <div className="relative w-full p-8 rounded-[2rem] flex flex-col items-center text-center overflow-hidden border-2 border-dashed bg-indigo-500/5 border-indigo-500/20">
+                              
+                              {/* Фоновое свечение под иконкой */}
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 blur-3xl rounded-full pointer-events-none opacity-40 bg-indigo-500" />
+
+                              {/* Иконка */}
+                              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-lg border bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-indigo-500/10">
+                                  <ArrowRightLeft size={32} />
+                              </div>
+
+                              {/* Текст */}
+                              <h3 className="text-lg font-bold text-white mb-2 relative z-10">
+                                  Brak transakcji
+                              </h3>
+                              <p className="text-sm font-medium text-gray-500 mb-6 relative z-10 max-w-xs mx-auto">
+                                  Nie masz jeszcze żadnych wpisów. Dodaj pierwszą transakcję, aby zobaczyć statystyki.
+                              </p>
+
+                              {/* Кнопка добавления */}
+                              <Link 
+                                  to="/add-transaction" 
+                                  className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20"
+                              >
+                                  <Plus size={18} strokeWidth={3} />
+                                  Dodaj transakcję
+                              </Link>
+                          </div>
                       </div>
                   ) : (
                       recentTransactions.map(t => {

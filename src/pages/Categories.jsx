@@ -148,15 +148,46 @@ export default function Categories() {
     </div>
 
       {/* СПИСОК */}
+      {/* СПИСОК */}
       {filteredCategories.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white/5 rounded-3xl border border-dashed border-white/10">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 text-gray-600">
-                  <FolderOpen size={32} />
+          <div className="flex flex-col items-center justify-center mt-6">
+              <div className={`
+                  relative w-full max-w-sm p-8 rounded-[2rem] flex flex-col items-center text-center overflow-hidden
+                  border-2 border-dashed
+                  ${activeTab === 'expense' ? 'bg-rose-500/5 border-rose-500/20' : 'bg-emerald-500/5 border-emerald-500/20'}
+              `}>
+                  
+                  {/* Фоновое свечение под иконкой */}
+                  <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 blur-3xl rounded-full pointer-events-none opacity-50 ${activeTab === 'expense' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+
+                  {/* Иконка */}
+                  <div className={`
+                      w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-lg border
+                      ${activeTab === 'expense' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-rose-500/10' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10'}
+                  `}>
+                      <FolderOpen size={32} />
+                  </div>
+
+                  {/* Текст */}
+                  <h3 className="text-lg font-bold text-white mb-2 relative z-10">
+                      Brak {activeTab === 'expense' ? 'wydatków' : 'przychodów'}
+                  </h3>
+                  <p className="text-sm font-medium text-gray-500 mb-6 relative z-10">
+                      Stwórz pierwszą kategorię, aby zacząć śledzić swoje finanse.
+                  </p>
+
+                  {/* Кнопка в цвет таба */}
+                  <button 
+                      onClick={openCreateModal} 
+                      className={`
+                          relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg
+                          ${activeTab === 'expense' ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-500/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'}
+                      `}
+                  >
+                      <Plus size={18} strokeWidth={3} />
+                      Dodaj pierwszą
+                  </button>
               </div>
-              <p className="text-sm font-medium">Brak kategorii tego typu</p>
-              <button onClick={openCreateModal} className="text-indigo-400 text-xs font-bold mt-2 uppercase tracking-wider hover:text-indigo-300">
-                  Dodaj pierwszą
-              </button>
           </div>
       ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -165,7 +196,7 @@ export default function Categories() {
                     key={cat.id} 
                     cat={cat} 
                     onDelete={handleDelete}
-                    onEdit={openEditModal} // 🔥 Передаем функцию редактирования
+                    onEdit={openEditModal}
                   />
               ))}
           </div>
