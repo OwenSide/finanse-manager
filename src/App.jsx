@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar.jsx";
 import BottomNav from "./components/layout/BottomNav.jsx"; 
