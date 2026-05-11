@@ -3,10 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { getAllCategories, addCategory, deleteCategory, updateCategory, getAllTransactions } from '../db.js';
 import { ArrowLeft, FolderOpen, Plus, Trash2, Loader2, X, Check, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
-import CategoryIcon from '../components/CategoryIcon';
-import IconPicker from '../components/IconPicker';
+import CategoryIcon from '../components/ui/CategoryIcon.jsx';
+import IconPicker from '../components/ui/IconPicker.jsx';
 
-// 🔥 Подключаем переводы
 import { useTranslation } from 'react-i18next';
 
 export default function Categories() {
@@ -16,7 +15,6 @@ export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -70,12 +68,10 @@ export default function Categories() {
     const hasLinkedTxs = allTxs.some(t => t.categoryId === id);
 
     if (hasLinkedTxs) {
-        // 🔥 Перевод предупреждения
         alert(t('categories.deleteWarning'));
         return;
     }
 
-    // 🔥 Перевод подтверждения
     if (window.confirm(t('categories.deleteConfirm'))) {
       await deleteCategory(id);
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
@@ -95,13 +91,12 @@ export default function Categories() {
         
     <div className="sticky top-0 z-20 bg-[#0B0E14]/80 backdrop-blur-md -mx-4 px-4 pb-4 min-[450px]:-mx-6 min-[450px]:px-6 min-[450px]:pt-6 mb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         
-        {/* HEADER */}
+
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 border border-pink-500/10">
                     <FolderOpen size={20} />
                 </div>
-                {/* 🔥 Заголовок */}
                 <h2 className="text-2xl font-bold text-white">{t('categories.title')}</h2>
             </div>
 
@@ -113,7 +108,6 @@ export default function Categories() {
             </button>
         </div>
 
-        {/* TABS */}
         <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
             <button 
                 onClick={() => setActiveTab('expense')}
@@ -139,7 +133,6 @@ export default function Categories() {
 
     </div>
 
-      {/* СПИСОК */}
       {filteredCategories.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-6">
               <div className={`
@@ -158,7 +151,6 @@ export default function Categories() {
                   </div>
 
                   <h3 className="text-lg font-bold text-white mb-2 relative z-10">
-                      {/* 🔥 Перевод пустых состояний */}
                       {activeTab === 'expense' ? t('categories.emptyExpense') : t('categories.emptyIncome')}
                   </h3>
                   <p className="text-sm font-medium text-gray-500 mb-6 relative z-10">
@@ -190,7 +182,6 @@ export default function Categories() {
           </div>
       )}
 
-      {/* МОДАЛКА */}
       <AddCategoryModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
@@ -203,9 +194,7 @@ export default function Categories() {
   );
 }
 
-// --- КАРТОЧКА КАТЕГОРИИ ---
 function CategoryCard({ cat, onDelete, onEdit }) {
-    // 🔥 Тоже подключаем t() для карточки
     const { t } = useTranslation();
 
     return (
@@ -222,7 +211,6 @@ function CategoryCard({ cat, onDelete, onEdit }) {
                 <div>
                     <p className="font-bold text-white text-base">{cat.name}</p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider opacity-60">
-                        {/* 🔥 Перевод: Выдаток/Приход */}
                         {cat.type === 'income' ? t('categories.incomeSingle') : t('categories.expenseSingle')}
                     </p>
                 </div>
@@ -246,13 +234,11 @@ function CategoryCard({ cat, onDelete, onEdit }) {
     );
 }
 
-// --- МОДАЛЬНОЕ ОКНО ---
 function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData }) {
     const [name, setName] = useState('');
     const [icon, setIcon] = useState('Tag');
     const [type, setType] = useState(initialType);
     
-    // 🔥 Подключаем t() для модалки
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -290,7 +276,6 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                         : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
                     }`} />
                     
-                    {/* --- 1. ШАПКА --- */}
                     <div className="flex items-center justify-between px-4 pb-0 py-4 sticky top-0 z-20 bg-transparent">
                         <button 
                             onClick={onClose}
@@ -300,18 +285,15 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                         </button>
 
                         <h3 className="text-lg font-bold text-white absolute left-1/2 -translate-x-1/2">
-                            {/* 🔥 Перевод: Редактировать / Создать новую */}
                             {initialData ? t('categories.modalEditTitle') : t('categories.modalNewTitle')}
                         </h3>
 
                         <div className="w-10" /> 
                     </div>
 
-                    {/* --- 2. КОНТЕНТ --- */}
                     <div className="flex-1 overflow-y-auto p-6 relative">
                         <div className="relative z-10 max-w-md mx-auto space-y-8 mt-4">
                             
-                            {/* Переключатель типа */}
                             <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/10 shadow-lg">
                                 <button 
                                     onClick={() => setType('expense')}
@@ -327,7 +309,6 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                                 </button>
                             </div>
 
-                            {/* Поле ввода */}
                             <div>
                                 <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-2 block">{t('categories.categoryName')}</label>
                                 <div className="relative group">
@@ -335,7 +316,7 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                                         autoFocus
                                         maxLength={13} 
                                         type="text"
-                                        placeholder={t('categories.namePlaceholder')} // 🔥 Плейсхолдер
+                                        placeholder={t('categories.namePlaceholder')} 
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full bg-[#151A23] border border-white/10 group-focus-within:border-indigo-500/50 rounded-2xl p-5 pr-16 text-white text-xl placeholder-gray-600 focus:outline-none transition-all font-bold shadow-lg"
@@ -348,7 +329,6 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                                 </div>
                             </div>
 
-                            {/* Выбор иконки */}
                             <div>
                                 <label className="text-xs text-gray-500 font-bold uppercase tracking-wider ml-1 mb-3 block">{t('categories.icon')}</label>
                                 <div className="bg-[#151A23] border border-white/10 rounded-2xl p-4 shadow-lg">
@@ -362,7 +342,6 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
 
                         </div>
 
-                        {/* --- 3. ФУТЕР (КНОПКА) --- */}
                         <div className="p-4 bg-transparent pb-safe">
                             <button
                                 onClick={handleSubmit}
@@ -377,7 +356,6 @@ function AddCategoryModal({ isOpen, onClose, onSave, initialType, initialData })
                             >
                                 <Check size={22} strokeWidth={3} />
                                 <span>
-                                    {/* 🔥 Кнопка: Сохранить или Создать */}
                                     {initialData ? t('categories.saveBtn') : t('categories.createBtn')}
                                 </span>
                             </button>

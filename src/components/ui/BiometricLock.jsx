@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Fingerprint, Lock, Loader2 } from 'lucide-react'; // Заменил Globe на Loader2
+import { Fingerprint, Lock, Loader2 } from 'lucide-react'; 
 import { useTranslation } from 'react-i18next';
 
 export default function BiometricLock({ onUnlock }) {
@@ -8,7 +8,6 @@ export default function BiometricLock({ onUnlock }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleUnlock = async () => {
-    // Если уже идет процесс, не запускаем еще раз
     if (isLoading) return;
 
     try {
@@ -32,7 +31,6 @@ export default function BiometricLock({ onUnlock }) {
       }
     } catch (err) {
       console.error("Auth failed", err);
-      // Если пользователь отменил или FaceID не узнал
       setError(true);
     } finally {
       setIsLoading(false);
@@ -40,7 +38,6 @@ export default function BiometricLock({ onUnlock }) {
   };
 
   useEffect(() => {
-    // 🔥 Маленькая задержка перед авто-вызовом
     const timer = setTimeout(() => {
       handleUnlock();
     }, 500);
@@ -49,7 +46,6 @@ export default function BiometricLock({ onUnlock }) {
 
   return (
     <div className="fixed inset-0 z-[1000] bg-[#0B0E14] flex flex-col items-center justify-center p-6">
-      {/* Фоновое свечение */}
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent pointer-events-none" />
       
       <div className="relative mb-8">

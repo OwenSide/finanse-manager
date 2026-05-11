@@ -211,5 +211,14 @@
         "addTransaction": "Add transaction",
         "categories": "Categories",
         "analytics": "Analytics"
+    },
+    "defaultCats": {
+        "Jedzenie": "Food",
+        "Dom": "Home",
+        "Transport": "Transport",
+        "Rozrywka": "Entertainment",
+        "Zdrowie": "Health",
+        "Wynagrodzenie": "Salary",
+        "Prezenty": "Gifts"
     }
 }

@@ -1,27 +1,25 @@
 import React from 'react';
 import { 
-  // Базовые и Разное
+  
   Tag, HelpCircle, MoreHorizontal,
-  // Финансы
+ 
   Wallet, DollarSign, CreditCard, Briefcase, Landmark, PiggyBank, TrendingUp,
-  // Покупки и Одежда
+ 
   ShoppingCart, ShoppingBag, Gift, Package, Shirt,
-  // Еда
+ 
   Coffee, Utensils, Beer, Wine, 
-  // Транспорт
+  
   Home, Car, Bus, Plane, Fuel, Bike, CarFront,
-  // Техника и Сервисы
+
   Zap, Wifi, Phone, Smartphone, Tv, Hammer, Wrench,
-  // Подписки и Развлечения
+
   Gamepad2, Music, Film, Heart, Smile, Book, GraduationCap,
   Youtube, Clapperboard, Ticket,
-  // Здоровье, Красота, Жизнь
+
   Dumbbell, Stethoscope, Baby, Dog, Palette, Globe, Scissors
 } from 'lucide-react';
 
-// Карта иконок
 const iconMap = {
-  // --- Финансы ---
   "tag": Tag,
   "wallet": Wallet,
   "dollar-sign": DollarSign,
@@ -29,31 +27,27 @@ const iconMap = {
   "briefcase": Briefcase,
   "bank": Landmark,
   "piggy": PiggyBank,
-  "invest": TrendingUp,   // Инвестиции / Рост
+  "invest": TrendingUp,  
 
-  // --- Покупки ---
   "shopping-cart": ShoppingCart,
   "shopping-bag": ShoppingBag,
   "gift": Gift,
   "package": Package,
-  "clothes": Shirt,       // Одежда / Мода
+  "clothes": Shirt,       
 
-  // --- Еда ---
   "coffee": Coffee,
   "utensils": Utensils,
   "beer": Beer,
   "wine": Wine,
 
-  // --- Транспорт ---
   "home": Home,
   "car": Car,
-  "taxi": CarFront,       // Такси / Uber
+  "taxi": CarFront,       
   "bus": Bus,
   "plane": Plane,
   "fuel": Fuel,
   "bike": Bike,
 
-  // --- Услуги ---
   "zap": Zap,
   "wifi": Wifi,
   "phone": Phone,
@@ -62,7 +56,6 @@ const iconMap = {
   "repair": Hammer,
   "service": Wrench,
 
-  // --- Развлечения ---
   "youtube": Youtube,
   "netflix": Clapperboard,
   "cinema": Ticket,
@@ -70,10 +63,9 @@ const iconMap = {
   "music": Music,
   "film": Film,
   
-  // --- Жизнь ---
   "gym": Dumbbell,
   "health": Stethoscope,
-  "beauty": Scissors,     // Парикмахерская / Салон красоты
+  "beauty": Scissors,    
   "baby": Baby,
   "pet": Dog,
   "art": Palette,
@@ -83,7 +75,7 @@ const iconMap = {
   "smile": Smile,
   "book": Book,
   "graduation-cap": GraduationCap,
-  "other": MoreHorizontal, // Другое
+  "other": MoreHorizontal, 
   
   "help-circle": HelpCircle
 };

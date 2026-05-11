@@ -1,24 +1,21 @@
 import React from 'react';
 import { Trophy, Star, Coins } from 'lucide-react';
-import CategoryIcon from './CategoryIcon';
-import WalletFlag from '../utils/flags'; // 🔥 Подключаем флаг для красоты
+import CategoryIcon from '../ui/CategoryIcon';
+import WalletFlag from '../../utils/flags'; 
 
-import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
+import { formatCompactAmount, formatExactAmount } from '../../utils/formatters';
 
-// 🔥 Подключаем хук перевода
 import { useTranslation } from 'react-i18next';
 
 export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
   const isExpense = activeTab === 'expense';
   
-  // 🔥 Вытягиваем функцию t и i18n
   const { t, i18n } = useTranslation();
 
   const top3 = isExpense ? stats.top3Exp : stats.top3Inc;
   const total = isExpense ? stats.totalExpenses : stats.totalIncomes;
   const topCategory = stats.pieData && stats.pieData.length > 0 ? stats.pieData[0] : null;
   
-  // 🔥 Наша новая топовая валюта
   const topCurrency = stats.topCurrency;
 
   if (total === 0) return null;
@@ -28,7 +25,6 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
       
       <div className="bg-[#151A23] rounded-[32px] border border-white/5 flex flex-col divide-y divide-white/5 transition-all">
         
-        {/* СРЕДНЕЕ ЗА ДЕНЬ */}
         {isExpense && stats.dailyAvg > 0 && (
           <div className="p-5 flex flex-col items-center justify-center">
             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">
@@ -48,7 +44,6 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
           </div>
         )}
 
-        {/* ТОП КАТЕГОРИЯ */}
         {topCategory && (
           <div className="p-5 flex flex-col items-center justify-center">
             <div className="flex items-center gap-1.5 mb-3 text-indigo-400">
@@ -78,8 +73,7 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
             </div>
           </div>
         )}
-
-        {/* 🔥 ТОП ВАЛЮТА */}
+        
         {topCurrency && (
           <div className="p-5 flex flex-col items-center justify-center">
             <div className="flex items-center gap-1.5 mb-3 text-orange-400">
@@ -97,7 +91,6 @@ export default function ExpenseHighlights({ activeTab, stats, mainCurrency }) {
 
       </div>
 
-      {/* ТОП-3 ТРАНЗАКЦИЙ */}
       {top3 && top3.length > 0 && (
         <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">

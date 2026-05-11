@@ -1,8 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import CategoryIcon from './CategoryIcon';
-
-// 🔥 Подключаем хук перевода
+import CategoryIcon from '../ui/CategoryIcon';
 import { useTranslation } from 'react-i18next';
 
 export default function CategoryDetailsModal({ 
@@ -14,29 +12,24 @@ export default function CategoryDetailsModal({
   rates = {}, 
   color = '#3b82f6' 
 }) {
-  // 🔥 Вытягиваем функцию t и i18n
   const { t, i18n } = useTranslation();
 
   if (!isOpen || !category) return null;
 
-  // 🔥 Обновленное форматирование даты (цифры, без запятой, без "р.")
   const formatDate = (dateString) => {
     const d = new Date(dateString);
     
-    // Получаем дату (например, 10.05.2026) и чистим от "р."
     const datePart = d.toLocaleDateString(i18n.language, { 
       day: '2-digit', 
       month: '2-digit', 
       year: 'numeric' 
     }).replace(' р.', '');
 
-    // Получаем время (например, 14:30)
     const timePart = d.toLocaleTimeString(i18n.language, { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
 
-    // Склеиваем через пробел
     return `${datePart} ${timePart}`;
   };
 

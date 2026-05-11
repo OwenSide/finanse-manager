@@ -9,7 +9,7 @@ export default function MoneyMatrix() {
     let animationFrameId;
 
     let particles = [];
-    const maxParticles = 35; // 🔥 Оптимальное количество для визуала и нулевой нагрузки
+    const maxParticles = 35; 
     const symbols = ['$', '€', '¥', '₿', '₴', '£', 'zł', 'CHF'];
 
     const resizeCanvas = () => {
@@ -18,16 +18,15 @@ export default function MoneyMatrix() {
       initParticles();
     };
 
-    // Создаем частицы с разными размерами, скоростью и прозрачностью (для эффекта глубины)
     const initParticles = () => {
       particles = [];
       for (let i = 0; i < maxParticles; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          speed: 0.3 + Math.random() * 0.8, // Очень плавное падение
-          fontSize: 10 + Math.random() * 12, // Разные размеры
-          opacity: 0.1 + Math.random() * 0.25, // Легкая прозрачность
+          speed: 0.3 + Math.random() * 0.8, 
+          fontSize: 10 + Math.random() * 12,
+          opacity: 0.1 + Math.random() * 0.25,
           text: symbols[Math.floor(Math.random() * symbols.length)]
         });
       }
@@ -37,17 +36,15 @@ export default function MoneyMatrix() {
     window.addEventListener('resize', resizeCanvas);
 
     const draw = () => {
-      // 🔥 Главный секрет производительности: полностью очищаем кадр перед новой отрисовкой
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach(p => {
-        ctx.fillStyle = `rgba(99, 102, 241, ${p.opacity})`; // Наш фирменный цвет индиго
+        ctx.fillStyle = `rgba(99, 102, 241, ${p.opacity})`;
         ctx.font = `${p.fontSize}px monospace`;
         ctx.fillText(p.text, p.x, p.y);
 
         p.y += p.speed;
 
-        // Если символ улетел за нижний край — возвращаем его наверх в случайное место
         if (p.y > canvas.height + 20) {
           p.y = -20;
           p.x = Math.random() * canvas.width;

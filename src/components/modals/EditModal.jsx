@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { ArrowLeft, Save, Calendar, Wallet, FileText, Repeat, Clock, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import CategoryIcon from "./CategoryIcon"; 
-import WalletSelect from "./WalletSelect";
+import CategoryIcon from "../ui/CategoryIcon"; 
+import WalletSelect from "../wallets/WalletSelect";
 import { useTranslation } from 'react-i18next';
 
 export default function EditModal({ isOpen, transaction, onSave, onClose, categories, wallets }) {
@@ -17,14 +17,11 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
   const [isAmountFocused, setIsAmountFocused] = useState(false);
   const { t } = useTranslation();
   
-  // Стейты для подписки
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState("monthly");
   
-  // 🔥 НОВОЕ: Тип транзакции (для фильтрации категорий)
   const [transactionType, setTransactionType] = useState("expense");
 
-  // Загружаем данные при открытии
   useEffect(() => {
     if (transaction && isOpen) {
       setForm({
@@ -39,7 +36,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
       setIsRecurring(!!transaction.isRecurring);
       setFrequency(transaction.frequency || "monthly");
       
-      // Устанавливаем тип из транзакции или категории
       const currentCategory = categories.find(c => c.id === transaction.categoryId);
       setTransactionType(transaction.type || currentCategory?.type || "expense");
       
@@ -60,7 +56,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
         ...form, 
         amount: parseFloat(form.amount),
         date: finalDate.toISOString(),
-        // 🔥 Сохраняем актуальный тип
         type: transactionType,
         isRecurring: isRecurring,
         frequency: isRecurring ? frequency : null
@@ -76,7 +71,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
   const isFormValid = form.amount && form.categoryId && form.walletId && form.date;
   const currentWallet = wallets.find(w => w.id === form.walletId);
   
-  // 🔥 Фильтруем категории
   const filteredCategories = categories.filter(c => c.type === transactionType);
 
   return (
@@ -89,14 +83,13 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
           className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col font-sans"
         >
-            {/* ФОНОВЫЙ БЛИК */}
+
             <div className={`fixed top-0 left-0 w-full h-[40vh] pointer-events-none -z-10 transition-colors duration-500 opacity-30 ${
                 transactionType === 'expense' 
                 ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-600/40 via-rose-600/0 to-transparent' 
                 : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
             }`} />
 
-            {/* SCROLLABLE CONTENT */}
             <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide relative z-10 pt-[max(1rem,env(safe-area-inset-top))]">
 
               <div className="flex items-center justify-between pt-8 pb-4 mb-2">
@@ -112,7 +105,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
               
                 <div className="space-y-8 max-w-md mx-auto">
                     
-                    {/* 🔥 1. TYPE SWITCHER */}
                     <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
                         <button 
                           onClick={() => { setTransactionType("expense"); setForm(f => ({...f, categoryId: ""})); }}
@@ -136,7 +128,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                         </button>
                     </div>
 
-                    {/* 2. INPUT AMOUNT (HERO) */}
                     <div className="relative flex flex-col items-center justify-center py-2 mb-2">
                         <div className={`transition-all duration-300 ${isAmountFocused ? "scale-105" : "scale-100 opacity-80"}`}>
                             <div className="relative">
@@ -163,7 +154,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             {currentWallet?.currency || "PLN"}
                         </span>
 
-                        {/* ВАЛЮТНОЕ ПРЕДУПРЕЖДЕНИЕ */}
                         <div className="absolute bottom-0 left-0 right-0 flex justify-center pointer-events-none translate-y-6">
                              {transaction && currentWallet && currentWallet.currency !== wallets.find(w => w.id === transaction.walletId)?.currency && (
                                 <motion.span 
@@ -177,7 +167,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                         </div>
                     </div>
 
-                    {/* 3. CATEGORY SELECTOR (HORIZONTAL GRID) */}
                     <div>
                         <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
                             {t('addTransaction.category')}
@@ -188,15 +177,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                 <p className="text-sm text-gray-500 font-medium">{t('addTransaction.noCategories')}</p>
                             </div>
                         ) : (
-                            /* Контейнер скролла */
                             <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-                                {/* 🔥 МАГИЯ СЕТКИ:
-                                grid-rows-2    -> Всегда 2 ряда
-                                grid-flow-col  -> Элементы идут слева направо (а не вниз)
-                                w-max          -> Контейнер растягивается по ширине контента
-                                gap-x-2        -> Расстояние между колонками (по горизонтали)
-                                gap-y-4        -> Расстояние между рядами (по вертикали)
-                                */}
                                 <div className="grid grid-rows-2 grid-flow-col gap-x-2 gap-y-4 w-max pb-4">
                                     {filteredCategories.map((cat) => {
                                         const isSelected = form.categoryId === cat.id;
@@ -204,7 +185,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                             <button
                                                 key={cat.id}
                                                 onClick={() => setForm({...form, categoryId: cat.id})}
-                                                className="group flex flex-col items-center gap-2 w-[72px]" // 🔥 Фиксированная ширина для ровности
+                                                className="group flex flex-col items-center gap-2 w-[72px]" 
                                             >
                                                 <motion.div 
                                                     whileTap={{ scale: 0.9 }}
@@ -232,10 +213,8 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                         )}
                     </div>
 
-                    {/* 4. DETAILS GRID */}
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
-                            {/* DATE */}
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('editTransaction.date')}</label>
                                 <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
@@ -249,8 +228,7 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 z-0 pointer-events-none" size={18} />
                                 </div>
                             </div>
-                            
-                            {/* PORTFEL */}
+ 
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('addTransaction.wallet')}</label>
                                 <WalletSelect 
@@ -261,7 +239,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             </div>
                         </div>
 
-                        {/* NOTE */}
                         <div className="space-y-2">
                             <div className="relative bg-[#151A23] border border-white/5 rounded-xl overflow-hidden focus-within:border-indigo-500/50 transition-colors">
                                 <input 
@@ -279,7 +256,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                             </div>
                         </div>
 
-                        {/* RECURRING TOGGLE */}
                         <div className="space-y-3 pt-1">
                              <div 
                                 onClick={() => setIsRecurring(!isRecurring)}
@@ -308,7 +284,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                                 </div>
                              </div>
 
-                             {/* FREQUENCY SELECTOR */}
                              <AnimatePresence>
                                 {isRecurring && (
                                     <motion.div
@@ -344,7 +319,6 @@ export default function EditModal({ isOpen, transaction, onSave, onClose, catego
                         </div>
                     </div>
 
-                    {/* SAVE BUTTON */}
                     <div className="pt-4 pb-12">
                         <button 
                             onClick={handleSave} 

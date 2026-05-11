@@ -1,4 +1,3 @@
-// (Wydatki)
 export const EXPENSE_COLORS = [
   '#f43f5e', // Rose
   '#60a5fa', // Blue 
@@ -22,7 +21,6 @@ export const EXPENSE_COLORS = [
   '#c084fc'  // Light Purple
 ];
 
-// (Przychody) 
 export const INCOME_COLORS = [
   '#34d399', // Emerald 
   '#60a5fa', // Blue 

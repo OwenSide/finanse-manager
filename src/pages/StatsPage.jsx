@@ -16,15 +16,14 @@ import { formatNumber } from '../utils/formatNumber';
 
 import { useNavigate } from 'react-router-dom';
 import { TrendingDown, TrendingUp, ArrowLeft, Wallet, PackageOpen } from 'lucide-react';
-import CategoryIcon from '../components/CategoryIcon';
+import CategoryIcon from '../components/ui/CategoryIcon';
 import { EXPENSE_COLORS, INCOME_COLORS } from '../constants';
-import CategoryDetailsModal from '../components/CategoryDetailsModal';
-import PeriodSelector from '../components/PeriodSelector'; 
-import WeekdayBarChart from '../components/WeekdayBarChart';
-import ExpenseHighlights from '../components/ExpenseHighlights';
+import CategoryDetailsModal from '../components/modals/CategoryDetailsModal';
+import PeriodSelector from '../components/ui/PeriodSelector'; 
+import WeekdayBarChart from '../components/analytics/WeekdayBarChart';
+import ExpenseHighlights from '../components/analytics/ExpenseHighlights';
 import WalletFlag from "../utils/flags";
 
-// 🔥 Подключаем хук перевода
 import { useTranslation } from 'react-i18next';
 
 const getLocalYYYYMMDD = (date) => {
@@ -38,7 +37,6 @@ export default function StatsPage() {
   const { mainCurrency } = usePreferences();
   const navigate = useNavigate();
   
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   const [dbData, setDbData] = useState({ txs: [], cats: [], wallets: [] });
@@ -157,7 +155,6 @@ export default function StatsPage() {
     const topIncList = []; 
     const weekDaysRaw = [0, 0, 0, 0, 0, 0, 0];
     
-    // 🔥 НОВОЕ: Словари для подсчета объема по валютам
     const expCurrencies = {};
     const incCurrencies = {};
 
@@ -185,13 +182,13 @@ export default function StatsPage() {
       if (isExp) {
         totalExp += convertedAmount;
         topExpList.push(txWithCat); 
-        expCurrencies[c] = (expCurrencies[c] || 0) + convertedAmount; // Считаем расходы по валютам
+        expCurrencies[c] = (expCurrencies[c] || 0) + convertedAmount; 
       }
       
       if (isInc) {
         totalInc += convertedAmount;
         topIncList.push(txWithCat); 
-        incCurrencies[c] = (incCurrencies[c] || 0) + convertedAmount; // Считаем доходы по валютам
+        incCurrencies[c] = (incCurrencies[c] || 0) + convertedAmount;
       }
 
       if (tx.type === activeTab) {
@@ -222,7 +219,6 @@ export default function StatsPage() {
     const top3Exp = topExpList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
     const top3Inc = topIncList.sort((a, b) => b.convertedAmount - a.convertedAmount).slice(0, 3);
 
-    // 🔥 НОВОЕ: Находим топовую валюту
     const topExpCurrency = Object.entries(expCurrencies).sort((a, b) => b[1] - a[1])[0]?.[0] || mainCurrency;
     const topIncCurrency = Object.entries(incCurrencies).sort((a, b) => b[1] - a[1])[0]?.[0] || mainCurrency;
     const topCurrency = activeTab === 'expense' ? topExpCurrency : topIncCurrency;
@@ -242,7 +238,6 @@ export default function StatsPage() {
     
     const dailyAvg = totalExp / daysPassed;
 
-    // 🔥 Возвращаем topCurrency
     return { pieData, totalExpenses: totalExp, totalIncomes: totalInc, barData, top3Exp, top3Inc, dailyAvg, topCurrency };
   }, [filteredTxs, dbData.cats, mainCurrency, rates, activeTab, periodType, customStart, customEnd, t]);
 
@@ -286,7 +281,6 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 pb-24 space-y-5">
-      {/* HEADER */}
       <div className="relative flex items-center justify-center py-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <button 
           onClick={() => navigate(-1)} 
@@ -294,11 +288,9 @@ export default function StatsPage() {
         >
           <ArrowLeft size={24} />
         </button>
-        {/* 🔥 Перевод: Аналитика */}
         <h2 className="text-xl font-bold text-white">{t('stats.title')}</h2>
       </div>
 
-      {/* ФИЛЬТР КОШЕЛЬКОВ */}
       <div 
         className="flex gap-3 overflow-x-auto py-1 px-1 -mx-1 snap-x scroll-smooth relative z-30"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -307,7 +299,6 @@ export default function StatsPage() {
           div::-webkit-scrollbar { display: none; }
         `}</style>
 
-        {/* Кнопка "Wszystkie" */}
         <button
           onClick={() => setSelectedWallet('all')}
           className={`relative flex-shrink-0 flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 active:scale-95 snap-start border ${
@@ -317,11 +308,9 @@ export default function StatsPage() {
           }`}
         >
           <Wallet size={18} className={selectedWallet === 'all' ? 'text-indigo-400 drop-shadow-md' : 'opacity-60'} />
-          {/* 🔥 Перевод: Все */}
           {t('stats.allWallets')}
         </button>
         
-        {/* Кнопки кошельков */}
         {dbData.wallets.map(w => (
           <button
             key={w.id}
@@ -345,7 +334,6 @@ export default function StatsPage() {
         ))}
       </div>
 
-      {/* УМНЫЙ ВЫБОР ПЕРИОДА */}
       <div className="relative z-40">
         <PeriodSelector 
           periodType={periodType}
@@ -357,7 +345,6 @@ export default function StatsPage() {
         />
       </div>
 
-      {/* TABS */}
       <div className="grid grid-cols-2 gap-4">
         <div 
           onClick={() => setActiveTab('expense')}
@@ -368,7 +355,6 @@ export default function StatsPage() {
           }`}
         >
           <TrendingDown className="text-rose-500 mb-2" size={20} />
-          {/* 🔥 Перевод: Расходы */}
           <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{t('stats.expenses')}</p>
           <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalExpenses)}>
             {formatCompactAmount(stats.totalExpenses)} <span className="text-xs opacity-50">{mainCurrency}</span>
@@ -384,7 +370,6 @@ export default function StatsPage() {
           }`}
         >
           <TrendingUp className="text-emerald-500 mb-2" size={20} />
-          {/* 🔥 Перевод: Доходы */}
           <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{t('stats.incomes')}</p>
           <p className="text-xl font-bold text-white cursor-help" title={formatExactAmount(stats.totalIncomes)}>
             {formatCompactAmount(stats.totalIncomes)} <span className="text-xs opacity-50">{mainCurrency}</span>
@@ -392,10 +377,8 @@ export default function StatsPage() {
         </div>
       </div>
       
-      {/* PIE CHART + LIST */}
       <div className="bg-[#151A23] p-6 rounded-[32px] border border-white/5 space-y-6 min-h-[400px] flex flex-col">
         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center">
-          {/* 🔥 Перевод: Структура расходов/доходов */}
           {activeTab === 'expense' ? t('stats.structureExpense') : t('stats.structureIncome')}
         </h3>
         
@@ -404,7 +387,6 @@ export default function StatsPage() {
             <div className="w-20 h-20 rounded-full bg-white/5 border border-white/5 flex items-center justify-center mb-6 shadow-inner">
               <PackageOpen size={32} className="text-gray-600" />
             </div>
-            {/* 🔥 Перевод: Пустое состояние */}
             <p className="text-white font-bold text-lg mb-2">{t('stats.emptyTitle')}</p>
             <p className="text-sm text-gray-500 max-w-[240px] leading-relaxed">
               {t('stats.emptyDesc')}
@@ -445,7 +427,6 @@ export default function StatsPage() {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* ЦЕНТР ГРАФИКА */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 {activeIndex !== null && stats.pieData[activeIndex] ? (
                   <>
@@ -472,7 +453,6 @@ export default function StatsPage() {
                   </>
                 ) : (
                   <>
-                    {/* 🔥 Перевод: Сумма */}
                     <span className="text-[10px] text-gray-500 uppercase font-bold mb-1 text-center px-4 line-clamp-1">{t('stats.sum')}</span>
                     <span 
                       className="text-xl font-black text-white drop-shadow-md cursor-help pointer-events-auto"

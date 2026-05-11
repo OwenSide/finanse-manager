@@ -2,11 +2,9 @@ import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, Plus, Tags, Wallet, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// 🔥 Подключаем хук перевода
 import { useTranslation } from 'react-i18next';
 
 export default function BottomNav() {
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   return (
@@ -24,13 +22,11 @@ export default function BottomNav() {
         shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)]
       ">
         
-        {/* Левая группа */}
         <div className="flex items-center justify-around flex-1">
             <BottomNavItem to="/" icon={<LayoutDashboard size={20} />} label={t('nav.home')} />
             <BottomNavItem to="/wallets" icon={<Wallet size={20} />} label={t('nav.wallets')} />
         </div>
 
-        {/* Центральная кнопка (Акцентная) */}
         <div className="mx-1 -mt-8 relative z-10 flex flex-col items-center">
             <NavLink 
                 to="/add-transaction"
@@ -50,7 +46,6 @@ export default function BottomNav() {
             </NavLink>
         </div>
 
-        {/* Правая группа */}
         <div className="flex items-center justify-around flex-1">
             <BottomNavItem to="/categories" icon={<Tags size={20} />} label={t('nav.categories')} />
             <BottomNavItem to="/stats" icon={<BarChart3 size={20} />} label={t('nav.analytics')} />

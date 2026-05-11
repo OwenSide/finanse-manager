@@ -5,7 +5,7 @@ import {
   ChevronRight, FileJson, Trash2, Check, ChevronDown, Fingerprint
 } from "lucide-react";
 import { usePreferences } from '../context/PreferencesContext';
-import { useTranslation } from 'react-i18next'; // 🔥 Подключаем переводы
+import { useTranslation } from 'react-i18next'; 
 
 import { 
   getAllWallets, getAllTransactions, getAllCategories, 
@@ -19,43 +19,35 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  // 🔥 Refs для двух дропдаунов
-  const dropdownRef = useRef(null); // Для валют
-  const langDropdownRef = useRef(null); // Для языков
+  const dropdownRef = useRef(null);
+  const langDropdownRef = useRef(null); 
   
   const [isLoading, setIsLoading] = useState(false);
   const { mainCurrency, setMainCurrency } = usePreferences();
 
-  // 🔥 НОВОЕ: Состояние биометрии
   const [isBiometricsActive, setIsBiometricsActive] = useState(
     localStorage.getItem("useBiometrics") === "true"
   );
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   
-  // 🔥 Инициализация переводов
   const { t, i18n } = useTranslation();
   
   const [availableCurrencies, setAvailableCurrencies] = useState(["PLN", "USD", "EUR", "UAH", "CHF", "GBP", "JPY"]);
   
-  // Стейты для дропдауна валют
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  // 🔥 Стейт для дропдауна языков
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
-  // Список поддерживаемых языков
   const languages = [
     { code: 'pl', label: 'Polski' },
     { code: 'en', label: 'English' },
     { code: 'uk', label: 'Українська' }
   ];
 
-  // Текущий активный язык (определяем из i18n)
   const currentLangCode = i18n.resolvedLanguage || 'pl';
   const currentLangLabel = languages.find(l => l.code === currentLangCode)?.label || 'Polski';
 
-  // Проверяем, поддерживает ли устройство биометрию
   useEffect(() => {
     if (window.PublicKeyCredential) {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
@@ -63,7 +55,6 @@ export default function SettingsPage() {
     }
   }, []);
 
-  // 🔥 Функция вызова Face ID / Touch ID
   const toggleBiometrics = async () => {
     if (isBiometricsActive) {
       localStorage.setItem("useBiometrics", "false");
@@ -72,7 +63,6 @@ export default function SettingsPage() {
     }
 
     try {
-      // Это стандартный запрос на проверку личности
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
 
@@ -101,15 +91,12 @@ export default function SettingsPage() {
     }
   };
 
-  // Закрытие дропдаунов по клику вне области
   useEffect(() => {
     function handleClickOutside(event) {
-        // Закрываем валюты
         if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
             setIsDropdownOpen(false);
             setSearch(""); 
         }
-        // Закрываем языки
         if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
             setIsLangDropdownOpen(false);
         }
@@ -118,7 +105,6 @@ export default function SettingsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Загружаем валюты при открытии
   useEffect(() => {
     async function fetchCurrencies() {
       try {
@@ -142,12 +128,10 @@ export default function SettingsPage() {
     fetchCurrencies();
   }, []);
 
-  // Фильтруем валюты по поиску
   const filteredCurrencies = availableCurrencies.filter(cur => 
     cur.toLowerCase().includes(search.toLowerCase())
   );
 
-  // --- ЭКСПОРТ ---
   const handleExport = async () => {
     if (!window.confirm(t('settings.alerts.exportConfirm'))) return;
 
@@ -178,7 +162,6 @@ export default function SettingsPage() {
     }
   };
 
-  // --- ИМПОРТ ---
   const handleImportClick = () => {
     if(window.confirm(t('settings.alerts.importWarning'))) {
         fileInputRef.current.click();
@@ -218,7 +201,6 @@ export default function SettingsPage() {
     reader.readAsText(file);
   };
 
-  // --- СБРОС ---
   const handleResetData = async () => {
     if (window.confirm(t('settings.alerts.resetWarning'))) {
         if (window.confirm(t('settings.alerts.resetConfirm'))) {
@@ -241,7 +223,6 @@ export default function SettingsPage() {
     <div className="min-h-screen text-white font-sans pb-10 pt-[max(1rem,env(safe-area-inset-top))]">
       <div className="fixed top-0 right-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* HEADER */}
       <div className="relative px-4 py-5 flex items-center gap-4">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-400 hover:text-white rounded-full hover:bg-white/5 transition-colors">
           <ArrowLeft size={24} />
@@ -251,12 +232,10 @@ export default function SettingsPage() {
 
       <div className="max-w-2xl mx-auto px-4 mt-8 space-y-8 relative">
         
-        {/* PREFERENCES */}
         <section>
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">{t('settings.preferences')}</h2>
           <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-visible shadow-xl relative z-20">
              
-            {/* 🔥 КАСТОМНЫЙ ВЫБОР ЯЗЫКА */}
             <div className="relative" ref={langDropdownRef}>
                 <div 
                     className={`p-4 flex items-center justify-between cursor-pointer transition-colors border-b border-white/5 ${isLangDropdownOpen ? 'bg-blue-500/10' : 'hover:bg-white/5'}`}
@@ -272,7 +251,6 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {/* Выпадающий список языков */}
                 {isLangDropdownOpen && (
                     <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100 ring-1 ring-black/50">
                         {languages.map((lng) => (
@@ -280,8 +258,8 @@ export default function SettingsPage() {
                                 key={lng.code}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    i18n.changeLanguage(lng.code); // Меняем язык в i18next
-                                    setIsLangDropdownOpen(false);  // Закрываем меню
+                                    i18n.changeLanguage(lng.code); 
+                                    setIsLangDropdownOpen(false); 
                                 }}
                                 className={`
                                     w-full text-left px-5 py-4 text-sm font-bold flex items-center justify-between
@@ -297,7 +275,6 @@ export default function SettingsPage() {
                 )}
             </div>
             
-            {/* КАСТОМНЫЙ ВЫБОР ВАЛЮТЫ */}
             <div className="relative" ref={dropdownRef}>
                 <div 
                     className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${isDropdownOpen ? 'bg-indigo-500/10' : 'hover:bg-white/5'}`}
@@ -308,7 +285,6 @@ export default function SettingsPage() {
                         <div><p className="text-sm font-bold">{t('settings.currency')}</p></div>
                     </div>
                     
-                    {/* Строка поиска появляется только когда меню открыто */}
                     {isDropdownOpen ? (
                         <div className="flex-1 ml-4 relative z-20">
                             <input
@@ -329,7 +305,6 @@ export default function SettingsPage() {
                     )}
                 </div>
 
-                {/* Выпадающий список */}
                 {isDropdownOpen && (
                     <div className="absolute top-full left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl max-h-56 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-100 no-scrollbar ring-1 ring-black/50">
                         {filteredCurrencies.length === 0 ? (
@@ -366,7 +341,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 🔥 НОВАЯ СЕКЦИЯ: БЕЗОПАСНОСТЬ (Биометрия) */}
         {isBiometricsAvailable && (
           <section>
             <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">
@@ -386,7 +360,6 @@ export default function SettingsPage() {
                     <p className="text-xs text-gray-500">{t('settings.biometricsDesc')}</p>
                   </div>
                 </div>
-                {/* Switcher */}
                 <div className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${isBiometricsActive ? 'bg-indigo-500' : 'bg-gray-700'}`}>
                    <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ${isBiometricsActive ? 'translate-x-6' : 'translate-x-0'}`} />
                 </div>
@@ -395,7 +368,6 @@ export default function SettingsPage() {
           </section>
         )}
 
-        {/* DATA */}
         <section className="relative z-10">
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 ml-4">{t('settings.data')}</h2>
           <div className="bg-[#151A23] border border-white/5 rounded-3xl overflow-hidden shadow-xl">
@@ -417,7 +389,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* DANGER */}
         <section className="relative z-10">
           <h2 className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-3 ml-4">{t('settings.dangerZone')}</h2>
           <div className="bg-[#151A23] border border-rose-500/20 rounded-3xl overflow-hidden">

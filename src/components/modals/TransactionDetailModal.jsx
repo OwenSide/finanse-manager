@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Edit2, Trash2, Wallet, TrendingUp, Info, Repeat, XCircle } from "lucide-react";
-import CategoryIcon from "./CategoryIcon";
-import { formatNumber } from "../utils/formatNumber";
+import CategoryIcon from "../ui/CategoryIcon";
+import { formatNumber } from "../../utils/formatNumber";
 import { useTranslation } from 'react-i18next';
 
 export default function TransactionDetailModal({ 
@@ -21,13 +21,10 @@ export default function TransactionDetailModal({
   const targetCurrency = transaction?.savedMainCurrency || "PLN";
   const { t, i18n } = useTranslation();
 
-  // Показываем блок конвертации ТОЛЬКО если валюта кошелька не совпадает с исторической главной валютой
   const showConversion = wallet?.currency !== targetCurrency;
 
-  // Берем сохраненный курс (для новых) или пропс (для старых, он исторически был к PLN)
   const actualRate = transaction?.savedExchangeRate || exchangeRate;
 
-  // Функция для красивого текста частоты
   const getFrequencyText = (freq) => {
       switch (freq) {
           case 'weekly': return t('transactionDetail.weekly');
@@ -41,7 +38,6 @@ export default function TransactionDetailModal({
     <AnimatePresence>
       {isOpen && transaction && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop" 
             initial={{ opacity: 0 }}
@@ -51,7 +47,6 @@ export default function TransactionDetailModal({
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md"
           />
 
-          {/* Panel */}
           <motion.div
             key="panel" 
             initial={{ x: "100%" }}
@@ -61,7 +56,6 @@ export default function TransactionDetailModal({
             className="fixed inset-y-0 right-0 z-[101] w-full max-w-md bg-[#0B0E14] border-l border-white/5 shadow-2xl flex flex-col"
           >
             
-            {/* --- SCROLLABLE CONTENT --- */}
             <div className="flex-1 overflow-y-auto px-5 pb-8 scrollbar-hide pt-[max(1rem,env(safe-area-inset-top))]">
 
                 <div className="flex items-center justify-between p-4 pt-6">
@@ -73,7 +67,6 @@ export default function TransactionDetailModal({
                     </button>
                 </div>
                 
-                {/* 1. HERO SECTION */}
                 <div className="flex flex-col items-center mt-0 mb-8">
                     <div className="relative mb-4">
                         <div className={`absolute inset-0 blur-xl opacity-20 ${isExpense ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
@@ -106,7 +99,6 @@ export default function TransactionDetailModal({
                     </div>
                 </div>
 
-                {/* 🔥 ИНДИКАТОР ПОДПИСКИ С ЧАСТОТОЙ */}
                 {(transaction.isRecurring || transaction.wasRecurring) && (
                     <div className="mb-6 flex flex-col items-center gap-3">
                         <div className={`inline-flex items-center gap-3 border px-4 py-2.5 rounded-2xl transition-all ${
@@ -140,7 +132,6 @@ export default function TransactionDetailModal({
                     </div>
                 )}
 
-                {/* 2. INFO CARDS (Кошелек) */}
                 <div className="mb-4">
                     <div className="bg-[#151A23] p-4 rounded-2xl border border-white/5 flex flex-col justify-between h-24 relative overflow-hidden group w-full">
                         <div className="absolute -top-3 -right-3 text-white opacity-[0.03] group-hover:opacity-[0.07] transition-opacity rotate-12">
@@ -161,7 +152,6 @@ export default function TransactionDetailModal({
                     </div>
                 </div>
 
-                {/* 3. FINANCE DETAILS (Баланс, Курс) */}
                 <div className="space-y-2 mb-6">
                     <div className="bg-[#151A23] rounded-xl p-3 border border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -205,7 +195,6 @@ export default function TransactionDetailModal({
                     )}
                 </div>
 
-                {/* 4. COMMENT */}
                 {transaction.comment && (
                     <div className="bg-[#0B0E14] border border-white/10 rounded-xl p-3 relative mb-6">
                         <div className="absolute top-3 left-3">
@@ -220,7 +209,6 @@ export default function TransactionDetailModal({
                     </div>
                 )}
 
-                {/* 5. ACTIONS */}
                 <div className="grid grid-cols-2 gap-3 mt-8">
                      <button 
                         onClick={() => { onEdit(transaction); onClose(); }}

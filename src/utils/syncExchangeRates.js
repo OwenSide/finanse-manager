@@ -1,7 +1,18 @@
 import { fetchExchangeRates } from "../api/exchangeRates";
 import { saveExchangeRate } from "../db";
 
+const LAST_SYNC_KEY = "lastRatesSyncTime";
+const SYNC_INTERVAL = 12 * 60 * 60 * 1000; 
+
 export async function syncExchangeRates() {
+  const lastSync = localStorage.getItem(LAST_SYNC_KEY);
+  const now = Date.now();
+
+  if (lastSync && (now - parseInt(lastSync, 10) < SYNC_INTERVAL)) {
+    console.log("⚡ Rates are fresh. Using local DB cache.");
+    return true; 
+  }
+
   try {
     const ratesMap = await fetchExchangeRates();
 
@@ -14,11 +25,14 @@ export async function syncExchangeRates() {
     });
 
     await Promise.all(promises);
-    console.log("✅ Курсы обновлены через интернет");
+    
+    localStorage.setItem(LAST_SYNC_KEY, now.toString());
+    console.log("✅ Exchange rates updated online");
+    
     return true;
 
   } catch (error) {
-    console.warn("⚠️ Нет интернета. Синхронизация пропущена.");
+    console.warn("⚠️ No internet connection. Synchronization skipped.");
     return false;
   }
 }

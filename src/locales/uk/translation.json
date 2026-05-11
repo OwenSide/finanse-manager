@@ -211,5 +211,14 @@
         "addTransaction": "Додати транзакцію",
         "categories": "Категорії",
         "analytics": "Аналітика"
+    },
+    "defaultCats": {
+        "Jedzenie": "Їжа",
+        "Dom": "Дім",
+        "Transport": "Транспорт",
+        "Rozrywka": "Розваги",
+        "Zdrowie": "Здоров'я",
+        "Wynagrodzenie": "Зарплата",
+        "Prezenty": "Подарунки"
     }
 }

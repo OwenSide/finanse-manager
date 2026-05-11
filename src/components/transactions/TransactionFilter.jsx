@@ -1,28 +1,23 @@
 import { useState, useEffect, useRef } from "react";
-import { Filter, Repeat, X, Search } from "lucide-react"; // Убрали лишние шевроны
-import WalletSelect from "../components/WalletSelect";
+import { Filter, Repeat, X, Search } from "lucide-react"; 
+import WalletSelect from "../wallets/WalletSelect";
 import { useTranslation } from 'react-i18next';
 
 export default function TransactionFilter({ filter, setFilter, categories, wallets }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Разделяем категории для селектов
   const incomeCategories = categories.filter(c => c.type === 'income');
   const expenseCategories = categories.filter(c => c.type === 'expense');
 
   const { t } = useTranslation();
 
-  // Проверяем, включен ли какой-то фильтр (кроме поиска), чтобы зажечь индикатор
   const isFilterActive = filter.type !== "" || filter.dateFrom !== "" || filter.dateTo !== "" || filter.categoryId !== "" || filter.walletId !== "" || filter.onlyRecurring;
 
   return (
     <div className="mb-2 relative z-20">
       
-      {/* 🔥 КОМПАКТНАЯ СТРОКА: ПОИСК + КНОПКА (Уменьшили высоту до 42px и скругления до xl) 🔥 */}
       <div className="flex gap-2 h-[42px]">
-        {/* Поисковик */}
         <div className="relative flex-1 group h-full">
-          {/* Иконка лупы чуть меньше (size 16) */}
           <Search className="absolute z-10 left-3.5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-indigo-400 transition-colors" size={16} />
           <input 
             type="text" 
@@ -41,7 +36,6 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
           )}
         </div>
 
-        {/* Кнопка фильтра (Уменьшили до 42x42) */}
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
           className={`relative w-[42px] h-[42px] shrink-0 rounded-xl border transition-all shadow-lg flex items-center justify-center active:scale-95 ${
@@ -51,18 +45,15 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
           }`}
         >
           <Filter size={18} />
-          {/* Индикатор активного фильтра */}
           {isFilterActive && (
             <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,1)]"></span>
           )}
         </button>
       </div>
 
-      {/* 🔥 ВЫПАДАЮЩАЯ ПАНЕЛЬ ФИЛЬТРОВ 🔥 */}
       {isFilterOpen && (
         <div className="absolute top-[calc(100%+8px)] left-0 w-full glass-panel bg-[#0B0E14]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
             
-          {/* ТИП ТРАНЗАКЦИИ */}
           <div className="flex p-1 bg-[#0B0E14] rounded-xl border border-white/10">
             <button 
               onClick={() => setFilter({ ...filter, type: "" })}
@@ -84,7 +75,6 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             </button>
           </div>
 
-          {/* КАЛЕНДАРИ (OD / DO) */}
           <div className="flex gap-2 mt-2">
             <label className="flex-1 block bg-[#0B0E14] border border-white/10 rounded-xl px-3 py-2 focus-within:border-indigo-500 focus-within:bg-[#151A23] transition-all group cursor-pointer">
               <span className="text-[9px] uppercase text-gray-500 font-bold tracking-widest block mb-0.5 group-focus-within:text-indigo-400 transition-colors">{t('filters.dateFrom')}</span>
@@ -109,7 +99,6 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             </label>
           </div>
 
-          {/* ГРУППИРОВКА КАТЕГОРИЙ */}
           <select 
             className="w-full bg-[#0B0E14] border border-white/10 rounded-xl p-3 text-xs text-white outline-none focus:border-indigo-500 transition-colors appearance-none" 
             value={filter.categoryId}
@@ -128,7 +117,6 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
             )}
           </select>
 
-          {/* ВЫБОР КОШЕЛЬКА */}
           <WalletSelect 
               wallets={wallets} 
               value={filter.walletId} 
@@ -138,7 +126,6 @@ export default function TransactionFilter({ filter, setFilter, categories, walle
               placeholderClass="text-white"
           />
 
-          {/* ПЕРЕКЛЮЧАТЕЛЬ ПОДПИСОК */}
           <div 
             onClick={() => setFilter({ ...filter, onlyRecurring: !filter.onlyRecurring })}
             className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all mb-3 ${

@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown, Wallet } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import WalletFlag from "../utils/flags";
+import WalletFlag from "../../utils/flags";
 import { useTranslation } from 'react-i18next';
 
-// 🔥 НОВОЕ: Функция для сокращения текста в середине
 const truncateMiddle = (text, maxLength = 16) => {
     if (!text || text.length <= maxLength) return text;
-    // Берем первые 8 символов, ставим троеточие и берем последние 5 символов
     return `${text.slice(0, 8)}...${text.slice(-5)}`;
 };
 
@@ -44,18 +42,15 @@ export default function WalletSelect({
                     isOpen ? "border-indigo-500/50" : "border-white/5 hover:border-white/10"
                 }`}
             >
-                {/* Выбранный кошелек */}
                 <div className="flex items-center gap-3 min-w-0">
                     {currentWallet ? (
                         <>
                             <WalletFlag currency={currentWallet.currency} className="w-6 h-6 shadow-sm shrink-0" />
-                            {/* 🔥 ИСПОЛЬЗУЕМ textClass */}
                             <span className={`${textClass} text-sm truncate`}>
                                 {currentWallet.currency} • {truncateMiddle(currentWallet.name, 18)}
                             </span>
                         </>
                     ) : (
-                        // 🔥 ИСПОЛЬЗУЕМ placeholderClass
                         <span className={`${placeholderClass} text-xs truncate`}>
                             {showAllOption ? t('walletSelect.allWallets') : t('walletSelect.selectWallet')}
                         </span>
@@ -68,7 +63,6 @@ export default function WalletSelect({
                 />
             </div>
 
-            {/* Выпадающий список */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div 
@@ -78,7 +72,6 @@ export default function WalletSelect({
                         transition={{ duration: 0.15 }}
                         className="absolute top-[100%] left-0 w-full mt-2 bg-[#1A1F2B] border border-white/10 rounded-2xl shadow-2xl max-h-56 overflow-y-auto z-50 scrollbar-hide ring-1 ring-black/50"
                     >
-                        {/* Кнопка сброса */}
                         {showAllOption && (
                             <div
                                 onClick={() => {
@@ -96,7 +89,6 @@ export default function WalletSelect({
                             </div>
                         )}
 
-                        {/* Список кошельков */}
                         {wallets.map((w) => (
                             <div
                                 key={w.id}
@@ -110,7 +102,6 @@ export default function WalletSelect({
                             >
                                 <WalletFlag currency={w.currency} className="w-7 h-7 shadow-sm shrink-0" />
                                 <div className="flex flex-col min-w-0">
-                                    {/* 🔥 ИСПОЛЬЗУЕМ ФУНКЦИЮ ЗДЕСЬ */}
                                     <span className={`text-sm font-bold truncate ${value === w.id ? "text-indigo-400" : "text-white"}`}>
                                         {truncateMiddle(w.name, 20)}
                                     </span>

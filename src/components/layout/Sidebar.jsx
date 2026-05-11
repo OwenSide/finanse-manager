@@ -1,17 +1,13 @@
 import { LayoutDashboard, PlusCircle, Tags, Wallet, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
-// 🔥 Подключаем хук перевода
 import { useTranslation } from 'react-i18next';
 
 export default function Sidebar() {
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0B0E14] border-r border-white/5 z-20">
       
-      {/* Заголовок */}
       <div className="p-6 flex items-center gap-2">
         <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
            <Wallet size={20} />
@@ -19,7 +15,6 @@ export default function Sidebar() {
         <span className="font-bold text-xl text-white tracking-tight">FinManager</span>
       </div>
 
-      {/* Навигация */}
       <nav className="flex-1 px-4 space-y-2 mt-4">
         <NavItem to="/" icon={<LayoutDashboard size={20} />} label={t('nav.homeDesktop')} />
         <NavItem to="/add-transaction" icon={<PlusCircle size={20} />} label={t('nav.addTransaction')} />

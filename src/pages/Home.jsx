@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import { ArrowRightLeft, Loader2, Settings, Plus } from "lucide-react";
 import CountUp from 'react-countup';
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
-import TransactionItem from "../components/TransactionItem"; 
-import TrendBadge from '../components/TrendBadge';
-import WalletCarousel from '../components/WalletCarousel';
-import MoneyMatrix from '../components/MoneyMatrix'; 
+import TransactionItem from "../components/transactions/TransactionItem.jsx"; 
+import TrendBadge from '../components/analytics/TrendBadge.jsx';
+import WalletCarousel from '../components/wallets/WalletCarousel.jsx';
+import MoneyMatrix from '../components/analytics/MoneyMatrix.jsx'; 
 import { usePreferences } from '../context/PreferencesContext';
-import { useTranslation } from 'react-i18next'; // 🔥 Подключен хук перевода
+import { useTranslation } from 'react-i18next'; 
 
 import { getAllWallets, getAllTransactions, getAllExchangeRates, getAllCategories } from "../db.js";
 import { syncExchangeRates } from "../utils/syncExchangeRates.js"; 
@@ -22,7 +22,7 @@ export default function Home() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const { t } = useTranslation(); // 🔥 Вытаскиваем функцию перевода
+  const { t } = useTranslation(); 
   
   const stats = useMonthlyStats(wallets, transactions, exchangeRates);
 
@@ -33,7 +33,7 @@ export default function Home() {
         try {
             await syncExchangeRates();
         } catch (e) {
-            console.warn("Nie udało się zaktualizować kursów, używamy pamięci podręcznej:", e);
+            console.warn("⚠️ Failed to update rates, using local cache:", e);
         }
 
         const [walletsData, txsData, catsData, ratesList] = await Promise.all([
@@ -103,7 +103,6 @@ export default function Home() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] text-indigo-400 gap-3">
         <Loader2 className="animate-spin" size={48} />
-        {/* 🔥 Перевод экрана загрузки */}
         <span className="text-sm font-bold opacity-70 animate-pulse">{t('home.loading')}</span>
     </div>
   );
@@ -137,7 +136,6 @@ export default function Home() {
 
           <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 text-center mt-6">
             
-            {/* 🔥 Перевод заголовка капитала */}
             <h2 className="text-[11px] min-[450px]:text-xs font-semibold tracking-[0.2em] text-gray-300 mb-3 uppercase">
               {t('home.totalAssets')}
             </h2>
@@ -182,12 +180,10 @@ export default function Home() {
               <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                       <ArrowRightLeft className="text-indigo-400" size={20} />
-                      {/* 🔥 Перевод "Ostatnie" */}
                       {t('home.recent')}
                   </h3>
                   {transactions.length > 0 && (
                       <Link to="/add-transaction" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 px-3 py-1 rounded-full">
-                          {/* 🔥 Перевод "Wszystkie" */}
                           {t('home.seeAll')}
                       </Link>
                   )}
@@ -204,7 +200,6 @@ export default function Home() {
                                   <ArrowRightLeft size={32} />
                               </div>
 
-                              {/* 🔥 Перевод пустого состояния */}
                               <h3 className="text-lg font-bold text-white mb-2 relative z-10">
                                   {t('home.noTransactions')}
                               </h3>
@@ -217,7 +212,6 @@ export default function Home() {
                                   className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20"
                               >
                                   <Plus size={18} strokeWidth={3} />
-                                  {/* 🔥 Перевод кнопки добавления */}
                                   {t('home.addTransaction')}
                               </Link>
                           </div>

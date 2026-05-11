@@ -1,26 +1,38 @@
 import { useState } from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/Sidebar.jsx";
-import BottomNav from "./components/BottomNav.jsx"; 
+import Sidebar from "./components/layout/Sidebar.jsx";
+import BottomNav from "./components/layout/BottomNav.jsx"; 
 import AddTransaction from "./pages/AddTransaction.jsx";
 import Home from "./pages/Home.jsx";
 import Categories from "./pages/Categories.jsx";
 import Wallets from "./pages/Wallets.jsx";
 import { PreferencesProvider } from './context/PreferencesContext.jsx'
 import StatsPage from "./pages/StatsPage.jsx";
-import BiometricLock from './components/BiometricLock';
+import BiometricLock from './components/ui/BiometricLock.jsx'; 
 
 import SettingsPage from "./pages/SettingsPage.jsx"; 
 
 export default function App() {
   const [isLocked, setIsLocked] = useState(() => {
     return localStorage.getItem("useBiometrics") === "true";
-    // return false;
   });
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && localStorage.getItem("useBiometrics") === "true") {
+        setIsLocked(true);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <PreferencesProvider>
-      {/* Если заблокировано, показываем ТОЛЬКО BiometricLock и ничего больше */}
       {isLocked ? (
         <BiometricLock onUnlock={() => setIsLocked(false)} />
       ) : (

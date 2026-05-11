@@ -2,13 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Calendar, Wallet, FileText, Plus, ChevronDown, Repeat, Clock } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import CategoryIcon from "./CategoryIcon";
-import WalletSelect from "./WalletSelect";
+import CategoryIcon from "../ui/CategoryIcon.jsx";
+import WalletSelect from "../wallets/WalletSelect.jsx";
 import { useTranslation } from 'react-i18next';
-
-// 🔥 НОВЫЕ ИМПОРТЫ
-import { usePreferences } from "../context/PreferencesContext"; 
-import { getAllExchangeRates } from "../db.js";
+import { usePreferences } from "../../context/PreferencesContext.jsx"; 
+import { getAllExchangeRates } from "../../db.js";
 
 export default function AddTransactionModal({ 
   isOpen, 
@@ -30,7 +28,6 @@ export default function AddTransactionModal({
   const [frequency, setFrequency] = useState("monthly");
   const [transactionType, setTransactionType] = useState("expense");
  
-  // 🔥 Получаем текущую главную валюту из настроек
   const { mainCurrency } = usePreferences();
 
   const { t } = useTranslation();
@@ -51,7 +48,6 @@ export default function AddTransactionModal({
     }
   }, [isOpen, wallets]);
 
-  // 🔥 ДЕЛАЕМ ФУНКЦИЮ АСИНХРОННОЙ
   const handleSubmit = async () => {
     if (!form.amount || !form.categoryId || !form.date || !form.walletId) return;
 
@@ -62,7 +58,6 @@ export default function AddTransactionModal({
     const selectedDate = new Date(form.date);
     selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
 
-    // 🔥 ДОСТАЕМ ТЕКУЩИЙ КУРС ВАЛЮТЫ КОШЕЛЬКА К PLN
     let crossRate = 1;
     try {
         const ratesList = await getAllExchangeRates();
@@ -71,13 +66,10 @@ export default function AddTransactionModal({
             ratesList.forEach(item => { ratesMap[item.currency] = item.rate || item.mid || 1; });
         }
         
-        // 1. Узнаем курс валюты кошелька к PLN (например, кошелек PLN = 1)
         const walletRate = wallet ? (ratesMap[wallet.currency] || 1) : 1;
         
-        // 2. Узнаем курс главной валюты к PLN (например, USD = 4.02)
         const mainRate = ratesMap[mainCurrency] || 1;
         
-        // 3. Считаем кросс-курс (1 / 4.02 = ~0.248)
         crossRate = walletRate / mainRate;
         
     } catch (e) {
@@ -95,7 +87,6 @@ export default function AddTransactionModal({
       isRecurring: isRecurring,
       frequency: isRecurring ? frequency : null,
       
-      // 🔥 СОХРАНЯЕМ ПРАВИЛЬНЫЙ КРОСС-КУРС
       savedMainCurrency: mainCurrency,
       savedExchangeRate: crossRate
     };
@@ -126,17 +117,14 @@ export default function AddTransactionModal({
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
           className="fixed inset-0 z-[200] bg-[#0B0E14] flex flex-col font-sans"
         >
-          {/* ФОНОВЫЙ БЛИК */}
           <div className={`fixed top-0 left-0 w-full h-[40vh] pointer-events-none -z-10 transition-colors duration-500 opacity-30 ${
                 transactionType === 'expense' 
                 ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-rose-600/40 via-rose-600/0 to-transparent' 
                 : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-600/40 via-emerald-600/0 to-transparent'
             }`} />
 
-          {/* ЕДИНЫЙ СКРОЛЛ КОНТЕЙНЕР */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide pt-[max(1rem,env(safe-area-inset-top))]">
             
-            {/* HEADER */}
             <div className="flex items-center justify-between pt-8 pb-4 mb-2">
                 <button 
                   onClick={onClose} 
@@ -150,7 +138,6 @@ export default function AddTransactionModal({
 
             <div className="space-y-8 max-w-md mx-auto">
               
-              {/* 1. TYPE SWITCHER */}
               <div className="flex p-1 bg-[#151A23] rounded-2xl border border-white/5">
                 <button 
                   onClick={() => { setTransactionType("expense"); setForm(f => ({...f, categoryId: ""})); }}
@@ -174,7 +161,6 @@ export default function AddTransactionModal({
                 </button>
               </div>
 
-              {/* 2. INPUT AMOUNT */}
               <div className="relative flex flex-col items-center">
                 <div className={`transition-all duration-300 ${isAmountFocused ? "scale-105" : "scale-100 opacity-80"}`}>
                     <div className="relative">
@@ -200,7 +186,6 @@ export default function AddTransactionModal({
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">{t('addTransaction.enterAmount')}</p>
               </div>
 
-              {/* 3. CATEGORY SELECTOR */}
                 <div>
                     <label className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-3 block ml-1">
                         {t('addTransaction.category')}
@@ -247,7 +232,6 @@ export default function AddTransactionModal({
                     )}
                 </div>
 
-              {/* 4. DETAILS GRID */}
               <div className="space-y-4">
                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -264,8 +248,6 @@ export default function AddTransactionModal({
                         </div>
                     </div>
                     
-                    {/* PORTFEL */}
-                    {/* PORTFEL (КАСТОМНЫЙ) */}
                     <div className="space-y-2">
                         <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider ml-1">{t('addTransaction.wallet')}</label>
                         <WalletSelect 
@@ -293,7 +275,6 @@ export default function AddTransactionModal({
                     </div>
                  </div>
 
-                 {/* 5. RECURRING PAYMENT */}
                  <div className="space-y-3">
                       <div 
                         onClick={() => setIsRecurring(!isRecurring)}
@@ -361,7 +342,6 @@ export default function AddTransactionModal({
 
               </div>
 
-              {/* SAVE BUTTON */}
               <div className="pt-4 pb-12">
                  <button 
                     onClick={handleSubmit} 

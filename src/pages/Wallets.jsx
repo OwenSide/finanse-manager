@@ -136,15 +136,12 @@ export default function Wallets() {
           <div className="flex flex-col items-center justify-center mt-6">
               <div className="relative w-full max-w-sm p-8 rounded-[2rem] flex flex-col items-center text-center overflow-hidden border-2 border-dashed bg-indigo-500/5 border-indigo-500/20">
                   
-                  {/* Фоновое свечение под иконкой */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 blur-3xl rounded-full pointer-events-none opacity-40 bg-indigo-500" />
 
-                  {/* Иконка */}
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-lg border bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-indigo-500/10">
                       <CreditCard size={32} />
                   </div>
 
-                  {/* Текст */}
                   <h3 className="text-lg font-bold text-white mb-2 relative z-10">
                      {t('walletsPage.emptyTitle')}
                   </h3>
@@ -152,7 +149,6 @@ export default function Wallets() {
                       {t('walletsPage.emptyTitle')}
                   </p>
 
-                  {/* Полноценная кнопка вместо текста */}
                   <button 
                       onClick={openCreateModal} 
                       className="relative z-10 flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all active:scale-95 shadow-lg bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20"
@@ -191,7 +187,6 @@ export default function Wallets() {
   );
 }
 
-// 🔥 Вспомогательный компонент для изоляции логики Drag Controls
 function WalletCardWrapper({ wallet, onDelete, onEdit }) {
     const dragControls = useDragControls();
 
@@ -200,7 +195,6 @@ function WalletCardWrapper({ wallet, onDelete, onEdit }) {
             value={wallet} 
             dragListener={false} 
             dragControls={dragControls}
-            // 🔥 УБРАЛИ touch-none отсюда, чтобы разрешить скролл всей страницы
             className="relative" 
         >
             <WalletCard 
@@ -218,7 +212,6 @@ function WalletCard({ wallet, onDelete, onEdit, dragControls }) {
         <div className="group relative flex items-center p-3 rounded-[24px] bg-[#151A23] border border-white/5 hover:border-indigo-500/30 transition-all shadow-sm overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-            {/* 🔥 ВАЖНО: touch-none должен быть ТОЛЬКО ЗДЕСЬ */}
             <div 
                 className="text-gray-600/30 hover:text-gray-400 transition-colors mx-1 shrink-0 cursor-grab active:cursor-grabbing p-2 -ml-2 touch-none"
                 onPointerDown={(e) => dragControls.start(e)}
@@ -242,14 +235,14 @@ function WalletCard({ wallet, onDelete, onEdit, dragControls }) {
             
             <div className="flex items-center gap-1 bg-[#0B0E14]/80 backdrop-blur-md rounded-xl p-1 border border-white/5 opacity-60 group-hover:opacity-100 transition-all z-10 shrink-0">
                 <button
-                    onPointerDown={(e) => e.stopPropagation()} // Чтобы не сработало перетаскивание при клике на кнопку
+                    onPointerDown={(e) => e.stopPropagation()} 
                     onClick={() => onEdit(wallet)}
                     className="p-2 text-gray-400 hover:text-indigo-400 hover:bg-white/5 rounded-lg transition-all"
                 >
                     <Pencil size={16} />
                 </button>
                 <button
-                    onPointerDown={(e) => e.stopPropagation()} // Чтобы не сработало перетаскивание при клике на кнопку
+                    onPointerDown={(e) => e.stopPropagation()} 
                     onClick={() => onDelete(wallet.id)}
                     className="p-2 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                 >

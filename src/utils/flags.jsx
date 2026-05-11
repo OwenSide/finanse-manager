@@ -2,7 +2,6 @@ import React from "react";
 import Flag from "react-world-flags";
 import { CreditCard } from "lucide-react";
 
-// 1. Оставляем константу внутри (можно не экспортировать, если она нужна только тут)
 const currencyToCountry = {
   USD: "US", EUR: "EU", PLN: "PL", UAH: "UA", GBP: "GB", 
   CHF: "CH", CZK: "CZ", JPY: "JP", CNY: "CN", AUD: "AU", 
@@ -13,7 +12,6 @@ const currencyToCountry = {
   CLP: "CL", MYR: "MY", NZD: "NZ", SGD: "SG", HKD: "HK"
 };
 
-// 2. Делаем основной экспорт компонента
 const WalletFlag = ({ currency, className = "" }) => {
   const countryCode = currencyToCountry[currency];
 
@@ -33,14 +31,7 @@ const WalletFlag = ({ currency, className = "" }) => {
         fallback={<CreditCard className="w-full h-full p-2 opacity-40" />}
       />
     </div>
-    // <div className={`aspect-square overflow-hidden rounded-full border border-white/10 ${className}`}>
-    //   <Flag 
-    //     code={countryCode} 
-    //     className="w-full h-full object-cover scale-110 saturate-[0.9] brightness-[0.95]" // scale-110 убирает возможные белые края
-    //     fallback={<CreditCard className="w-full h-full p-2 opacity-40" />}
-    //   />
-    // </div>
   );
 };
 
-export default WalletFlag; // Обязательно default export для Vite
+export default WalletFlag; 

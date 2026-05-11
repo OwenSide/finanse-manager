@@ -2,20 +2,20 @@ import { openDB } from "idb";
 import { v4 as uuidv4 } from "uuid";
 
 const DB_NAME = "FinanceManagerDB";
-const DB_VERSION = 6; // Версия базы
+const DB_VERSION = 6;
 const STORE_CATEGORIES = "categories";
 const STORE_TRANSACTIONS = "transactions";
 const STORE_WALLETS = "wallets";
 const STORE_EXCHANGE_RATES = "exchangeRates"; 
 
 const DEFAULT_CATEGORIES = [
-  { name: "Jedzenie", type: "expense", icon: "shopping-cart", color: "orange" },
-  { name: "Dom", type: "expense", icon: "home", color: "blue" },
+  { name: "Food", type: "expense", icon: "shopping-cart", color: "orange" },
+  { name: "Home", type: "expense", icon: "home", color: "blue" },
   { name: "Transport", type: "expense", icon: "car", color: "red" },
-  { name: "Rozrywka", type: "expense", icon: "film", color: "purple" },
-  { name: "Zdrowie", type: "expense", icon: "heart", color: "green" },
-  { name: "Wynagrodzenie", type: "income", icon: "briefcase", color: "emerald" },
-  { name: "Prezenty", type: "income", icon: "gift", color: "pink" }
+  { name: "Entertainment", type: "expense", icon: "film", color: "purple" },
+  { name: "Health", type: "expense", icon: "heart", color: "green" },
+  { name: "Salary", type: "income", icon: "briefcase", color: "emerald" },
+  { name: "Gifts", type: "income", icon: "gift", color: "pink" }
 ];
 
 export async function getDB() {

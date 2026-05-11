@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Wallet, Plus, Wifi } from "lucide-react";
-import { formatNumber } from "../utils/formatNumber";
-import WalletFlag from "../utils/flags";
+import { formatNumber } from "../../utils/formatNumber";
+import WalletFlag from "../../utils/flags";
 import { useTranslation } from 'react-i18next';
 
 export default function WalletCarousel({ wallets, exchangeRates, mainCurrency }) {
@@ -10,7 +10,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
   const carouselRef = useRef(null);
   const { t } = useTranslation();
 
-  // 1. ЛОГИКА ОТСЛЕЖИВАНИЯ ЦЕНТРАЛЬНОЙ КАРТОЧКИ (Intersection Observer)
   useEffect(() => {
     if (!carouselRef.current || wallets.length === 0) return;
     
@@ -31,9 +30,7 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
     return () => observer.disconnect();
   }, [wallets]);
 
-  // ГЕНЕРАТОР ТЕМЫ
   const getTheme = (curr) => {
-    // Исправленный SVG: линии кодированы через %23 вместо #, добавлен stroke
     const circuitPattern = `url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-opacity='0.3'%3E%3Cpath d='M10 10h30v20h20M60 30v40h-20M100 100h40v-40M100 100v40h-40M150 150h30v-30'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%23ffffff' fill-opacity='0.2'/%3E%3Ccircle cx='100' cy='100' r='4' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/g%3E%3C/svg%3E")`;
 
     const asiaTheme = { bg: 'from-red-600/20 to-red-900/10', border: 'border-red-500/30', text: 'text-red-400', glow: 'bg-red-500/20' };
@@ -75,7 +72,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
         }
       `}</style>
 
-      {/* Заголовок секции */}
       <div className="flex items-center justify-between px-2 mb-3">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <Wallet className="text-indigo-400" size={20} />
@@ -89,7 +85,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
       </div>
 
       {wallets.length === 0 ? (
-        // Пустое состояние (без изменений)
         <div className="w-full flex justify-center">
           <Link 
             to="/wallets" 
@@ -102,7 +97,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
           </Link>
         </div>
       ) : (
-        // Контейнер карусели
         <div 
           ref={carouselRef}
           className="flex gap-0 overflow-x-auto snap-x snap-mandatory px-4 pb-6 pt-2 no-scrollbar md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:pb-0 md:px-0 group/carousel"
@@ -125,10 +119,8 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                 data-id={w.id}
                 className={`wallet-card snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-44 min-[450px]:h-52 rounded-[2.2rem] p-6 flex flex-col justify-between relative overflow-hidden bg-[#151A23]/80 backdrop-blur-xl border ${theme.border} transition-all duration-300 mr-3 ${mobileClasses} ${desktopClasses} cursor-pointer`}
               >
-                {/* Стеклянный эффект (фона) */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg} opacity-50 pointer-events-none transition-opacity duration-300`} />
                 
-                {/* 🔥 СЛОЙ МИКРОСХЕМ (Circuit Pattern) */}
                 <div 
                   className="absolute inset-0 z-0"
                   style={{ 
@@ -139,18 +131,13 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                   }} 
                 />
 
-                {/* Статичное свечение */}
                 <div className={`absolute -top-10 -right-10 w-32 h-32 ${theme.glow} blur-3xl rounded-full pointer-events-none transition-all duration-500 ${isActive ? 'opacity-100' : 'opacity-30'}`} />
 
-                {/* --- 🔥 3. ЭЛЕМЕНТ БЛИКА (LIGHT RAY) --- */}
-                {/* overflow-hidden на родителе обязателен. */}
+
                 <div 
-                  // 🔥 React Хак: Изменение ключа при изменении isActive заставляет 
-                  // React перемонтировать этот div, перезапуская CSS анимацию.
                   key={`shimmer-${w.id}-${isActive}`} 
                   className={`absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-[2.2rem] ${isActive ? 'opacity-100' : 'opacity-0'}`}
                 >
-                  {/* Сам луч света: диагональный градиент. */}
                   <div 
                     className={`
                       absolute top-0 h-full w-1/4 
@@ -162,7 +149,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                   />
                 </div>
 
-                {/* Верхняя часть карты */}
                 <div className="flex justify-between items-start relative z-10">
                   <div>
                     <h4 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 drop-shadow-md">
@@ -178,9 +164,7 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                   </div>
                 </div>
                 
-                {/* Нижняя часть карты (Суммы и Флаг) */}
                 <div className="relative z-10 flex justify-between items-end gap-4 mt-4">
-                  {/* Левая сторона: Баланс */}
                   <div className="min-w-0"> 
                     <p className={`font-black tracking-tight truncate drop-shadow-lg ${balance < 0 ? "text-rose-400" : "text-white"} ${balance.toString().length > 10 ? 'text-2xl' : 'text-2xl'}`}>
                       {formatNumber(balance)}
@@ -192,7 +176,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
                     </p>
                   </div>
 
-                  {/* 🔥 Правая сторона: Круглый Флаг */}
                   <div className="shrink-0 mb-1 drop-shadow-2xl opacity-90 group-hover:opacity-100 transition-opacity">
                     <WalletFlag currency={w.currency} className="w-10 h-10 min-[450px]:w-11 min-[450px]:h-11 border-white/10" />
                   </div>
@@ -201,11 +184,6 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
             );
           })}
           
-          {/* Кнопка "Добавить" (без изменений) */}
-          {/* <Link to="/wallets" className="wallet-card snap-center shrink-0 w-[85vw] min-[450px]:w-80 md:w-auto h-44 min-[450px]:h-52 glass-card rounded-[2.2rem] p-5 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-500 border border-dashed border-white/10 md:group-hover/carousel:opacity-60 hover:!opacity-100 opacity-60 mr-3">
-            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center"><Plus size={20} /></div>
-            <span className="text-[10px] font-bold uppercase md:block hidden">Dodaj portfel</span>
-          </Link> */}
         </div>
       )}
     </section>

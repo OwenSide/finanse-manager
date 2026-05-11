@@ -15,7 +15,6 @@ export default function PeriodSelector({
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export default function PeriodSelector({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 🔥 Переводим опции на лету
   const options = [
     { id: 'this_month', label: t('periodSelector.thisMonth') },
     { id: 'last_month', label: t('periodSelector.lastMonth') },

@@ -1,12 +1,9 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCompactAmount, formatExactAmount } from '../utils/formatters';
-
-// 🔥 Подключаем хук перевода
+import { formatCompactAmount, formatExactAmount } from '../../utils/formatters';
 import { useTranslation } from 'react-i18next';
 
 export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
-  // 🔥 Вытягиваем функцию t
   const { t } = useTranslation();
 
   const hasData = data.some(item => item.value > 0);
@@ -15,7 +12,6 @@ export default function WeekdayBarChart({ data, mainCurrency, activeTab }) {
   const isExpense = activeTab === 'expense';
   const color = isExpense ? '#f43f5e' : '#10b981';
   
-  // 🔥 Перевод заголовка и тултипа
   const title = isExpense ? t('weekdayChart.titleExpense') : t('weekdayChart.titleIncome');
   const tooltipText = isExpense ? t('weekdayChart.spent') : t('weekdayChart.received');
 

@@ -2,16 +2,13 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const TrendBadge = ({ value, className = "" }) => {
-  // Преобразуем в число на всякий случай
   const numValue = Number(value);
   
-  // 🔥 Исправляем баг с -0.0%: если число очень близко к нулю, считаем его чистым нулем
   const isNeutral = numValue === 0 || Math.abs(numValue) < 0.01;
   const isPositive = numValue > 0 && !isNeutral;
 
   const baseStyles = "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border";
   
-  // Цвета в зависимости от состояния
   const colorStyles = isNeutral
     ? "text-gray-400 bg-gray-400/10 border-gray-400/20"
     : isPositive

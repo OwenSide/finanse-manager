@@ -4,12 +4,12 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import translationEN from './locales/en/translation.json';
 import translationPL from './locales/pl/translation.json';
-import translationUK from './locales/uk/translation.json'; // 🔥 Добавили UK
+import translationUK from './locales/uk/translation.json'; 
 
 const resources = {
   en: { translation: translationEN },
   pl: { translation: translationPL },
-  uk: { translation: translationUK }  // 🔥 Добавили UK
+  uk: { translation: translationUK } 
 };
 
 i18n
