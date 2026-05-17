@@ -93,7 +93,7 @@ export default function WalletCarousel({ wallets, exchangeRates, mainCurrency })
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
               <Plus size={24} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-widest">Dodaj portfel</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest">{t('home.addWallet')}</span>
           </Link>
         </div>
       ) : (
