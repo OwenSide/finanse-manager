@@ -140,19 +140,25 @@ export default function Home() {
               {t('home.totalAssets')}
             </h2>
 
-            <div className={`
-              font-black leading-none tracking-tight transition-all duration-500
-              text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400 drop-shadow-[0_0_25px_rgba(236,72,153,0.8)]
-              ${capitalLength >= 7 ? 'text-[44px] min-[450px]:text-6xl' : 'text-[13vw] min-[450px]:text-7xl'}
-            `}>
-              <CountUp 
-                end={totalCapital} 
-                duration={1.5} 
-                decimals={capitalLength >= 8 ? 0 : 2} 
-                decimal="." 
-                separator=" " 
-                preserveValue={true}
-              />
+            <div className="relative w-fit flex items-center justify-center py-2 px-4">
+              
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[80%] bg-fuchsia-500/15 blur-[30px] rounded-full pointer-events-none z-0 transform-gpu"></div>
+
+              <div className={`
+                relative z-10 font-black leading-none tracking-tight transition-all duration-500
+                text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400
+                ${capitalLength >= 7 ? 'text-[44px] min-[450px]:text-6xl' : 'text-[13vw] min-[450px]:text-7xl'}
+              `}>
+                <CountUp 
+                  end={totalCapital} 
+                  duration={1.5} 
+                  decimals={capitalLength >= 8 ? 0 : 2} 
+                  decimal="." 
+                  separator=" " 
+                  preserveValue={true}
+                />
+              </div>
+
             </div>
 
             <div className="mt-5 px-5 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-inner">
