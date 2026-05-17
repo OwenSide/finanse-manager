@@ -9,13 +9,13 @@ const STORE_WALLETS = "wallets";
 const STORE_EXCHANGE_RATES = "exchangeRates"; 
 
 const DEFAULT_CATEGORIES = [
-  { name: "Food", type: "expense", icon: "shopping-cart", color: "orange" },
-  { name: "Home", type: "expense", icon: "home", color: "blue" },
-  { name: "Transport", type: "expense", icon: "car", color: "red" },
-  { name: "Entertainment", type: "expense", icon: "film", color: "purple" },
-  { name: "Health", type: "expense", icon: "heart", color: "green" },
-  { name: "Salary", type: "income", icon: "briefcase", color: "emerald" },
-  { name: "Gifts", type: "income", icon: "gift", color: "pink" }
+  { id: "default-food", name: "Food", type: "expense", icon: "shopping-cart", color: "orange" },
+  { id: "default-home", name: "Home", type: "expense", icon: "home", color: "blue" },
+  { id: "default-transport", name: "Transport", type: "expense", icon: "car", color: "red" },
+  { id: "default-entertainment", name: "Entertainment", type: "expense", icon: "film", color: "purple" },
+  { id: "default-health", name: "Health", type: "expense", icon: "heart", color: "green" },
+  { id: "default-salary", name: "Salary", type: "income", icon: "briefcase", color: "emerald" },
+  { id: "default-gifts", name: "Gifts", type: "income", icon: "gift", color: "pink" }
 ];
 
 export async function getDB() {
@@ -38,7 +38,7 @@ export async function getDB() {
         const store = db.createObjectStore(STORE_CATEGORIES, { keyPath: "id" });
         
         DEFAULT_CATEGORIES.forEach(cat => {
-            store.add({ id: uuidv4(), ...cat });
+            store.put(cat); 
         });
       }
     },
@@ -128,22 +128,24 @@ export async function deleteTransaction(id) {
   return db.delete(STORE_TRANSACTIONS, id);
 }
 
-export async function clearAllData() {
+export async function clearAllData(restoreDefaults = true) {
   const db = await getDB();
   
   await db.clear(STORE_TRANSACTIONS); 
   await db.clear(STORE_WALLETS);      
   await db.clear(STORE_CATEGORIES);
 
-  const txCat = db.transaction(STORE_CATEGORIES, 'readwrite');
-  
-  await Promise.all(
-    DEFAULT_CATEGORIES.map(cat => {
-      return txCat.store.add({ id: uuidv4(), ...cat });
-    })
-  );
-  
-  await txCat.done;
+  if (restoreDefaults) {
+    const txCat = db.transaction(STORE_CATEGORIES, 'readwrite');
+    
+    await Promise.all(
+      DEFAULT_CATEGORIES.map(cat => {
+        return txCat.store.put(cat);
+      })
+    );
+    
+    await txCat.done;
+  }
 
   return true;
 }

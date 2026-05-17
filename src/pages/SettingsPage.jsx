@@ -180,7 +180,7 @@ export default function SettingsPage() {
 
         if (!importedData.wallets || !importedData.transactions) throw new Error(t('settings.alerts.importFormatError'));
 
-        await clearAllData(); 
+        await clearAllData(false); 
 
         for (const w of importedData.wallets) await addWallet(w); 
         if (importedData.categories) {
