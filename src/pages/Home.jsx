@@ -128,6 +128,7 @@ export default function Home() {
           <div className="absolute top-4 left-4 min-[450px]:top-6 min-[450px]:left-6 z-20 pt-[env(safe-area-inset-top)]">
             <Link 
               to="/settings" 
+              aria-label="Settings"
               className="flex items-center justify-center w-10 h-10 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-lg active:scale-95"
             >
               <Settings size={22} className="hover:rotate-90 transition-transform duration-500" />

@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar.jsx";
 import BottomNav from "./components/layout/BottomNav.jsx"; 
-import AddTransaction from "./pages/AddTransaction.jsx";
-import Home from "./pages/Home.jsx";
-import Categories from "./pages/Categories.jsx";
-import Wallets from "./pages/Wallets.jsx";
-import { PreferencesProvider } from './context/PreferencesContext.jsx'
-import StatsPage from "./pages/StatsPage.jsx";
+import { PreferencesProvider } from './context/PreferencesContext.jsx';
 import BiometricLock from './components/ui/BiometricLock.jsx'; 
 
-import SettingsPage from "./pages/SettingsPage.jsx"; 
+const Home = lazy(() => import("./pages/Home.jsx"));
+const StatsPage = lazy(() => import("./pages/StatsPage.jsx"));
+const AddTransaction = lazy(() => import("./pages/AddTransaction.jsx"));
+const Categories = lazy(() => import("./pages/Categories.jsx"));
+const Wallets = lazy(() => import("./pages/Wallets.jsx"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage.jsx"));
 
 export default function App() {
   const [isLocked, setIsLocked] = useState(() => {
@@ -31,6 +31,14 @@ export default function App() {
     };
   }, []);
 
+  const PageLoader = () => (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="animate-pulse text-indigo-400 font-medium tracking-wider">
+        Ładowanie...
+      </div>
+    </div>
+  );
+
   return (
     <PreferencesProvider>
       {isLocked ? (
@@ -39,18 +47,24 @@ export default function App() {
         <Router>
           <div className="flex min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-indigo-500/30">
             <Sidebar />
+            
             <main className="flex-1 w-full min-h-screen relative transition-all duration-300">
               <div className="md:pl-64 pb-24 md:pb-0 h-full">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/stats" element={<StatsPage/>} />
-                  <Route path="/add-transaction" element={<AddTransaction />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/wallets" element={<Wallets />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Routes>
+                
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/stats" element={<StatsPage/>} />
+                    <Route path="/add-transaction" element={<AddTransaction />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/wallets" element={<Wallets />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </Suspense>
+
               </div>
             </main>
+            
             <BottomNav />
           </div>
         </Router>
