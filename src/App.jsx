@@ -48,7 +48,7 @@ export default function App() {
           <div className="flex min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-indigo-500/30">
             <Sidebar />
             
-            <main className="flex-1 w-full min-h-screen relative transition-all duration-300">
+            <main className="flex-1 w-full min-h-screen relative transition-opacity duration-300">
               <div className="md:pl-64 pb-24 md:pb-0 h-full">
                 
                 <Suspense fallback={<PageLoader />}>
