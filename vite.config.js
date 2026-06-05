@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: true
   },
+  base: "/finanse-manager/",
   plugins: [
     react(),
     VitePWA({
@@ -13,6 +14,7 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, 
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        cleanupOutdatedCaches: true, 
       },
       includeAssets: ['favicon.png'],
       manifest: {
@@ -42,16 +44,17 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
             if (id.includes('recharts')) return 'vendor-recharts';
             if (id.includes('framer-motion')) return 'vendor-framer';
             if (id.includes('lucide-react')) return 'vendor-icons';
-            if (id.includes('react/') || id.includes('react-dom/')) return 'vendor-react';
             return 'vendor';
           }
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-  },
-  base: "/finanse-manager/",
+  }
 })
