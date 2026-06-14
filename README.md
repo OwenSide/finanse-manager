@@ -6,6 +6,15 @@
 
 <br />
 
+<!-- <div align="center">
+  <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/IndexedDB-4D4D4D?style=for-the-badge&logo=databricks&logoColor=white" alt="IndexedDB" />
+</div> -->
+
 **Finance Manager** is a modern Progressive Web Application (PWA) designed for convenient tracking of personal finances, multi-currency wallets, and detailed analytics. The app works completely offline, utilizes local device storage, and is optimized to look and feel like a native app on iOS and Android.
 
 🔗 **Demo:** [Open App](https://owenside.github.io/finanse-manager/) 
