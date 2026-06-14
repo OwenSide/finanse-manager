@@ -43,19 +43,19 @@
     <td align="center"><b>Analytics & Charts</b></td>
   </tr>
   <tr>
-    <td><img src="" alt="Home Screen" width="250"/></td>
-    <td><img src="" alt="Wallets Screen" width="250"/></td>
-    <td><img src="" alt="Stats Screen" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/16beebce-482b-424d-b2df-a509b117d763" alt="Home Screen" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/b1e0c4c3-1e5f-494a-9c85-59697926c17a" alt="Wallets Screen" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/c9ce8fdd-758c-4326-8c84-a33fff377625" alt="Stats Screen" width="250"/></td>
   </tr>
   <tr>
     <td align="center"><b>Add Transaction</b></td>
     <td align="center"><b>Categories / Icons</b></td>
-    <td align="center"><b>Biometric PIN Lock</b></td>
+    <td align="center"><b>Settings</b></td>
   </tr>
   <tr>
-    <td><img src="" alt="Add Transaction" width="250"/></td>
-    <td><img src="" alt="Categories" width="250"/></td>
-    <td><img src="" alt="Lock Screen" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/08793290-9734-4076-9f73-f6fcf30a6315" alt="Add Transaction" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/ded424bb-7567-410c-b082-db33d792b9aa" alt="Categories" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/b6e63953-1dfc-4971-858d-63d0d261214a" alt="Settings" width="250"/></td>
   </tr>
 </table>
 
