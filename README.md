@@ -13,15 +13,15 @@
 ---
 
 ## 📑 Table of Contents
-- [📸 Screenshots](#screenshots)
-- [🔒 Privacy First](#privacy-first)
-- [✨ Key Features](#key-features)
-- [🏗 Tech Stack](#tech-stack)
-- [🚀 Installation and Setup](#installation-and-setup)
-- [📦 Build and Deploy](#build-and-deploy)
-- [📱 How to Install on Phone (PWA)](#how-to-install-on-phone-pwa)
-- [📂 Project Structure](#project-structure)
-- [📄 License](#license)
+- [📸 Screenshots](#-screenshots)
+- [🔒 Privacy First](#-privacy-first)
+- [✨ Key Features](#-key-features)
+- [🏗 Tech Stack](#-tech-stack)
+- [🚀 Installation and Setup](#-installation-and-setup)
+- [📦 Build and Deploy](#-build-and-deploy)
+- [📱 How to Install on Phone (PWA)](#-how-to-install-on-phone-pwa)
+- [📂 Project Structure](#-project-structure)
+- [📄 License](#-license)
 
 ---
 
