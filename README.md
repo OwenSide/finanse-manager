@@ -39,7 +39,7 @@
 <table align="center">
   <tr>
     <td align="center"><b>Home / Dashboard</b></td>
-    <td align="center"><b>Wallet Carousel</b></td>
+    <td align="center"><b>Wallets</b></td>
     <td align="center"><b>Analytics & Charts</b></td>
   </tr>
   <tr>
